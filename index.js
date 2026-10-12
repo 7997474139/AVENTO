@@ -7,7 +7,7 @@ const mime = require("mime-types");
 const express = require("express");
 const axios = require("axios");
 const { createClient } = require("@supabase/supabase-js");
-const nodemailer = require("nodemailer");
+const { Resend } = require("resend");
 
 const brindavanMenu = require("./services/brindavanMenu");
 const freshMeatMenu = require("./services/freshMeatMenu");
@@ -25,9 +25,8 @@ const {
   AVENTO_UPI_ID = "9876543210@ybl",
   AVENTO_UPI_NAME = "Avento Multi-Services",
   AVENTO_ADMIN_PHONE = "",
-  EMAIL_USER,
-  EMAIL_PASS,
-  ADMIN_EMAIL,
+  RESEND_API_KEY,
+  ADMIN_EMAIL = "aventoservices@gmail.com",
 } = process.env;
 
 const GRAPH_VERSION = "v23.0";
@@ -47,35 +46,24 @@ if (
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ==================================================
-// NODEMAILER TRANSPORTER SETUP (FIXED FOR RENDER / TIMEOUT)
+// RESEND API CLIENT SETUP
 // ==================================================
-const emailTransporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 465,
-  secure: true,
-  auth: {
-    user: EMAIL_USER,
-    pass: EMAIL_PASS,
-  },
-  tls: {
-    rejectUnauthorized: false
-  }
-});
+const resend = new Resend(RESEND_API_KEY);
 
 async function sendOrderEmail(subject, htmlContent) {
-  if (!EMAIL_USER || !EMAIL_PASS || !ADMIN_EMAIL) {
-    console.warn("Email credentials not configured properly.");
+  if (!RESEND_API_KEY || !ADMIN_EMAIL) {
+    console.warn("Resend API key or Admin email not configured properly.");
     return;
   }
 
   try {
-    await emailTransporter.sendMail({
-      from: EMAIL_USER,
-      to: ADMIN_EMAIL,
+    await resend.emails.send({
+      from: "Avento Bot <onboarding@resend.dev>",
+      to: [ADMIN_EMAIL],
       subject: subject,
       html: htmlContent,
     });
-    console.log("✅ ఆర్డర్ ఈమెయిల్ విజయవంతంగా పంపబడింది!");
+    console.log("✅ ఆర్డర్ ఈమెయిల్ Resend API ద్వారా విజయవంతంగా పంపబడింది!");
   } catch (error) {
     console.error("❌ ఈమెయిల్ పంపడంలో ఎర్రర్ వచ్చింది:", error);
   }
@@ -993,7 +981,7 @@ async function initiatePaymentFlow(phone, user) {
 
       await sendNavigation(phone);
 
-      // EMAIL NOTIFICATION FOR FRESH MEAT
+      // EMAIL NOTIFICATION FOR FRESH MEAT (RESEND API)
       const loc = details.location ? `https://maps.google.com/?q=${details.location.latitude},${details.location.longitude}` : "లొకేషన్ లేదు";
       const itemsList = cart.map(i => `${i.name} (${i.quantity} ${i.unit})`).join(", ");
       await sendOrderEmail(
@@ -1029,7 +1017,7 @@ async function initiatePaymentFlow(phone, user) {
     await sendPaymentInstructions(phone, order, details);
     await sendNavigation(phone);
 
-    // EMAIL NOTIFICATION FOR FOOD ORDER
+    // EMAIL NOTIFICATION FOR FOOD ORDER (RESEND API)
     const loc = details.location ? `https://maps.google.com/?q=${details.location.latitude},${details.location.longitude}` : "లొకేషన్ లేదు";
     const itemsList = cart.map(i => `${i.name} (Qty: ${i.quantity})`).join(", ");
     await sendOrderEmail(
@@ -1088,7 +1076,7 @@ async function createServiceRequest(phone, user) {
 
     await sendNavigation(phone);
 
-    // EMAIL NOTIFICATION FOR OTHER SERVICES (Medicine, Plumbing, Shifting)
+    // EMAIL NOTIFICATION FOR OTHER SERVICES (RESEND API)
     const loc = details.location ? `https://maps.google.com/?q=${details.location.latitude},${details.location.longitude}` : "లొకేషన్ లేదు";
     await sendOrderEmail(
       `🚀 కొత్త సర్వీస్ రిక్వెస్ట్ వచ్చింది! (#${order.id})`,
