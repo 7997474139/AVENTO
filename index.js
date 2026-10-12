@@ -47,14 +47,19 @@ if (
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ==================================================
-// NODEMAILER TRANSPORTER SETUP
+// NODEMAILER TRANSPORTER SETUP (FIXED FOR RENDER / TIMEOUT)
 // ==================================================
 const emailTransporter = nodemailer.createTransport({
-  service: "gmail",
+  host: "smtp.gmail.com",
+  port: 465,
+  secure: true,
   auth: {
     user: EMAIL_USER,
     pass: EMAIL_PASS,
   },
+  tls: {
+    rejectUnauthorized: false
+  }
 });
 
 async function sendOrderEmail(subject, htmlContent) {
