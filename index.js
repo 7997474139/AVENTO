@@ -1,4 +1,3 @@
-
 require("dotenv").config();
 
 const fs = require("fs");
@@ -8,6 +7,7 @@ const mime = require("mime-types");
 const express = require("express");
 const axios = require("axios");
 const { createClient } = require("@supabase/supabase-js");
+const nodemailer = require("nodemailer");
 
 const brindavanMenu = require("./services/brindavanMenu");
 const freshMeatMenu = require("./services/freshMeatMenu");
@@ -25,6 +25,9 @@ const {
   AVENTO_UPI_ID = "9876543210@ybl",
   AVENTO_UPI_NAME = "Avento Multi-Services",
   AVENTO_ADMIN_PHONE = "",
+  EMAIL_USER,
+  EMAIL_PASS,
+  ADMIN_EMAIL,
 } = process.env;
 
 const GRAPH_VERSION = "v23.0";
@@ -42,6 +45,36 @@ if (
 }
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// ==================================================
+// NODEMAILER TRANSPORTER SETUP
+// ==================================================
+const emailTransporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: EMAIL_USER,
+    pass: EMAIL_PASS,
+  },
+});
+
+async function sendOrderEmail(subject, htmlContent) {
+  if (!EMAIL_USER || !EMAIL_PASS || !ADMIN_EMAIL) {
+    console.warn("Email credentials not configured properly.");
+    return;
+  }
+
+  try {
+    await emailTransporter.sendMail({
+      from: EMAIL_USER,
+      to: ADMIN_EMAIL,
+      subject: subject,
+      html: htmlContent,
+    });
+    console.log("✅ ఆర్డర్ ఈమెయిల్ విజయవంతంగా పంపబడింది!");
+  } catch (error) {
+    console.error("❌ ఈమెయిల్ పంపడంలో ఎర్రర్ వచ్చింది:", error);
+  }
+}
 
 // ==================================================
 // 1. HELPERS
@@ -324,7 +357,6 @@ async function sendList(to, body, buttonText, sections) {
     },
   });
 
-  // ప్రతి లిస్ట్ తర్వాత Back, Main Menu ఆప్షన్లు.
   await sendNavigation(to);
 }
 
@@ -430,8 +462,6 @@ async function updateOrder(orderId, updates) {
 // ==================================================
 
 async function showMainMenu(to) {
-  // Welcome image ఉంటే ముందుగా పంపుతుంది.
-  // Image లేకపోయినా బాట్ పనిచేస్తుంది.
   await sendLocalImage(
     to,
     serviceImage("welcome.jpg"),
@@ -466,8 +496,6 @@ async function startService(phone, service) {
 }
 
 async function goToMainMenu(phone) {
-  // ప్రస్తుత సర్వీస్ స్టేట్‌ను మాత్రమే రీసెట్ చేస్తుంది.
-  // గతంలో ఇప్పటికే సృష్టించిన ఆర్డర్‌ను తొలగించదు.
   await setState(phone, "IDLE", {
     location: null,
     temp_selection: {},
@@ -959,6 +987,15 @@ async function initiatePaymentFlow(phone, user) {
       );
 
       await sendNavigation(phone);
+
+      // EMAIL NOTIFICATION FOR FRESH MEAT
+      const loc = details.location ? `https://maps.google.com/?q=${details.location.latitude},${details.location.longitude}` : "లొకేషన్ లేదు";
+      const itemsList = cart.map(i => `${i.name} (${i.quantity} ${i.unit})`).join(", ");
+      await sendOrderEmail(
+        `🚀 కొత్త ఫ్రెష్ మీట్ ఆర్డర్ వచ్చింది! (#${order.id})`,
+        `<h2>🥩 కొత్త ఫ్రెష్ మీట్ ఆర్డర్</h2><p><b>ఫోన్ నంబర్:</b> ${phone}</p><p><b>ఐటమ్స్:</b> ${itemsList}</p><p><b>లొకేషన్:</b> <a href="${loc}" target="_blank">Google Maps లో చూడండి</a></p>`
+      );
+
       return;
     }
 
@@ -986,6 +1023,15 @@ async function initiatePaymentFlow(phone, user) {
 
     await sendPaymentInstructions(phone, order, details);
     await sendNavigation(phone);
+
+    // EMAIL NOTIFICATION FOR FOOD ORDER
+    const loc = details.location ? `https://maps.google.com/?q=${details.location.latitude},${details.location.longitude}` : "లొకేషన్ లేదు";
+    const itemsList = cart.map(i => `${i.name} (Qty: ${i.quantity})`).join(", ");
+    await sendOrderEmail(
+      `🚀 కొత్త ఫుడ్ ఆర్డర్ వచ్చింది! (#${order.id})`,
+      `<h2>🍽️ కొత్త ఫుడ్ ఆర్డర్ (${details.hotel_name || 'Food'})</h2><p><b>ఫోన్ నంబర్:</b> ${phone}</p><p><b>ఐటమ్స్:</b> ${itemsList}</p><p><b>మొత్తం:</b> ${formatRupees(totalAmount)}</p><p><b>లొకేషన్:</b> <a href="${loc}" target="_blank">Google Maps లో చూడండి</a></p>`
+    );
+
   } catch (error) {
     console.error("Payment flow error:", error.message);
 
@@ -1036,6 +1082,14 @@ async function createServiceRequest(phone, user) {
     );
 
     await sendNavigation(phone);
+
+    // EMAIL NOTIFICATION FOR OTHER SERVICES (Medicine, Plumbing, Shifting)
+    const loc = details.location ? `https://maps.google.com/?q=${details.location.latitude},${details.location.longitude}` : "లొకేషన్ లేదు";
+    await sendOrderEmail(
+      `🚀 కొత్త సర్వీస్ రిక్వెస్ట్ వచ్చింది! (#${order.id})`,
+      `<h2>🛠️ కొత్త సర్వీస్ రిక్వెస్ట్ (${getServiceName(temp.service)})</h2><p><b>ఫోన్ నంబర్:</b> ${phone}</p><p><b>వివరాలు:</b> ${details.notes || 'వివరాలు లేవు'}</p><p><b>లొకేషన్:</b> <a href="${loc}" target="_blank">Google Maps లో చూడండి</a></p>`
+    );
+
   } catch (error) {
     console.error("Service request error:", error.message);
 
@@ -1055,7 +1109,6 @@ async function handleAdminCommand(phone, text) {
 
   const trimmed = String(text || "").trim();
 
-  // Example: price ORDER_ID 450
   const priceMatch = trimmed.match(
     /^price\s+(\S+)\s+(\d+(?:\.\d{1,2})?)$/i
   );
@@ -1122,7 +1175,6 @@ async function handleAdminCommand(phone, text) {
     return true;
   }
 
-  // Example: paid ORDER_ID
   const paidMatch = trimmed.match(/^paid\s+(\S+)$/i);
 
   if (paidMatch) {
@@ -1223,7 +1275,6 @@ app.get(
 app.post(
   ["/webhook", "/whatsapp/webhook", "/whatsapp/webhook/"],
   async (req, res) => {
-    // WhatsAppకు వెంటనే response ఇవ్వాలి.
     res.sendStatus(200);
 
     try {
@@ -1249,12 +1300,10 @@ app.post(
       const cart = getCart(user);
       const temp = getTemp(user);
 
-      // Admin commands
       if (type === "text" && await handleAdminCommand(phone, text)) {
         return;
       }
 
-      // Main Menu button - Hi తప్పనిసరి కాదు.
       if (
         command === "nav_main" ||
         ["hi", "hello", "menu", "start", "హాయ్", "మెనూ"].includes(normalized)
@@ -1263,7 +1312,6 @@ app.post(
         return;
       }
 
-      // Back button
       if (
         command === "nav_back" ||
         ["back", "వెనక్కి", "వెనుకకు"].includes(normalized)
@@ -1272,7 +1320,6 @@ app.post(
         return;
       }
 
-      // UTR submission
       if (user.current_state === "AWAITING_UTR" && type === "text") {
         const utrNumber = text;
         const orderId = temp.pending_order_id;
@@ -1352,7 +1399,6 @@ app.post(
         return;
       }
 
-      // Cancel
       if (
         command === "order_cancel" ||
         ["cancel", "రద్దు"].includes(normalized)
@@ -1368,7 +1414,6 @@ app.post(
         return;
       }
 
-      // Location
       if (type === "location" && message.location) {
         if (user.current_state !== "AWAITING_LOCATION") {
           await sendText(
@@ -1399,7 +1444,6 @@ app.post(
         return;
       }
 
-      // 1. Food service
       if (command === "srv_food") {
         await startService(phone, "food");
 
@@ -1417,7 +1461,6 @@ app.post(
         return;
       }
 
-      // Hotel selection
       if (
         command === "hotel_brindavanam" ||
         command === "hotel_king_biryani"
@@ -1440,7 +1483,6 @@ app.post(
         return;
       }
 
-      // 2. Fresh Meat
       if (command === "srv_meat") {
         await startService(phone, "fresh_meat");
 
@@ -1458,7 +1500,6 @@ app.post(
         return;
       }
 
-      // 3. Medicine
       if (command === "srv_med") {
         await startService(phone, "medicine");
 
@@ -1481,7 +1522,6 @@ app.post(
         return;
       }
 
-      // 4. Plumbing / Electrical
       if (command === "srv_plumbing") {
         await startService(phone, "plumbing_electrical");
 
@@ -1508,7 +1548,6 @@ app.post(
         return;
       }
 
-      // 5. Shifting / Parcel
       if (command === "srv_shifting") {
         await startService(phone, "shifting");
 
@@ -1536,7 +1575,6 @@ app.post(
         return;
       }
 
-      // Food pagination
       const pageMatch = String(command).match(/^foodpage_(.+)_(\d+)$/);
 
       if (pageMatch) {
@@ -1548,13 +1586,11 @@ app.post(
         return;
       }
 
-      // Food category
       if (String(command).startsWith("cat_")) {
         await showFoodItems(phone, String(command).slice(4), 0);
         return;
       }
 
-      // Add food item
       if (String(command).startsWith("item_")) {
         const item = getFoodItem(String(command).slice(5));
 
@@ -1581,7 +1617,6 @@ app.post(
         return;
       }
 
-      // Meat category
       const meatCategory = getMeatCategories().find(
         category => String(category.id) === String(command)
       );
@@ -1607,7 +1642,6 @@ app.post(
         return;
       }
 
-      // Meat quantity selection
       const quantityMatch = String(command).match(
         /^qty_(\d+)_([A-Za-z0-9_-]+)$/
       );
@@ -1626,8 +1660,6 @@ app.post(
           return;
         }
 
-        // quantity.id సంఖ్యగా ఉంటే దాన్ని ఉపయోగిస్తుంది.
-        // లేకపోతే titleలోని సంఖ్యను ఉపయోగిస్తుంది.
         const rawQuantity =
           quantityOption.value ??
           quantityOption.kg ??
@@ -1647,7 +1679,6 @@ app.post(
           return;
         }
 
-        // ఉదాహరణకు title "500 g" అయితే 0.5 KGగా మార్చుతుంది.
         const titleText = String(quantityOption.title || "").toLowerCase();
         const quantityKg =
           /g\b|grams?/.test(titleText) && !/kg/.test(titleText)
@@ -1679,7 +1710,6 @@ app.post(
         return;
       }
 
-      // Cart actions
       if (command === "cart_add_more") {
         if (temp.service === "fresh_meat") {
           await showMeatCategories(phone);
@@ -1724,7 +1754,6 @@ app.post(
         return;
       }
 
-      // Shifting / parcel sub-menu
       if (command === "shift_home" || command === "shift_parcel") {
         const serviceName =
           command === "shift_home" ? "Home Shifting" : "Parcel Delivery";
@@ -1747,7 +1776,6 @@ app.post(
         return;
       }
 
-      // Prescription upload
       if (user.current_state === "AWAITING_PRESCRIPTION") {
         const media = message.image || message.document;
 
@@ -1776,7 +1804,6 @@ app.post(
         return;
       }
 
-      // Plumbing, Electrical, Shifting details
       if (user.current_state === "AWAITING_SERVICE_DETAILS") {
         let notes = text || "";
 
@@ -1815,7 +1842,6 @@ app.post(
         return;
       }
 
-      // Order submission
       if (command === "order_submit") {
         if (user.current_state !== "REVIEW_ORDER") {
           await sendText(
@@ -1830,7 +1856,6 @@ app.post(
         return;
       }
 
-      // Unknown message fallback
       if (type === "text") {
         await sendText(
           phone,
@@ -1861,4 +1886,3 @@ app.get("/", (req, res) => {
 app.listen(PORT, () => {
   console.log(`Avento WhatsApp Bot running on port ${PORT}`);
 });
- 
