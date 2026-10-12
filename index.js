@@ -26,7 +26,7 @@ const {
   AVENTO_UPI_NAME = "Avento Multi-Services",
   AVENTO_ADMIN_PHONE = "",
   RESEND_API_KEY,
-  ADMIN_EMAIL = "aventoservices@gmail.com",
+  ADMIN_EMAIL = "smahesh0404@gmail.com",
 } = process.env;
 
 const GRAPH_VERSION = "v23.0";
@@ -66,6 +66,22 @@ async function sendOrderEmail(subject, htmlContent) {
     console.log("✅ ఆర్డర్ ఈమెయిల్ Resend API ద్వారా విజయవంతంగా పంపబడింది!");
   } catch (error) {
     console.error("❌ ఈమెయిల్ పంపడంలో ఎర్రర్ వచ్చింది:", error);
+  }
+}
+
+// ==================================================
+// WHATSAPP MEDIA URL HELPER
+// ==================================================
+async function getWhatsAppMediaUrl(mediaId) {
+  if (!mediaId) return null;
+  try {
+    const response = await axios.get(`${GRAPH_URL}/${mediaId}`, {
+      headers: { Authorization: `Bearer ${WHATSAPP_TOKEN}` },
+    });
+    return response.data?.url || null;
+  } catch (error) {
+    console.error("Failed to fetch WhatsApp media URL:", error.message);
+    return null;
   }
 }
 
@@ -563,7 +579,7 @@ async function goBack(phone, user) {
     case "AWAITING_UTR":
       await sendText(
         phone,
-        "మీ పేమెంట్ రిఫరెన్స్ ఇంకా పెండింగ్‌లో ఉంది. UTR పంపడం ద్వారా పేమెంట్ వెరిఫికేషన్ పూర్తి చేయవచ్చు. Main Menuకి వెళ్లినా ఇప్పటికే సేవ్ చేసిన ఆర్డర్ తొలగించబడదు."
+        "మీ పేమెంట్ రిఫరెన్స్ ఇంకా పెండింగ్‌లో ఉంది. UTR లేదా పేమెంట్ ఫోటో పంపడం ద్వారా వెరిఫికేషన్ పూర్తి చేయవచ్చు."
       );
       await sendNavigation(phone);
       return;
@@ -907,7 +923,7 @@ async function sendPaymentInstructions(phone, order, details) {
     `📱 UPI ID: ${AVENTO_UPI_ID}\n` +
     `👤 పేరు: ${AVENTO_UPI_NAME}\n\n` +
     `QR కోడ్ స్కాన్ చేసి లేదా UPI IDకి చెల్లించండి.\n` +
-    `చెల్లింపు చేసిన తర్వాత UPI Ref No / UTR నంబర్‌ను ఈ చాట్‌లో పంపండి.\n\n` +
+    `చెల్లింపు చేసిన తర్వాత UTR నంబర్ లేదా పేమెంట్ రసీదు/స్క్రీన్‌షాట్‌ను ఇక్కడ పంపండి.\n\n` +
     `గమనిక: పేమెంట్‌ను వెరిఫై చేసిన తర్వాతే ఆర్డర్ కన్ఫర్మ్ అవుతుంది.`;
 
   if (fs.existsSync(qrPath)) {
@@ -1046,8 +1062,7 @@ async function createServiceRequest(phone, user) {
     service: temp.service,
     service_name: temp.service_name || null,
     notes: temp.notes || null,
-    prescription_media_id: temp.prescription_media_id || null,
-    attachments: temp.attachments || [],
+    media_id: temp.media_id || temp.prescription_media_id || null,
     location: getLocation(user),
     status: "REQUESTED",
     created_at: new Date().toISOString(),
@@ -1078,9 +1093,24 @@ async function createServiceRequest(phone, user) {
 
     // EMAIL NOTIFICATION FOR OTHER SERVICES (RESEND API)
     const loc = details.location ? `https://maps.google.com/?q=${details.location.latitude},${details.location.longitude}` : "లొకేషన్ లేదు";
+    let mediaLinkHtml = "ఫోటోలు/ఇమేజెస్ లేవు";
+
+    if (details.media_id) {
+      const mediaUrl = await getWhatsAppMediaUrl(details.media_id);
+      if (mediaUrl) {
+        mediaLinkHtml = `<a href="${mediaUrl}" target="_blank" style="padding: 10px 15px; background-color: #008CBA; color: white; text-decoration: none; border-radius: 5px;">📷 ఇమేజ్ / ఫోటో చూడటానికి ఇక్కడ క్లిక్ చేయండి</a>`;
+      } else {
+        mediaLinkHtml = `Media ID: ${details.media_id} (URL పొందలేకపోయాం)`;
+      }
+    }
+
     await sendOrderEmail(
       `🚀 కొత్త సర్వీస్ రిక్వెస్ట్ వచ్చింది! (#${order.id})`,
-      `<h2>🛠️ కొత్త సర్వీస్ రిక్వెస్ట్ (${getServiceName(temp.service)})</h2><p><b>ఫోన్ నంబర్:</b> ${phone}</p><p><b>వివరాలు:</b> ${details.notes || 'వివరాలు లేవు'}</p><p><b>లొకేషన్:</b> <a href="${loc}" target="_blank">Google Maps లో చూడండి</a></p>`
+      `<h2>🛠️ కొత్త సర్వీస్ రిక్వెస్ట్ (${getServiceName(temp.service)})</h2>
+       <p><b>ఫోన్ నంబర్:</b> ${phone}</p>
+       <p><b>వివరాలు:</b> ${details.notes || 'వివరాలు లేవు'}</p>
+       <p><b>పంపిన ఫోటో/ఇమేజ్:</b> ${mediaLinkHtml}</p>
+       <p><b>లొకేషన్:</b> <a href="${loc}" target="_blank">Google Maps లో చూడండి</a></p>`
     );
 
   } catch (error) {
@@ -1185,7 +1215,7 @@ async function handleAdminCommand(phone, text) {
         await sendText(
           phone,
           `ఈ ఆర్డర్ PAYMENT_REVIEW స్థితిలో లేదు. ప్రస్తుత స్థితి: ${order.status}\n\n` +
-          `PhonePeలో పేమెంట్‌ను చెక్ చేసి, UTR వచ్చిన ఆర్డర్ మాత్రమే కన్ఫర్మ్ చేయండి.`
+          `PhonePeలో పేమెంట్‌ను చెక్ చేసి, UTR/స్క్రీన్‌షాట్ వచ్చిన ఆర్డర్ మాత్రమే కన్ఫర్మ్ చేయండి.`
         );
         return true;
       }
@@ -1313,22 +1343,14 @@ app.post(
         return;
       }
 
-      if (user.current_state === "AWAITING_UTR" && type === "text") {
-        const utrNumber = text;
+      // PAYMENT PROOF / UTR / SCREENSHOT HANDLING
+      if (user.current_state === "AWAITING_UTR") {
         const orderId = temp.pending_order_id;
 
         if (!orderId) {
           await sendText(
             phone,
             "మీ పెండింగ్ ఆర్డర్ నంబర్ దొరకలేదు. మా బృందాన్ని సంప్రదించండి."
-          );
-          return;
-        }
-
-        if (!/^[A-Za-z0-9-]{6,40}$/.test(utrNumber)) {
-          await sendText(
-            phone,
-            "దయచేసి మీ PhonePe రసీదులో ఉన్న సరైన UTR / UPI Ref No పంపండి."
           );
           return;
         }
@@ -1340,10 +1362,17 @@ app.post(
           return;
         }
 
-        if (order.status !== "PENDING_PAYMENT") {
+        let utrNumber = text;
+        let imageMediaId = message.image?.id || null;
+
+        if (type === "image" && imageMediaId) {
+          utrNumber = `IMAGE_SCREENSHOT_${imageMediaId}`;
+        }
+
+        if (!utrNumber) {
           await sendText(
             phone,
-            `ఈ ఆర్డర్ ప్రస్తుతం ${order.status} స్థితిలో ఉంది.`
+            "దయచేసి మీ PhonePe UTR / UPI Ref No లేదా పేమెంట్ స్క్రీన్‌షాట్ పంపండి."
           );
           return;
         }
@@ -1355,6 +1384,7 @@ app.post(
           method: "UPI_MANUAL",
           status: "PAYMENT_REVIEW",
           utr_transaction_id: utrNumber,
+          screenshot_media_id: imageMediaId,
           submitted_at: new Date().toISOString(),
         };
 
@@ -1370,10 +1400,29 @@ app.post(
 
         await sendText(
           phone,
-          `✅ మీ UTR / Transaction ID అందింది.\n\n` +
+          `✅ మీ పేమెంట్ వివరాలు / స్క్రీన్‌షాట్ అందింది.\n\n` +
           `🧾 ఆర్డర్ నంబర్: #${order.id}\n` +
           `మా బృందం PhonePeలో పేమెంట్‌ను వెరిఫై చేసిన తర్వాతే ఆర్డర్ కన్ఫర్మ్ అవుతుంది.\n\n` +
           `ధన్యవాదాలు! 🙏`
+        );
+
+        // ADMIN EMAIL NOTIFICATION FOR PAYMENT
+        let paymentMediaHtml = "యుటిఆర్ సరిచూసుకోండి";
+        if (imageMediaId) {
+          const mediaUrl = await getWhatsAppMediaUrl(imageMediaId);
+          if (mediaUrl) {
+            paymentMediaHtml = `<a href="${mediaUrl}" target="_blank" style="padding: 10px 15px; background-color: #28a745; color: white; text-decoration: none; border-radius: 5px;">💳 పేమెంట్ స్క్రీన్‌షాట్ చూడటానికి క్లిక్ చేయండి</a>`;
+          }
+        }
+
+        await sendOrderEmail(
+          `💳 కొత్త పేమెంట్ రివ్యూ వచ్చింది! (#${order.id})`,
+          `<h2>💳 పేమెంట్ వెరిఫికేషన్ అవసరం</h2>
+           <p><b>Order ID:</b> #${order.id}</p>
+           <p><b>Customer:</b> ${phone}</p>
+           <p><b>Amount:</b> ${formatRupees(details.total)}</p>
+           <p><b>UTR / Text:</b> ${text || 'స్క్రీన్‌షాట్ పంపారు'}</p>
+           <p><b>పేమెంట్ ఫోటో:</b> ${paymentMediaHtml}</p>`
         );
 
         if (AVENTO_ADMIN_PHONE) {
@@ -1383,8 +1432,8 @@ app.post(
             `Order ID: ${order.id}\n` +
             `Customer: ${phone}\n` +
             `Amount: ${formatRupees(details.total)}\n` +
-            `UTR: ${utrNumber}\n\n` +
-            `PhonePeలో పేమెంట్ నిజంగా వచ్చిందని చెక్ చేసిన తర్వాత మాత్రమే:\n` +
+            `UTR/Status: ${text || 'Screenshot received'}\n\n` +
+            `PhonePeలో పేమెంట్ చెక్ చేసిన తర్వాత మాత్రమే:\n` +
             `paid ${order.id}`
           );
         }
@@ -1522,7 +1571,6 @@ app.post(
           temp_selection: {
             service: "plumbing_electrical",
             notes: "",
-            attachments: [],
           },
         });
 
@@ -1534,7 +1582,7 @@ app.post(
 
         await sendText(
           phone,
-          "🔧 మీకు కావాల్సిన పని లేదా సమస్య వివరాలు టైప్ చేయండి. అవసరమైతే ఫోటో లేదా వాయిస్ మెసేజ్ కూడా పంపండి."
+          "🔧 మీకు కావాల్సిన పని లేదా సమస్య వివరాలు టైప్ చేయండి లేదా ఫోటో పంపండి."
         );
 
         await sendNavigation(phone);
@@ -1667,7 +1715,7 @@ app.post(
         if (!Number.isFinite(parsedQuantity) || parsedQuantity <= 0) {
           await sendText(
             phone,
-            "ఈ పరిమాణాన్ని గుర్తించలేకపోయాం. freshMeatMenu.jsలో quantity వివరాలను చెక్ చేయండి."
+            "ఈ పరిమాణాన్ని గుర్తించలేకపోయాం."
           );
           return;
         }
@@ -1762,7 +1810,7 @@ app.post(
         await sendText(
           phone,
           `🚚 ${serviceName}\n\n` +
-          `దయచేసి పికప్ లొకేషన్, డ్రాప్ లొకేషన్, వస్తువుల వివరాలు మరియు అవసరమైన తేదీ పంపండి.`
+          `దయచేసి పికప్ లొకేషన్, డ్రాప్ లొకేషన్, వస్తువుల వివరాలు పంపండి.`
         );
 
         await sendNavigation(phone);
@@ -1784,7 +1832,7 @@ app.post(
         await setState(phone, "AWAITING_LOCATION", {
           temp_selection: {
             ...temp,
-            prescription_media_id: media.id,
+            media_id: media.id,
           },
         });
 
@@ -1799,21 +1847,12 @@ app.post(
 
       if (user.current_state === "AWAITING_SERVICE_DETAILS") {
         let notes = text || "";
+        let mediaId = message.image?.id || message.document?.id || null;
 
-        if (message.image?.id) {
-          notes = `${notes} [Image media ID: ${message.image.id}]`.trim();
-        } else if (message.document?.id) {
-          notes = `${notes} [Document media ID: ${message.document.id}]`.trim();
-        } else if (message.audio?.id) {
-          notes = `${notes} [Audio media ID: ${message.audio.id}]`.trim();
-        } else if (message.video?.id) {
-          notes = `${notes} [Video media ID: ${message.video.id}]`.trim();
-        }
-
-        if (!notes) {
+        if (!notes && !mediaId) {
           await sendText(
             phone,
-            "దయచేసి పని వివరాలు టైప్ చేయండి లేదా ఫోటో/వాయిస్ మెసేజ్ పంపండి."
+            "దయచేసి పని వివరాలు టైప్ చేయండి లేదా ఫోటో పంపండి."
           );
           await sendNavigation(phone);
           return;
@@ -1822,7 +1861,8 @@ app.post(
         await setState(phone, "AWAITING_LOCATION", {
           temp_selection: {
             ...temp,
-            notes,
+            notes: notes || "ఫోటో పంపబడింది",
+            media_id: mediaId,
           },
         });
 
