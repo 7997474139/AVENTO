@@ -70,22 +70,6 @@ async function sendOrderEmail(subject, htmlContent) {
 }
 
 // ==================================================
-// WHATSAPP MEDIA URL HELPER
-// ==================================================
-async function getWhatsAppMediaUrl(mediaId) {
-  if (!mediaId) return null;
-  try {
-    const response = await axios.get(`${GRAPH_URL}/${mediaId}`, {
-      headers: { Authorization: `Bearer ${WHATSAPP_TOKEN}` },
-    });
-    return response.data?.url || null;
-  } catch (error) {
-    console.error("Failed to fetch WhatsApp media URL:", error.message);
-    return null;
-  }
-}
-
-// ==================================================
 // 1. HELPERS
 // ==================================================
 
@@ -971,6 +955,9 @@ async function initiatePaymentFlow(phone, user) {
   };
 
   try {
+    const cleanPhone = normalizePhone(phone);
+    const chatLink = `https://wa.me/${cleanPhone}`;
+
     if (service === "fresh_meat" || hasPendingPrice) {
       details.payment.status = "PRICE_PENDING";
 
@@ -997,12 +984,16 @@ async function initiatePaymentFlow(phone, user) {
 
       await sendNavigation(phone);
 
-      // EMAIL NOTIFICATION FOR FRESH MEAT (RESEND API)
+      // EMAIL NOTIFICATION FOR FRESH MEAT
       const loc = details.location ? `https://maps.google.com/?q=${details.location.latitude},${details.location.longitude}` : "లొకేషన్ లేదు";
       const itemsList = cart.map(i => `${i.name} (${i.quantity} ${i.unit})`).join(", ");
+      
       await sendOrderEmail(
         `🚀 కొత్త ఫ్రెష్ మీట్ ఆర్డర్ వచ్చింది! (#${order.id})`,
-        `<h2>🥩 కొత్త ఫ్రెష్ మీట్ ఆర్డర్</h2><p><b>ఫోన్ నంబర్:</b> ${phone}</p><p><b>ఐటమ్స్:</b> ${itemsList}</p><p><b>లొకేషన్:</b> <a href="${loc}" target="_blank">Google Maps లో చూడండి</a></p>`
+        `<h2>🥩 కొత్త ఫ్రెష్ మీట్ ఆర్డర్</h2>
+         <p><b>ఫోన్ నంబర్ / వాట్సాప్:</b> <a href="${chatLink}" target="_blank">${phone} (చాట్ ఓపెన్ చేయండి)</a></p>
+         <p><b>ఐటమ్స్:</b> ${itemsList}</p>
+         <p><b>లొకేషన్:</b> <a href="${loc}" target="_blank">Google Maps లో చూడండి</a></p>`
       );
 
       return;
@@ -1033,12 +1024,17 @@ async function initiatePaymentFlow(phone, user) {
     await sendPaymentInstructions(phone, order, details);
     await sendNavigation(phone);
 
-    // EMAIL NOTIFICATION FOR FOOD ORDER (RESEND API)
+    // EMAIL NOTIFICATION FOR FOOD ORDER
     const loc = details.location ? `https://maps.google.com/?q=${details.location.latitude},${details.location.longitude}` : "లొకేషన్ లేదు";
     const itemsList = cart.map(i => `${i.name} (Qty: ${i.quantity})`).join(", ");
+
     await sendOrderEmail(
       `🚀 కొత్త ఫుడ్ ఆర్డర్ వచ్చింది! (#${order.id})`,
-      `<h2>🍽️ కొత్త ఫుడ్ ఆర్డర్ (${details.hotel_name || 'Food'})</h2><p><b>ఫోన్ నంబర్:</b> ${phone}</p><p><b>ఐటమ్స్:</b> ${itemsList}</p><p><b>మొత్తం:</b> ${formatRupees(totalAmount)}</p><p><b>లొకేషన్:</b> <a href="${loc}" target="_blank">Google Maps లో చూడండి</a></p>`
+      `<h2>🍽️ కొత్త ఫుడ్ ఆర్డర్ (${details.hotel_name || 'Food'})</h2>
+       <p><b>ఫోన్ నంబర్ / వాట్సాప్:</b> <a href="${chatLink}" target="_blank">${phone} (చాట్ ఓపెన్ చేయండి)</a></p>
+       <p><b>ఐటమ్స్:</b> ${itemsList}</p>
+       <p><b>మొత్తం:</b> ${formatRupees(totalAmount)}</p>
+       <p><b>లొకేషన్:</b> <a href="${loc}" target="_blank">Google Maps లో చూడండి</a></p>`
     );
 
   } catch (error) {
@@ -1091,26 +1087,18 @@ async function createServiceRequest(phone, user) {
 
     await sendNavigation(phone);
 
-    // EMAIL NOTIFICATION FOR OTHER SERVICES (RESEND API)
+    // EMAIL NOTIFICATION FOR OTHER SERVICES (PLUMBING/MEDICINE/ETC)
     const loc = details.location ? `https://maps.google.com/?q=${details.location.latitude},${details.location.longitude}` : "లొకేషన్ లేదు";
-    let mediaLinkHtml = "ఫోటోలు/ఇమేజెస్ లేవు";
-
-    if (details.media_id) {
-      const mediaUrl = await getWhatsAppMediaUrl(details.media_id);
-      if (mediaUrl) {
-        mediaLinkHtml = `<a href="${mediaUrl}" target="_blank" style="padding: 10px 15px; background-color: #008CBA; color: white; text-decoration: none; border-radius: 5px;">📷 ఇమేజ్ / ఫోటో చూడటానికి ఇక్కడ క్లిక్ చేయండి</a>`;
-      } else {
-        mediaLinkHtml = `Media ID: ${details.media_id} (URL పొందలేకపోయాం)`;
-      }
-    }
+    const cleanPhone = normalizePhone(phone);
+    const chatLink = `https://wa.me/${cleanPhone}`;
 
     await sendOrderEmail(
       `🚀 కొత్త సర్వీస్ రిక్వెస్ట్ వచ్చింది! (#${order.id})`,
       `<h2>🛠️ కొత్త సర్వీస్ రిక్వెస్ట్ (${getServiceName(temp.service)})</h2>
-       <p><b>ఫోన్ నంబర్:</b> ${phone}</p>
+       <p><b>ఫోన్ నంబర్ / వాట్సాప్:</b> <a href="${chatLink}" target="_blank" style="padding: 6px 12px; background-color: #25D366; color: white; text-decoration: none; border-radius: 4px; font-weight: bold;">💬 కస్టమర్ వాట్సాప్ చాట్ ఓపెన్ చేయండి (${phone})</a></p>
        <p><b>వివరాలు:</b> ${details.notes || 'వివరాలు లేవు'}</p>
-       <p><b>పంపిన ఫోటో/ఇమేజ్:</b> ${mediaLinkHtml}</p>
-       <p><b>లొకేషన్:</b> <a href="${loc}" target="_blank">Google Maps లో చూడండి</a></p>`
+       <p><b>లొకేషన్:</b> <a href="${loc}" target="_blank">Google Maps లో చూడండి</a></p>
+       <p style="color: #666; font-size: 12px; margin-top: 10px;">గమనిక: కస్టమర్ పంపిన ఫోటోలు / ప్రిస్క్రిప్షన్ / సమస్యను చూడటానికి పైన ఉన్న వాట్సాప్ చాట్ బటన్‌ను క్లిక్ చేయండి.</p>`
     );
 
   } catch (error) {
@@ -1406,23 +1394,17 @@ app.post(
           `ధన్యవాదాలు! 🙏`
         );
 
-        // ADMIN EMAIL NOTIFICATION FOR PAYMENT
-        let paymentMediaHtml = "యుటిఆర్ సరిచూసుకోండి";
-        if (imageMediaId) {
-          const mediaUrl = await getWhatsAppMediaUrl(imageMediaId);
-          if (mediaUrl) {
-            paymentMediaHtml = `<a href="${mediaUrl}" target="_blank" style="padding: 10px 15px; background-color: #28a745; color: white; text-decoration: none; border-radius: 5px;">💳 పేమెంట్ స్క్రీన్‌షాట్ చూడటానికి క్లిక్ చేయండి</a>`;
-          }
-        }
+        // ADMIN EMAIL NOTIFICATION FOR PAYMENT REVIEW
+        const cleanPhone = normalizePhone(phone);
+        const chatLink = `https://wa.me/${cleanPhone}`;
 
         await sendOrderEmail(
           `💳 కొత్త పేమెంట్ రివ్యూ వచ్చింది! (#${order.id})`,
           `<h2>💳 పేమెంట్ వెరిఫికేషన్ అవసరం</h2>
            <p><b>Order ID:</b> #${order.id}</p>
-           <p><b>Customer:</b> ${phone}</p>
+           <p><b>Customer WhatsApp:</b> <a href="${chatLink}" target="_blank" style="color: #25D366; font-weight: bold;">💬 చాట్ ఓపెన్ చేసి స్క్రీన్‌షాట్ చూడండి (${phone})</a></p>
            <p><b>Amount:</b> ${formatRupees(details.total)}</p>
-           <p><b>UTR / Text:</b> ${text || 'స్క్రీన్‌షాట్ పంపారు'}</p>
-           <p><b>పేమెంట్ ఫోటో:</b> ${paymentMediaHtml}</p>`
+           <p><b>UTR / Text:</b> ${text || 'స్క్రీన్‌షాట్ పంపారు'}</p>`
         );
 
         if (AVENTO_ADMIN_PHONE) {
