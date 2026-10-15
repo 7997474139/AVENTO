@@ -1907,13 +1907,35 @@ app.post(
 );
 
 // ==================================================
-// 15. HEALTH CHECK & SERVER START
+// 15. HEALTH CHECK & LANDING PAGE
 // ==================================================
 
 app.get("/", (req, res) => {
-  res.status(200).send(
-    "Avento WhatsApp Multi-Services Bot is running."
-  );
+  res.send(`
+    <!DOCTYPE html>
+    <html lang="te">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Avento Services - WhatsApp Bot</title>
+        <style>
+            body { font-family: Arial, sans-serif; background-color: #f4f6f8; text-align: center; padding: 50px 20px; }
+            .card { background: white; max-width: 400px; margin: 0 auto; padding: 30px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+            h2 { color: #075e54; margin-bottom: 10px; }
+            p { color: #333; font-size: 16px; line-height: 1.5; margin-bottom: 25px; }
+            .btn { display: inline-block; background-color: #25d366; color: white; padding: 12px 25px; font-size: 18px; font-weight: bold; text-decoration: none; border-radius: 30px; box-shadow: 0 4px 6px rgba(37, 211, 102, 0.3); }
+            .btn:hover { background-color: #1ebe5d; }
+        </style>
+    </head>
+    <body>
+        <div class="card">
+            <h2>🙏 Avento Services</h2>
+            <p>నమస్కారం! Avento Services‌కు స్వాగతం. మీకు కావలసిన సేవల కోసం కింద ఉన్న బటన్‌ను క్లిక్ చేసి 'హాయ్' అని పంపండి.</p>
+            <a class="btn" href="https://wa.me/919059135163?text=Hi%20Avento%20Services" target="_blank">💬 WhatsApp లో చాట్ చేయండి</a>
+        </div>
+    </body>
+    </html>
+  `);
 });
 
 app.listen(PORT, () => {
