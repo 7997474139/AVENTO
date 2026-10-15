@@ -473,7 +473,6 @@ async function updateOrder(orderId, updates) {
   return data;
 }
 
-// కస్టమర్ నంబర్ ద్వారా లేటెస్ట్ ఆర్డర్ వెతికే ఫంక్షన్
 async function getLatestCustomerOrder(phone) {
   const cleanPhone = normalizePhone(phone);
   const { data, error } = await supabase
@@ -635,7 +634,7 @@ async function goBack(phone, user) {
 }
 
 // ==================================================
-// 5. HOTEL SELECTION
+// 5. HOTEL SELECTION & MENU
 // ==================================================
 
 async function showHotels(to) {
@@ -664,10 +663,6 @@ async function showHotels(to) {
     ]
   );
 }
-
-// ==================================================
-// 6. FOOD MENU
-// ==================================================
 
 async function showFoodCategories(to, hotelName) {
   const categories = getFoodCategories();
@@ -748,10 +743,6 @@ async function showFoodItems(to, categoryId, page = 0) {
   );
 }
 
-// ==================================================
-// 7. FRESH MEAT
-// ==================================================
-
 async function showMeatCategories(to) {
   const categories = getMeatCategories();
 
@@ -791,10 +782,6 @@ async function showMeatQuantities(to, meatItem) {
     ]
   );
 }
-
-// ==================================================
-// 8. CART & REVIEW
-// ==================================================
 
 function renderCart(cart) {
   if (!cart.length) return "మీ కార్ట్ ఖాళీగా ఉంది.";
@@ -864,10 +851,6 @@ async function showRemoveItems(to, cart) {
     ]
   );
 }
-
-// ==================================================
-// 9. LOCATION & REVIEW
-// ==================================================
 
 async function askForLocation(phone, user) {
   await setState(phone, "AWAITING_LOCATION", {
@@ -973,16 +956,12 @@ async function showReview(phone, user) {
     renderServiceReview(user),
     [
       { id: "order_submit", title: "నిర్ధారించు" },
-      { id: "order_cancel", title: "రద్దు చేయي" },
+      { id: "order_cancel", title: "రద్దు చేయి" },
     ]
   );
 
   await sendNavigation(phone);
 }
-
-// ==================================================
-// 10. PAYMENT
-// ==================================================
 
 async function sendPaymentInstructions(phone, order, details) {
   const amount = Number(details.total || 0);
@@ -1164,10 +1143,6 @@ async function initiatePaymentFlow(phone, user) {
   }
 }
 
-// ==================================================
-// 11. NON-FOOD SERVICE REQUESTS
-// ==================================================
-
 async function createServiceRequest(phone, user) {
   const temp = getTemp(user);
 
@@ -1235,7 +1210,7 @@ async function createServiceRequest(phone, user) {
 }
 
 // ==================================================
-// 12. ADMIN COMMANDS (ONE-CLICK BUTTONS)
+// 12. ADMIN COMMANDS
 // ==================================================
 
 async function handleAdminCommand(phone, text) {
@@ -1324,15 +1299,6 @@ async function handleAdminCommand(phone, text) {
         return true;
       }
 
-      if (order.status !== "PAYMENT_REVIEW") {
-        await sendText(
-          phone,
-          `ఈ ఆర్డర్ PAYMENT_REVIEW స్థితిలో లేదు. ప్రస్తుత స్థితి: ${order.status}\n\n` +
-          `PhonePeలో పేమెంట్‌ను చెక్ చేసి, UTR/స్క్రీన్‌షాట్ వచ్చిన ఆర్డర్ మాత్రమే కన్ఫర్మ్ చేయండి.`
-        );
-        return true;
-      }
-
       const details = parseOrderDetails(order.details);
 
       details.payment = {
@@ -1347,7 +1313,6 @@ async function handleAdminCommand(phone, text) {
         status: "PREPARING",
       });
 
-      // కస్టమర్‌కి ఆర్డర్ కన్ఫర్మ్ అయిందని చెప్పి, ట్రాకింగ్ బటన్ ఇవ్వడం
       await sendButtons(
         order.user_phone,
         `🎉 మీ ఆర్డర్ విజయవంతంగా బుక్ చేయబడింది. ధన్యవాదాలు! 🙏\n\n` +
@@ -1361,10 +1326,9 @@ async function handleAdminCommand(phone, text) {
         ]
       );
 
-      // అడ్మిన్‌కి టైప్ చేయకుండా నేరుగా స్టేటస్ మార్చుకోవడానికి 3 బటన్లు పంపడం
       await sendButtons(
         phone,
-        `✅ ఆర్డర్ #${order.id} కన్ఫర్మ్ అయింది.\n\nకస్టమర్‌కి స్టేటస్ అప్‌డేట్ చేయడానికి కింద బటన్ నొక్కండి:`,
+        `✅ ఆర్డర్ #${order.id} సక్సెస్ ఫుల్‌గా కన్ఫర్మ్ చేయబడింది!\n\nకస్టమర్‌కి స్టేటస్ అప్‌డేట్ చేయడానికి బటన్ ఎంచుకోండి:`,
         [
           { id: `st_prep_${order.id}`, title: "👨‍🍳 Preparing" },
           { id: `st_out_${order.id}`, title: "🚀 Out for Delivery" },
@@ -1373,13 +1337,13 @@ async function handleAdminCommand(phone, text) {
       );
     } catch (error) {
       console.error("Admin paid command error:", error.message);
-      await sendText(phone, "ఆర్డర్ కన్ఫర్మ్ చేయలేకపోయాం. సూపర్‌బేస్‌లో వివరాలు చెక్ చేయండి.");
+      await sendText(phone, "ఆర్డర్ కన్ఫర్మ్ చేయలేకపోయాం.");
     }
 
     return true;
   }
 
-  // 3. STATUS COMMAND: status ORDER_ID (అడ్మిన్‌కి బటన్లు పంపుతుంది)
+  // 3. STATUS COMMAND: status ORDER_ID
   const statusMatch = trimmed.match(/^status\s+(\S+)$/i);
 
   if (statusMatch) {
@@ -1406,19 +1370,6 @@ async function handleAdminCommand(phone, text) {
       console.error("Admin status command error:", error.message);
       await sendText(phone, "ఆర్డర్ స్టేటస్ బటన్లు పంపడంలో లోపం ఏర్పడింది.");
     }
-
-    return true;
-  }
-
-  if (/^(paid|price|status)\b/i.test(trimmed)) {
-    await sendText(
-      phone,
-      "Admin commands:\n\n" +
-      "1️⃣ price ORDER_ID AMOUNT (ఉదా: price 12 450)\n" +
-      "2️⃣ paid ORDER_ID (ఉదా: paid 12)\n" +
-      "3️⃣ status ORDER_ID (ఉదా: status 12 - బటన్లు వస్తాయి)\n\n" +
-      "గమనిక: అడ్మిన్ కేవలం బటన్‌పై క్లిక్ చేయడం ద్వారా కస్టమర్‌కి స్టేటస్ పంపవచ్చు."
-    );
 
     return true;
   }
@@ -1481,11 +1432,74 @@ app.post(
         return;
       }
 
-      // అడ్మిన్ బటన్ నొక్కినప్పుడు (st_prep_ID, st_out_ID, st_del_ID)
+      // ==========================================
+      // ADMIN BUTTON ACTIONS (Paid, Reject, Status)
+      // ==========================================
+      if (String(command).startsWith("adm_")) {
+        if (!isAdmin(phone)) return;
+
+        const parts = String(command).split("_"); // ['adm', 'paid'/'rej'/'utr', '64']
+        const action = parts[1];
+        const orderId = parts[2];
+
+        const order = await getOrderById(orderId);
+        if (!order) return;
+
+        if (action === "paid") {
+          const details = parseOrderDetails(order.details);
+          details.payment = { ...(details.payment || {}), status: "PAID", verified_manually: true };
+          
+          await updateOrder(orderId, { details: JSON.stringify(details), status: "PREPARING" });
+
+          await sendButtons(
+            order.user_phone,
+            `🎉 మీ ఆర్డర్ విజయవంతంగా బుక్ చేయబడింది. ధన్యవాదాలు! 🙏\n\n` +
+            `✅ మీ ఆర్డర్ కన్ఫర్మ్ అయింది.\n` +
+            `🧾 ఆర్డర్ నంబర్: #${order.id}\n` +
+            `💰 మొత్తం: ${formatRupees(details.total)}\n\n` +
+            `📦 స్టేటస్: హోటల్‌కు ఆర్డర్ పంపబడింది (Preparing).`,
+            [
+              { id: "track_order", title: "📦 Track Order" },
+              { id: "nav_main", title: "🏠 Main Menu" }
+            ]
+          );
+
+          await sendButtons(
+            phone,
+            `✅ Order #${orderId} successfully confirmed!\n\nSelect status update:`,
+            [
+              { id: `st_prep_${orderId}`, title: "👨‍🍳 Preparing" },
+              { id: `st_out_${orderId}`, title: "🚀 Out for Delivery" },
+              { id: `st_del_${orderId}`, title: "✅ Delivered" }
+            ]
+          );
+        } else if (action === "rej") {
+          await updateOrder(orderId, { status: "REJECTED" });
+
+          await sendText(
+            order.user_phone,
+            `❌ క్షమించండి, మీ ఆర్డర్ #${orderId} పేమెంట్ ఫెయిల్/ఫ్రాడ్ కారణంగా తిరస్కరించబడింది. దయచేసి సరియైన UTR తో మళ్లీ ప్రయత్నించండి.`
+          );
+
+          await sendText(phone, `❌ Order #${orderId} rejected successfully.`);
+        } else if (action === "utr") {
+          await sendText(
+            order.user_phone,
+            `⚠️ దయచేసి మీ సరియైన PhonePe UTR నంబర్ లేదా సరైన పేమెంట్ స్క్రీన్‌షాట్‌ను ఇక్కడ పంపండి.`
+          );
+
+          await sendText(phone, `ℹ️ Asked customer for correct UTR for Order #${orderId}.`);
+        }
+        return;
+      }
+
+      // ==========================================
+      // STATUS UPDATE BUTTON ACTIONS FROM ADMIN
+      // ==========================================
       if (String(command).startsWith("st_")) {
         if (!isAdmin(phone)) return;
 
-        const parts = String(command).split("_"); // ['st', 'prep', '62']
+        const parts = String(command).split("_"); // ['st', 'prep', '64']
         const action = parts[1];
         const orderId = parts[2];
 
@@ -1508,7 +1522,6 @@ app.post(
 
         await updateOrder(orderId, { status: newStatusText });
 
-        // కస్టమర్‌కి వాట్సాప్‌లో మెసేజ్ మరియు ట్రాకింగ్ బటన్
         await sendButtons(
           order.user_phone,
           `📦 **Live Order Tracking** (#${order.id})\n\n${statusMessageToCustomer}`,
@@ -1518,7 +1531,6 @@ app.post(
           ]
         );
 
-        // అడ్మిన్‌కి కన్ఫర్మేషన్ మరియు మళ్లీ తర్వాతి స్టేటస్ మార్చుకోవడానికి బటన్లు
         await sendButtons(
           phone,
           `✅ ఆర్డర్ #${orderId} స్టేటస్ విజయవంతంగా '${newStatusText}' కి మార్చబడింది.\n\nమరో స్టేటస్ మార్చడానికి ఎంచుకోండి:`,
@@ -1531,7 +1543,9 @@ app.post(
         return;
       }
 
-      // కస్టమర్ "Track Order" నొక్కినప్పుడు డేటాబేస్ నుండి స్టేటస్ ఆటోమేటిక్‌గా చూపించడం
+      // ==========================================
+      // CUSTOMER TRACK ORDER (WITH ADMIN NOTIFICATION)
+      // ==========================================
       if (command === "track_order" || ["track order", "where is my order", "order status", "ఆర్డర్ ఎక్కడుంది"].includes(normalized)) {
         const latestOrder = await getLatestCustomerOrder(phone);
 
@@ -1551,6 +1565,16 @@ app.post(
         else if (st === "OUT_FOR_DELIVERY") statusDesc = "🚀 డెలివరీ బాయ్ మీ లొకేషన్ వైపు బయలుదేరాడు (Out for Delivery)!";
         else if (st === "DELIVERED") statusDesc = "✅ ఆర్డర్ విజయవంతంగా డెలివరీ చేయబడింది (Delivered).";
         else statusDesc = `స్థితి: ${st}`;
+
+        // కస్టమర్ ట్రాక్ నొక్కిన ప్రతీసారి అడ్మిన్‌కి అలర్ట్ పంపడం
+        if (AVENTO_ADMIN_PHONE) {
+          await sendText(
+            AVENTO_ADMIN_PHONE,
+            `🔔 **Customer Update Request**\n\n` +
+            `Customer (${phone}) is requesting an update for Order #${latestOrder.id}.\n` +
+            `Current Status: ${statusDesc}`
+          );
+        }
 
         await sendButtons(
           phone,
@@ -1582,7 +1606,9 @@ app.post(
         return;
       }
 
+      // ==========================================
       // PAYMENT PROOF / UTR / SCREENSHOT HANDLING
+      // ==========================================
       if (user.current_state === "AWAITING_UTR") {
         const orderId = temp.pending_order_id;
 
@@ -1657,17 +1683,21 @@ app.post(
            <p><b>UTR / Text:</b> ${text || 'స్క్రీన్‌షాట్ పంపారు'}</p>`
         );
 
+        // అడ్మిన్‌కి పేమెంట్ అలర్ట్‌తో పాటు డైరెక్ట్ 3 బటన్లు పంపడం (Paid, Reject, Ask UTR)
         if (AVENTO_ADMIN_PHONE) {
-          // అడ్మిన్‌కి పేమెంట్ అలర్ట్‌తో పాటు ఆర్డర్ కన్ఫర్మ్ చేయడానికి బటన్/కమాండ్ సూచన
-          await sendText(
+          await sendButtons(
             AVENTO_ADMIN_PHONE,
-            `💳 Payment verification required\n\n` +
-            `Order ID: ${order.id}\n` +
+            `💳 **Payment Verification Required**\n\n` +
+            `Order ID: #${order.id}\n` +
             `Customer: ${phone}\n` +
             `Amount: ${formatRupees(details.total)}\n` +
             `UTR/Status: ${text || 'Screenshot received'}\n\n` +
-            `PhonePeలో పేమెంట్ చెక్ చేసిన తర్వాత కన్ఫర్మ్ చేయడానికి టైప్ చేయండి:\n` +
-            `paid ${order.id}`
+            `దయచేసి PhonePe చెక్ చేసి క్రింది బటన్ ఎంచుకోండి:`,
+            [
+              { id: `adm_paid_${order.id}`, title: "✅ Confirm / Paid" },
+              { id: `adm_rej_${order.id}`, title: "❌ Reject Fraud" },
+              { id: `adm_utr_${order.id}`, title: "⚠️ Ask UTR" }
+            ]
           );
         }
 
