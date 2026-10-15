@@ -491,14 +491,15 @@ async function getLatestCustomerOrder(phone) {
 }
 
 // ==================================================
-// 4. MAIN MENU & WELCOME IMAGE
+// 4. MAIN MENU & WELCOME IMAGE (CLEAN FULL LAYOUT)
 // ==================================================
 
 async function showMainMenu(to) {
+  // ఇమేజ్ కింద విడిగా టెక్స్ట్ పంపకుండా కెప్షన్‌గా ఇస్తే రెండు హాఫ్‌లుగా కాకుండా పర్ఫెక్ట్‌గా వస్తుంది
   await sendLocalImage(
     to,
     serviceImage("welcome.jpg"),
-    "నమస్కారం! 🙏 Avento Services‌కు స్వాగతం.\n\nమీకు కావలసిన సేవను ఎంచుకోండి. మేము తదుపరి దశలో మీకు సహాయం చేస్తాము."
+    "🙏 *నమస్కారం! Avento Services కి స్వాగతం.*\n\nమీకు కావాల్సిన సర్వీస్‌ను కింద ఉన్న బటన్‌ను నొక్కి ఎంచుకోండి."
   );
 
   await sendList(
@@ -1513,27 +1514,21 @@ app.post(
 
         let newStatusText = "";
         let statusMessageToCustomer = "";
-        let isAdminActionDone = false;
 
         if (action === "prep") {
           newStatusText = "PREPARING";
           statusMessageToCustomer = `👨‍🍳 అప్‌డేట్: మీ ఆర్డర్‌ను హోటల్ వారు తయారు చేస్తున్నారు (Preparing). త్వరలో డెలివరీకి సిద్దమవుతుంది!`;
-          isAdminActionDone = true;
         } else if (action === "out") {
           newStatusText = "OUT_FOR_DELIVERY";
           statusMessageToCustomer = `🚀 అప్‌డేట్: మీ ఆర్డర్ డెలివరీ బాయ్ చేతికి ఇవ్వబడింది మరియు మీ లొకేషన్ వైపు బయలుదేరింది (Out for Delivery)!`;
-          isAdminActionDone = true;
         } else if (action === "del") {
           newStatusText = "DELIVERED";
-          // ఆర్డర్ క్లోజ్ అయ్యేలా పర్ఫెక్ట్ మెసేజ్
           statusMessageToCustomer = `✅ మీ ఆర్డర్ విజయవంతంగా డెలివరీ చేయబడింది! Avento సేవలను ఎంచుకున్నందుకు ధన్యవాదాలు. 🙏\n\nమరిన్ని ఆర్డర్‌ల కోసం మెయిన్ మెనూని సందర్శించండి.`;
-          isAdminActionDone = true;
         }
 
         await updateOrder(orderId, { status: newStatusText });
 
         if (action === "del") {
-          // డెలివరీ అయిపోతే కస్టమర్‌కి ట్రాకింగ్ బటన్స్ ఇవ్వకుండా కేవలం క్లోజ్డ్ మెసేజ్ పంపడం
           await sendText(order.user_phone, `📦 **Order Delivered** (#${order.id})\n\n${statusMessageToCustomer}`);
           await sendText(phone, `✅ ఆర్డర్ #${orderId} విజయవంతంగా డెలివరీ చేయబడింది మరియు ఆర్డర్ క్లోజ్ చేయబడింది.`);
         } else {
@@ -1560,7 +1555,7 @@ app.post(
       }
 
       // ==========================================
-      // CUSTOMER TRACK ORDER (WITH DELIVERED CHECK)
+      // CUSTOMER TRACK ORDER
       // ==========================================
       if (command === "track_order" || ["track order", "where is my order", "order status", "ఆర్డర్ ఎక్కడుంది"].includes(normalized)) {
         const latestOrder = await getLatestCustomerOrder(phone);
@@ -1573,7 +1568,6 @@ app.post(
 
         const st = latestOrder.status;
 
-        // ఒకవేళ ఆర్డర్ ఆల్రెడీ డెలివరీ అయిపోయి ఉంటే, మళ్లీ ట్రాక్ చేయకుండా మెయిన్ మెనూకి వెళ్లమని చెప్పడం
         if (st === "DELIVERED" || st === "REJECTED") {
           await sendText(
             phone,
