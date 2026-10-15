@@ -167,8 +167,8 @@ function getServiceName(service) {
     food: "Food Order",
     fresh_meat: "Fresh Meat Delivery",
     medicine: "Medicine Order",
-    plumbing_electrical: "Plumbing / Electrical",
-    shifting: "Shifting / Parcel",
+    plumbing_electrical: "Home Repairs",
+    shifting: "Home Shifting / Parcel",
   };
 
   return names[service] || "Avento Multi-Services";
@@ -458,22 +458,42 @@ async function showMainMenu(to) {
   await sendLocalImage(
     to,
     serviceImage("welcome.jpg"),
-    "🙏 Avento Multi-Services‌కు స్వాగతం!\nOne Place. Many Services."
+    "నమస్కారం! 🙏 Avento Services‌కు స్వాగతం.\n\nమీకు కావలసిన సేవను ఎంచుకోండి. మేము తదుపరి దశలో మీకు సహాయం చేస్తాము."
   );
 
   await sendList(
     to,
-    "🙏 Avento Multi-Services‌కు స్వాగతం!\n\nమీకు ఏ సేవ కావాలో ఎంచుకోండి.",
+    "దయచేసి ఒక సేవను ఎంచుకోండి:",
     "సేవలు ఎంచుకోండి",
     [
       {
         title: "మా సేవలు",
         rows: [
-          { id: "srv_food", title: "Food Order" },
-          { id: "srv_meat", title: "Fresh Meat Delivery" },
-          { id: "srv_med", title: "Medicine Order" },
-          { id: "srv_plumbing", title: "Plumbing / Electrical" },
-          { id: "srv_shifting", title: "Shifting / Parcel" },
+          {
+            id: "srv_food",
+            title: "Food Order",
+            description: "హోటల్ ఫుడ్ డెలివరీ",
+          },
+          {
+            id: "srv_meat",
+            title: "Fresh Meat Delivery",
+            description: "చికెన్, మటన్, చేపలు",
+          },
+          {
+            id: "srv_med",
+            title: "Medicine Order",
+            description: "మందుల డెలివరీ",
+          },
+          {
+            id: "srv_plumbing",
+            title: "Home Repairs",
+            description: "ప్లంబింగ్, ఎలక్ట్రికల్",
+          },
+          {
+            id: "srv_shifting",
+            title: "Home Shifting / Parcel",
+            description: "ఇల్లు మారడం, పార్సెల్ డెలివరీ",
+          },
         ],
       },
     ]
@@ -818,7 +838,7 @@ async function askForLocation(phone, user) {
 
   await sendText(
     phone,
-    "📍 దయచేసి WhatsAppలో మీ లొకేషన్‌ను Share Location ద్వారా పంపండి."
+    "📍 దయచేసి మీ లొకేషన్‌ను షేర్ చేయండి."
   );
 
   await sendNavigation(phone);
@@ -842,10 +862,10 @@ function renderServiceReview(user) {
   } else if (service === "medicine") {
     lines.push("💊 మెడిసిన్ రిక్వెస్ట్ (ప్రిస్క్రిప్షన్ అందింది)");
   } else if (service === "plumbing_electrical") {
-    lines.push("🔧 Plumbing / Electrical Service");
+    lines.push("🔧 Home Repairs (ప్లంబింగ్ / ఎలక్ట్రికల్)");
     lines.push(`వివరాలు: ${temp.notes || "వివరాలు అందించబడ్డాయి"}`);
   } else if (service === "shifting") {
-    lines.push(`🚚 ${temp.service_name || "Shifting / Parcel"}`);
+    lines.push(`🚚 ${temp.service_name || "Home Shifting / Parcel"}`);
     lines.push(`వివరాలు: ${temp.notes || "వివరాలు అందించబడ్డాయి"}`);
   }
 
@@ -1079,10 +1099,9 @@ async function createServiceRequest(phone, user) {
 
     await sendText(
       phone,
-      `✅ మీ రిక్వెస్ట్ నమోదు అయింది!\n\n` +
-      `🧾 రిక్వెస్ట్ నంబర్: #${order.id}\n\n` +
-      `మా బృందం మీ వివరాలను పరిశీలించి ధర మరియు తదుపరి వివరాలను మీకు తెలియజేస్తుంది.\n\n` +
-      `ధన్యవాదాలు! 🙏`
+      `🎉 మీ ఆర్డర్ విజయవంతంగా బుక్ చేయబడింది. ధన్యవాదాలు! 🙏\n\n` +
+      `🧾 ఆర్డర్ నంబర్: #${order.id}\n\n` +
+      `మా బృందం మీ వివరాలను పరిశీలించి త్వరలోనే మిమ్మల్ని సంప్రదిస్తుంది.`
     );
 
     await sendNavigation(phone);
@@ -1224,11 +1243,10 @@ async function handleAdminCommand(phone, text) {
 
       await sendText(
         order.user_phone,
-        `🎉 మీ పేమెంట్ వెరిఫై చేయబడింది!\n\n` +
+        `🎉 మీ ఆర్డర్ విజయవంతంగా బుక్ చేయబడింది. ధన్యవాదాలు! 🙏\n\n` +
         `✅ మీ ఆర్డర్ కన్ఫర్మ్ అయింది.\n` +
         `🧾 ఆర్డర్ నంబర్: #${order.id}\n` +
-        `💰 మొత్తం: ${formatRupees(details.total)}\n\n` +
-        `Avento Multi-Services‌ను ఎంచుకున్నందుకు ధన్యవాదాలు! 🙏`
+        `💰 మొత్తం: ${formatRupees(details.total)}`
       );
 
       await sendText(
@@ -1478,7 +1496,7 @@ app.post(
         await sendLocalImage(
           phone,
           serviceImage("food.jpg"),
-          "🍽️ Avento Food Ordering"
+          "🍽️ Food Order\n\nమీరు ఫుడ్ ఆర్డర్ చేయాలనుకుంటే మీ లొకేషన్ షేర్ చేయండి."
         );
 
         await showHotels(phone);
@@ -1517,7 +1535,7 @@ app.post(
         await sendLocalImage(
           phone,
           serviceImage("fresh-meat.jpg"),
-          "🥩 Fresh Meat Delivery"
+          "🥩 Fresh Meat Delivery\n\nచికెన్, మటన్, చేపలు ఫ్రీ ఫ్రెష్ డెలివరీ."
         );
 
         await showMeatCategories(phone);
@@ -1534,7 +1552,7 @@ app.post(
         await sendLocalImage(
           phone,
           serviceImage("medicine.jpg"),
-          "💊 Medicine Order"
+          "💊 Medicines\n\nమందుల డెలివరీ కోసం ప్రిస్క్రిప్షన్ ఫోటోను పంపండి."
         );
 
         await sendText(
@@ -1559,7 +1577,7 @@ app.post(
         await sendLocalImage(
           phone,
           serviceImage("plumbing-electrical.jpg"),
-          "🔧 Plumbing / Electrical Service"
+          "🔧 Home Repairs\n\nప్లంబింగ్, ఎలక్ట్రికల్ పనుల వివరాలు తెలియజేయండి."
         );
 
         await sendText(
@@ -1577,7 +1595,7 @@ app.post(
         await sendLocalImage(
           phone,
           serviceImage("shifting-parcel.jpg"),
-          "🚚 Shifting & Parcel Service"
+          "🚚 Home Shifting / Parcel\n\nఇల్లు మారడం, పార్సెల్ డెలివరీ సేవల కోసం ఎంచుకోండి."
         );
 
         await sendList(
@@ -1820,7 +1838,7 @@ app.post(
 
         await sendText(
           phone,
-          "📄 ప్రిస్క్రిప్షన్ అందింది. ఇప్పుడు మీ లొకేషన్‌ను Share Location ద్వారా పంపండి."
+          "📄 ప్రిస్క్రిప్షన్ అందింది. ఇప్పుడు మీ లొకేషన్‌ను షేర్ చేయండి."
         );
 
         await sendNavigation(phone);
@@ -1850,7 +1868,7 @@ app.post(
 
         await sendText(
           phone,
-          "✅ వివరాలు అందాయి. ఇప్పుడు మీ లొకేషన్‌ను Share Location ద్వారా పంపండి."
+          "✅ వివరాలు అందాయి. ఇప్పుడు మీ లొకేషన్‌ను షేర్ చేయండి."
         );
 
         await sendNavigation(phone);
