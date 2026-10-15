@@ -70,8 +70,31 @@ async function sendOrderEmail(subject, htmlContent) {
 }
 
 // ==================================================
-// 1. HELPERS
+// 1. HELPERS & DISTANCE / DELIVERY FEE LOGIC
 // ==================================================
+
+const RESTAURANT_LAT = 13.951505;
+const RESTAURANT_LNG = 79.356579;
+
+function calculateDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371; // కిమీలలో భూమి వ్యాసార్థం
+  const dLat = (lat2 - lat1) * (Math.PI / 180);
+  const dLon = (lon2 - lon1) * (Math.PI / 180);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
+function calculateDeliveryFee(distanceInKm) {
+  if (distanceInKm <= 2) {
+    return 30; // మొదటి 2 కిమీలకు ₹30
+  } else {
+    return Math.round(30 + (distanceInKm - 2) * 10); // ఆపై ప్రతి కిమీకి ₹10 అదనంగా
+  }
+}
 
 function formatRupees(amount) {
   return `₹${Number(amount || 0).toLocaleString("en-IN", {
@@ -778,7 +801,7 @@ function renderCart(cart) {
   });
 
   lines.push("\n--------------------");
-  lines.push(`తెలిసిన మొత్తం: ${formatRupees(getCartTotal(cart))}`);
+  lines.push(`ఫుడ్ మొత్తం: ${formatRupees(getCartTotal(cart))}`);
 
   return lines.join("\n");
 }
@@ -825,7 +848,7 @@ async function showRemoveItems(to, cart) {
 }
 
 // ==================================================
-// 9. LOCATION & REVIEW
+// 9. LOCATION & REVIEW (WITH DISTANCE & DELIVERY FEE)
 // ==================================================
 
 async function askForLocation(phone, user) {
@@ -849,12 +872,31 @@ function renderServiceReview(user) {
   const location = getLocation(user);
   const cart = getCart(user);
   const service = temp.service;
-  const lines = ["🧾 మీ రిక్వెస్ట్ వివరాలు", ""];
+  const lines = ["🧾 మీ ఆర్డర్ సమ్మరీ (Order Summary)", ""];
 
   if (service === "food") {
-    lines.push(`🏨 హోటల్: ${temp.hotel_name || "ఎంచుకోలేదు"}`);
+    lines.push(`🏨 హోటల్: ${temp.hotel_name || "Food Palace Family Restaurant"}`);
     lines.push("");
     lines.push(renderCart(cart));
+
+    // డిస్టెన్స్ మరియు డెలివరీ చార్జ్ లెక్కించడం
+    if (location) {
+      const distance = calculateDistance(
+        RESTAURANT_LAT,
+        RESTAURANT_LNG,
+        location.latitude,
+        location.longitude
+      );
+      const deliveryFee = calculateDeliveryFee(distance);
+      const foodTotal = getCartTotal(cart);
+      const grandTotal = foodTotal + deliveryFee;
+
+      lines.push("");
+      lines.push(`📏 రెస్టారెంట్ నుండి దూరం: ${distance.toFixed(1)} KM`);
+      lines.push(`🚚 డెలివరీ చార్జీలు: ${formatRupees(deliveryFee)}`);
+      lines.push("--------------------");
+      lines.push(`💰 చెల్లించాల్సిన మొత్తం: ${formatRupees(grandTotal)}`);
+    }
   } else if (service === "fresh_meat") {
     lines.push("🥩 Fresh Meat Order");
     lines.push("");
@@ -869,7 +911,7 @@ function renderServiceReview(user) {
     lines.push(`వివరాలు: ${temp.notes || "వివరాలు అందించబడ్డాయి"}`);
   }
 
-  if (location) {
+  if (location && service !== "food") {
     lines.push("");
     lines.push(`📍 Location: ${location.latitude}, ${location.longitude}`);
   }
@@ -956,13 +998,24 @@ async function initiatePaymentFlow(phone, user) {
   }
 
   const hasPendingPrice = cart.some(item => item.price_pending);
-  const totalAmount = getCartTotal(cart);
+  let foodTotal = getCartTotal(cart);
+  let deliveryFee = 0;
+
+  const location = getLocation(user);
+  if (service === "food" && location) {
+    const distance = calculateDistance(RESTAURANT_LAT, RESTAURANT_LNG, location.latitude, location.longitude);
+    deliveryFee = calculateDeliveryFee(distance);
+  }
+
+  const totalAmount = foodTotal + deliveryFee;
 
   const details = {
     service,
     items: cart,
+    food_total: foodTotal,
+    delivery_fee: deliveryFee,
     total: totalAmount,
-    location: getLocation(user),
+    location: location,
     notes: temp.notes || null,
     hotel_name: temp.hotel_name || null,
     service_name: temp.service_name || null,
@@ -1004,7 +1057,6 @@ async function initiatePaymentFlow(phone, user) {
 
       await sendNavigation(phone);
 
-      // EMAIL NOTIFICATION FOR FRESH MEAT
       const loc = details.location ? `https://maps.google.com/?q=${details.location.latitude},${details.location.longitude}` : "లొకేషన్ లేదు";
       const itemsList = cart.map(i => `${i.name} (${i.quantity} ${i.unit})`).join(", ");
       
@@ -1044,16 +1096,17 @@ async function initiatePaymentFlow(phone, user) {
     await sendPaymentInstructions(phone, order, details);
     await sendNavigation(phone);
 
-    // EMAIL NOTIFICATION FOR FOOD ORDER
     const loc = details.location ? `https://maps.google.com/?q=${details.location.latitude},${details.location.longitude}` : "లొకేషన్ లేదు";
     const itemsList = cart.map(i => `${i.name} (Qty: ${i.quantity})`).join(", ");
 
     await sendOrderEmail(
       `🚀 కొత్త ఫుడ్ ఆర్డర్ వచ్చింది! (#${order.id})`,
-      `<h2>🍽️ కొత్త ఫుడ్ ఆర్డర్ (${details.hotel_name || 'Food'})</h2>
+      `<h2>🍽️ కొత్త ఫుడ్ ఆర్డర్ (${details.hotel_name || 'Food Palace'})</h2>
        <p><b>ఫోన్ నంబర్ / వాట్సాప్:</b> <a href="${chatLink}" target="_blank">${phone} (చాట్ ఓపెన్ చేయండి)</a></p>
        <p><b>ఐటమ్స్:</b> ${itemsList}</p>
-       <p><b>మొత్తం:</b> ${formatRupees(totalAmount)}</p>
+       <p><b>ఫుడ్ మొత్తం:</b> ${formatRupees(foodTotal)}</p>
+       <p><b>డెలివరీ చార్జీలు:</b> ${formatRupees(deliveryFee)}</p>
+       <p><b>మొత్తం చెల్లించాల్సింది:</b> ${formatRupees(totalAmount)}</p>
        <p><b>లొకేషన్:</b> <a href="${loc}" target="_blank">Google Maps లో చూడండి</a></p>`
     );
 
@@ -1106,7 +1159,6 @@ async function createServiceRequest(phone, user) {
 
     await sendNavigation(phone);
 
-    // EMAIL NOTIFICATION FOR OTHER SERVICES (PLUMBING/MEDICINE/ETC)
     const loc = details.location ? `https://maps.google.com/?q=${details.location.latitude},${details.location.longitude}` : "లొకేషన్ లేదు";
     const cleanPhone = normalizePhone(phone);
     const chatLink = `https://wa.me/${cleanPhone}`;
@@ -1116,8 +1168,7 @@ async function createServiceRequest(phone, user) {
       `<h2>🛠️ కొత్త సర్వీస్ రిక్వెస్ట్ (${getServiceName(temp.service)})</h2>
        <p><b>ఫోన్ నంబర్ / వాట్సాప్:</b> <a href="${chatLink}" target="_blank" style="padding: 6px 12px; background-color: #25D366; color: white; text-decoration: none; border-radius: 4px; font-weight: bold;">💬 కస్టమర్ వాట్సాప్ చాట్ ఓపెన్ చేయండి (${phone})</a></p>
        <p><b>వివరాలు:</b> ${details.notes || 'వివరాలు లేవు'}</p>
-       <p><b>లొకేషన్:</b> <a href="${loc}" target="_blank">Google Maps లో చూడండి</a></p>
-       <p style="color: #666; font-size: 12px; margin-top: 10px;">గమనిక: కస్టమర్ పంపిన ఫోటోలు / ప్రిస్క్రిప్షన్ / సమస్యను చూడటానికి పైన ఉన్న వాట్సాప్ చాట్ బటన్‌ను క్లిక్ చేయండి.</p>`
+       <p><b>లొకేషన్:</b> <a href="${loc}" target="_blank">Google Maps లో చూడండి</a></p>`
     );
 
   } catch (error) {
@@ -1412,7 +1463,6 @@ app.post(
           `ధన్యవాదాలు! 🙏`
         );
 
-        // ADMIN EMAIL NOTIFICATION FOR PAYMENT REVIEW
         const cleanPhone = normalizePhone(phone);
         const chatLink = `https://wa.me/${cleanPhone}`;
 
@@ -1483,6 +1533,18 @@ app.post(
         });
 
         await showReview(phone, updatedUser);
+        return;
+      }
+
+      if (user.current_state === "AWAITING_LOCATION" && type === "text") {
+        await sendText(
+          phone,
+          "📍 **మీ లొకేషన్ అత్యంత ముఖ్యం!**\n\n" +
+          "మా సర్వీస్ టీమ్ మీ వద్దకు త్వరగా చేరుకోవడానికి మరియు డెలివరీ నిర్ధారించడానికి మీ లొకేషన్ ఎంతో అవసరం.\n\n" +
+          "దయచేసి తప్పుడు టైపింగ్ కాకుండా WhatsApp లో **Share Location** ద్వారా మీ లొకేషన్‌ను షేర్ చేయాల్సిందిగా కోరుతున్నాము. 🙏"
+        );
+
+        await sendNavigation(phone);
         return;
       }
 
