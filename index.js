@@ -848,7 +848,7 @@ async function showRemoveItems(to, cart) {
 }
 
 // ==================================================
-// 9. LOCATION & REVIEW (WITH DISTANCE & DELIVERY FEE)
+// 9. LOCATION & REVIEW (ALL SERVICES DISTANCE & FEE)
 // ==================================================
 
 async function askForLocation(phone, user) {
@@ -879,7 +879,6 @@ function renderServiceReview(user) {
     lines.push("");
     lines.push(renderCart(cart));
 
-    // డిస్టెన్స్ మరియు డెలివరీ చార్జ్ లెక్కించడం
     if (location) {
       const distance = calculateDistance(
         RESTAURANT_LAT,
@@ -901,6 +900,19 @@ function renderServiceReview(user) {
     lines.push("🥩 Fresh Meat Order");
     lines.push("");
     lines.push(renderCart(cart));
+
+    if (location) {
+      const distance = calculateDistance(
+        RESTAURANT_LAT,
+        RESTAURANT_LNG,
+        location.latitude,
+        location.longitude
+      );
+      const deliveryFee = calculateDeliveryFee(distance);
+      lines.push("");
+      lines.push(`📏 లొకేషన్ నుండి దూరం: ${distance.toFixed(1)} KM`);
+      lines.push(`🚚 డెలివరీ చార్జీలు: ${formatRupees(deliveryFee)} (మీట్ ధర నిర్ధారించాలి)`);
+    }
   } else if (service === "medicine") {
     lines.push("💊 మెడిసిన్ రిక్వెస్ట్ (ప్రిస్క్రిప్షన్ అందింది)");
   } else if (service === "plumbing_electrical") {
@@ -911,7 +923,21 @@ function renderServiceReview(user) {
     lines.push(`వివరాలు: ${temp.notes || "వివరాలు అందించబడ్డాయి"}`);
   }
 
-  if (location && service !== "food") {
+  // అన్ని సర్వీసులకు లొకేషన్ ఉంటే దూరం మరియు డెలివరీ చార్జ్ చూపించడం
+  if (location && service !== "food" && service !== "fresh_meat") {
+    const distance = calculateDistance(
+      RESTAURANT_LAT,
+      RESTAURANT_LNG,
+      location.latitude,
+      location.longitude
+    );
+    const deliveryFee = calculateDeliveryFee(distance);
+
+    lines.push("");
+    lines.push(`📏 దూరం: ${distance.toFixed(1)} KM`);
+    lines.push(`🚚 అంచనా డెలివరీ చార్జీలు: ${formatRupees(deliveryFee)}`);
+    lines.push(`📍 Location: ${location.latitude}, ${location.longitude}`);
+  } else if (location && service === "fresh_meat") {
     lines.push("");
     lines.push(`📍 Location: ${location.latitude}, ${location.longitude}`);
   }
@@ -1002,7 +1028,7 @@ async function initiatePaymentFlow(phone, user) {
   let deliveryFee = 0;
 
   const location = getLocation(user);
-  if (service === "food" && location) {
+  if (location) {
     const distance = calculateDistance(RESTAURANT_LAT, RESTAURANT_LNG, location.latitude, location.longitude);
     deliveryFee = calculateDeliveryFee(distance);
   }
@@ -1065,6 +1091,7 @@ async function initiatePaymentFlow(phone, user) {
         `<h2>🥩 కొత్త ఫ్రెష్ మీట్ ఆర్డర్</h2>
          <p><b>ఫోన్ నంబర్ / వాట్సాప్:</b> <a href="${chatLink}" target="_blank">${phone} (చాట్ ఓపెన్ చేయండి)</a></p>
          <p><b>ఐటమ్స్:</b> ${itemsList}</p>
+         <p><b>డెలివరీ చార్జీలు:</b> ${formatRupees(deliveryFee)}</p>
          <p><b>లొకేషన్:</b> <a href="${loc}" target="_blank">Google Maps లో చూడండి</a></p>`
       );
 
@@ -1127,12 +1154,20 @@ async function initiatePaymentFlow(phone, user) {
 async function createServiceRequest(phone, user) {
   const temp = getTemp(user);
 
+  const location = getLocation(user);
+  let deliveryFee = 0;
+  if (location) {
+    const distance = calculateDistance(RESTAURANT_LAT, RESTAURANT_LNG, location.latitude, location.longitude);
+    deliveryFee = calculateDeliveryFee(distance);
+  }
+
   const details = {
     service: temp.service,
     service_name: temp.service_name || null,
     notes: temp.notes || null,
     media_id: temp.media_id || temp.prescription_media_id || null,
-    location: getLocation(user),
+    location: location,
+    delivery_fee: deliveryFee,
     status: "REQUESTED",
     created_at: new Date().toISOString(),
   };
@@ -1168,6 +1203,7 @@ async function createServiceRequest(phone, user) {
       `<h2>🛠️ కొత్త సర్వీస్ రిక్వెస్ట్ (${getServiceName(temp.service)})</h2>
        <p><b>ఫోన్ నంబర్ / వాట్సాప్:</b> <a href="${chatLink}" target="_blank" style="padding: 6px 12px; background-color: #25D366; color: white; text-decoration: none; border-radius: 4px; font-weight: bold;">💬 కస్టమర్ వాట్సాప్ చాట్ ఓపెన్ చేయండి (${phone})</a></p>
        <p><b>వివరాలు:</b> ${details.notes || 'వివరాలు లేవు'}</p>
+       <p><b>అంచనా డెలివరీ చార్జీలు:</b> ${formatRupees(deliveryFee)}</p>
        <p><b>లొకేషన్:</b> <a href="${loc}" target="_blank">Google Maps లో చూడండి</a></p>`
     );
 
@@ -1306,7 +1342,7 @@ async function handleAdminCommand(phone, text) {
       );
     } catch (error) {
       console.error("Admin paid command error:", error.message);
-      await sendText(phone, "ఆర్డర్ కన్ఫర్మ్ చేయలేకపోయాం. Supabaseలో వివరాలు చెక్ చేయండి.");
+      await sendText(phone, "ఆర్డర్ కన్ఫర్మ్ చేయలేకపోయాం. సూపర్‌బేస్‌లో వివరాలు చెక్ చేయండి.");
     }
 
     return true;
@@ -1536,6 +1572,7 @@ app.post(
         return;
       }
 
+      // ఏ సర్వీస్‌లోనైనా AWAITING_LOCATION స్టేజ్‌లో ఉండి లొకేషన్ కాకుండా టెక్స్ట్ పంపిస్తే
       if (user.current_state === "AWAITING_LOCATION" && type === "text") {
         await sendText(
           phone,
@@ -1891,6 +1928,7 @@ app.post(
           return;
         }
 
+        // ప్రిస్క్రిప్షన్ రాగానే లొకేషన్ స్టేజ్‌కి పంపడం
         await setState(phone, "AWAITING_LOCATION", {
           temp_selection: {
             ...temp,
@@ -1900,7 +1938,7 @@ app.post(
 
         await sendText(
           phone,
-          "📄 ప్రిస్క్రిప్షన్ అందింది. ఇప్పుడు మీ లొకేషన్‌ను షేర్ చేయండి."
+          "📄 ప్రిస్క్రిప్షన్ అందింది. ఇప్పుడు మా సర్వీస్ టీమ్ మీ వద్దకు చేరుకోవడానికి మీ లొకేషన్‌ను Share Location ద్వారా పంపండి."
         );
 
         await sendNavigation(phone);
@@ -1920,6 +1958,7 @@ app.post(
           return;
         }
 
+        // సర్వీస్ డిటెయిల్స్ రాగానే లొకేషన్ స్టేజ్‌కి పంపడం
         await setState(phone, "AWAITING_LOCATION", {
           temp_selection: {
             ...temp,
@@ -1930,7 +1969,7 @@ app.post(
 
         await sendText(
           phone,
-          "✅ వివరాలు అందాయి. ఇప్పుడు మీ లొకేషన్‌ను షేర్ చేయండి."
+          "✅ వివరాలు అందాయి. ఇప్పుడు మా సర్వీస్ టీమ్ మీ వద్దకు రావడానికి మీ లొకేషన్‌ను Share Location ద్వారా పంపండి."
         );
 
         await sendNavigation(phone);
