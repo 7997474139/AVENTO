@@ -22,9 +22,9 @@ const {
   PHONE_NUMBER_ID,
   SUPABASE_URL,
   SUPABASE_KEY,
-  AVENTO_UPI_ID = "9876543210@ybl",
+  AVENTO_UPI_ID = "9550665977-5@ybl",
   AVENTO_UPI_NAME = "Avento Multi-Services",
-  AVENTO_ADMIN_PHONE = "",
+  AVENTO_ADMIN_PHONE = "917997474139",
   RESEND_API_KEY,
   ADMIN_EMAIL = "smahesh0404@gmail.com",
 } = process.env;
@@ -923,7 +923,6 @@ function renderServiceReview(user) {
     lines.push(`వివరాలు: ${temp.notes || "వివరాలు అందించబడ్డాయి"}`);
   }
 
-  // అన్ని సర్వీసులకు లొకేషన్ ఉంటే దూరం మరియు డెలివరీ చార్జ్ చూపించడం
   if (location && service !== "food" && service !== "fresh_meat") {
     const distance = calculateDistance(
       RESTAURANT_LAT,
@@ -1218,7 +1217,7 @@ async function createServiceRequest(phone, user) {
 }
 
 // ==================================================
-// 12. ADMIN PAYMENT COMMANDS
+// 12. ADMIN COMMANDS (PRICE, PAID, & LIVE ORDER STATUS TRACKING)
 // ==================================================
 
 async function handleAdminCommand(phone, text) {
@@ -1226,6 +1225,7 @@ async function handleAdminCommand(phone, text) {
 
   const trimmed = String(text || "").trim();
 
+  // 1. PRICE COMMAND: price ORDER_ID AMOUNT
   const priceMatch = trimmed.match(
     /^price\s+(\S+)\s+(\d+(?:\.\d{1,2})?)$/i
   );
@@ -1292,6 +1292,7 @@ async function handleAdminCommand(phone, text) {
     return true;
   }
 
+  // 2. PAID COMMAND: paid ORDER_ID
   const paidMatch = trimmed.match(/^paid\s+(\S+)$/i);
 
   if (paidMatch) {
@@ -1333,7 +1334,8 @@ async function handleAdminCommand(phone, text) {
         `🎉 మీ ఆర్డర్ విజయవంతంగా బుక్ చేయబడింది. ధన్యవాదాలు! 🙏\n\n` +
         `✅ మీ ఆర్డర్ కన్ఫర్మ్ అయింది.\n` +
         `🧾 ఆర్డర్ నంబర్: #${order.id}\n` +
-        `💰 మొత్తం: ${formatRupees(details.total)}`
+        `💰 మొత్తం: ${formatRupees(details.total)}\n\n` +
+        `📦 స్టేటస్: హోటల్‌కు ఆర్డర్ పంపబడింది (Preparing).`
       );
 
       await sendText(
@@ -1348,15 +1350,57 @@ async function handleAdminCommand(phone, text) {
     return true;
   }
 
-  if (/^(paid|price)\b/i.test(trimmed)) {
+  // 3. LIVE ORDER STATUS TRACKING COMMAND: status ORDER_ID [prep|out|delivered]
+  const statusMatch = trimmed.match(/^status\s+(\S+)\s+(prep|out|delivered)$/i);
+
+  if (statusMatch) {
+    const orderId = statusMatch[1];
+    const action = statusMatch[2].toLowerCase();
+
+    try {
+      const order = await getOrderById(orderId);
+
+      if (!order) {
+        await sendText(phone, `ఆర్డర్ దొరకలేదు: ${orderId}`);
+        return true;
+      }
+
+      let newStatusText = "";
+      let statusMessageToCustomer = "";
+
+      if (action === "prep") {
+        newStatusText = "PREPARING";
+        statusMessageToCustomer = `👨‍🍳 అప్‌డేట్: మీ ఆర్డర్‌ను హోటల్ వారు తయారు చేస్తున్నారు (Preparing). త్వరలో డెలివరీకి సిద్దమవుతుంది!`;
+      } else if (action === "out") {
+        newStatusText = "OUT_FOR_DELIVERY";
+        statusMessageToCustomer = `🚀 అప్‌డేట్: మీ ఆర్డర్ డెలివరీ బాయ్ చేతికి ఇవ్వబడింది మరియు మీ లొకేషన్ వైపు బయలుదేరింది (Out for Delivery)!`;
+      } else if (action === "delivered") {
+        newStatusText = "DELIVERED";
+        statusMessageToCustomer = `✅ అప్‌డేట్: మీ ఆర్డర్ విజయవంతంగా డెలివరీ చేయబడింది! Avento వాడినందుకు ధన్యవాదాలు. 🙏`;
+      }
+
+      await updateOrder(orderId, { status: newStatusText });
+
+      // కస్టమర్‌కి వాట్సాప్‌లో లైవ్ స్టేటస్ పంపడం
+      await sendText(order.user_phone, `📦 **Live Order Tracking** (#${order.id})\n\n${statusMessageToCustomer}`);
+
+      await sendText(phone, `✅ ఆర్డర్ #${order.id} స్టేటస్ '${newStatusText}' కి విజయవంతంగా మార్చబడింది మరియు కస్టమర్‌కి మెసేజ్ వెళ్ళింది.`);
+    } catch (error) {
+      console.error("Admin status command error:", error.message);
+      await sendText(phone, "ఆర్డర్ స్టేటస్ అప్‌డేట్ చేయడంలో లోపం ఏర్పడింది.");
+    }
+
+    return true;
+  }
+
+  if (/^(paid|price|status)\b/i.test(trimmed)) {
     await sendText(
       phone,
       "Admin commands:\n\n" +
-      "price ORDER_ID AMOUNT\n" +
-      "ఉదా: price 12345 450\n\n" +
-      "paid ORDER_ID\n" +
-      "ఉదా: paid 12345\n\n" +
-      "గమనిక: paid కమాండ్ ఇచ్చే ముందు PhonePeలో పేమెంట్ నిజంగా వచ్చిందని నిర్ధారించుకోండి."
+      "1️⃣ price ORDER_ID AMOUNT (ఉదా: price 12 450)\n" +
+      "2️⃣ paid ORDER_ID (ఉదా: paid 12)\n" +
+      "3️⃣ status ORDER_ID prep / out / delivered (ఉదా: status 12 out)\n\n" +
+      "గమనిక: 'status out' ఇస్తే డెలివరీ బాయ్ బయలుదేరినట్లు కస్టమర్‌కి వాట్సాప్ మెసేజ్ వెళ్తుంది."
     );
 
     return true;
@@ -1572,7 +1616,6 @@ app.post(
         return;
       }
 
-      // ఏ సర్వీస్‌లోనైనా AWAITING_LOCATION స్టేజ్‌లో ఉండి లొకేషన్ కాకుండా టెక్స్ట్ పంపిస్తే
       if (user.current_state === "AWAITING_LOCATION" && type === "text") {
         await sendText(
           phone,
@@ -1928,7 +1971,6 @@ app.post(
           return;
         }
 
-        // ప్రిస్క్రిప్షన్ రాగానే లొకేషన్ స్టేజ్‌కి పంపడం
         await setState(phone, "AWAITING_LOCATION", {
           temp_selection: {
             ...temp,
@@ -1958,7 +2000,6 @@ app.post(
           return;
         }
 
-        // సర్వీస్ డిటెయిల్స్ రాగానే లొకేషన్ స్టేజ్‌కి పంపడం
         await setState(phone, "AWAITING_LOCATION", {
           temp_selection: {
             ...temp,
