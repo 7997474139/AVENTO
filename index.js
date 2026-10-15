@@ -24,7 +24,7 @@ const {
   SUPABASE_KEY,
   AVENTO_UPI_ID = "9550665977-5@ybl",
   AVENTO_UPI_NAME = "Avento Multi-Services",
-  AVENTO_ADMIN_PHONE = "917997474139",
+  AVENTO_ADMIN_PHONE = "919550665977",
   RESEND_API_KEY,
   ADMIN_EMAIL = "smahesh0404@gmail.com",
 } = process.env;
