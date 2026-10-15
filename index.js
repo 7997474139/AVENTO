@@ -1335,7 +1335,7 @@ app.post(
 
       if (
         command === "nav_main" ||
-        ["hi", "hello", "menu", "start", "హాయ్", "మెనూ"].includes(normalized)
+        ["hi", "hello", "menu", "start", "హాయ్", "మెనూ", "hi avento services", "hi avento"].includes(normalized)
       ) {
         await goToMainMenu(phone);
         return;
