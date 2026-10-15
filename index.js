@@ -964,7 +964,7 @@ async function showReview(phone, user) {
 }
 
 // ==================================================
-// 10. PAYMENT (HIGHLIGHTED & BOLD INSTRUCTIONS)
+// 10. PAYMENT (HIGHLIGHTED INSTRUCTIONS)
 // ==================================================
 
 async function sendPaymentInstructions(phone, order, details) {
@@ -1487,6 +1487,11 @@ app.post(
 
           await sendText(phone, `❌ Order #${orderId} rejected successfully.`);
         } else if (action === "utr") {
+          // కస్టమర్ నంబర్‌ను AWAITING_UTR స్టేట్‌కి ఆటోమేటిక్‌గా మార్చడం
+          await setState(order.user_phone, "AWAITING_UTR", {
+            temp_selection: { pending_order_id: order.id }
+          });
+
           await sendText(
             order.user_phone,
             `⚠️ దయచేసి మీ సరియైన 12 అంకెల PhonePe UTR నంబర్ లేదా సరైన పేమెంట్ స్క్రీన్‌షాట్‌ను ఇక్కడ పంపండి.`
@@ -1613,7 +1618,12 @@ app.post(
       // PAYMENT PROOF / UTR / SCREENSHOT HANDLING
       // ==========================================
       if (user.current_state === "AWAITING_UTR") {
-        const orderId = temp.pending_order_id;
+        let orderId = temp.pending_order_id;
+
+        if (!orderId) {
+          const latest = await getLatestCustomerOrder(phone);
+          if (latest) orderId = latest.id;
+        }
 
         if (!orderId) {
           await sendText(
@@ -1666,11 +1676,12 @@ app.post(
           temp_selection: {},
         });
 
+        // కస్టమర్‌కి పంపే స్పష్టమైన కన్ఫర్మేషన్ మెసేజ్
         await sendText(
           phone,
-          `✅ మీ పేమెంట్ వివరాలు / స్క్రీన్‌షాట్ అందింది.\n\n` +
+          `✅ మీ UTR నంబర్ / వివరాలు అందాయి.\n\n` +
           `🧾 ఆర్డర్ నంబర్: #${order.id}\n` +
-          `మా బృందం PhonePeలో పేమెంట్‌ను వెరిఫై చేసిన తర్వాతే ఆర్డర్ కన్ఫర్మ్ అవుతుంది.\n\n` +
+          `మా బృందం ఈ UTR ను చెక్ చేసి మీ పేమెంట్‌ను వెరిఫై చేసిన తర్వాత ఆర్డర్ కన్ఫర్మ్ చేస్తాము.\n\n` +
           `ధన్యవాదాలు! 🙏`
         );
 
@@ -1681,12 +1692,12 @@ app.post(
           `💳 కొత్త పేమెంట్ రివ్యూ వచ్చింది! (#${order.id})`,
           `<h2>💳 పేమెంట్ వెరిఫికేషన్ అవసరం</h2>
            <p><b>Order ID:</b> #${order.id}</p>
-           <p><b>Customer WhatsApp:</b> <a href="${chatLink}" target="_blank" style="color: #25D366; font-weight: bold;">💬 చాట్ ఓపెన్ చేసి స్క్రీన్‌షాట్ చూడండి (${phone})</a></p>
+           <p><b>Customer WhatsApp:</b> <a href="${chatLink}" target="_blank" style="color: #25D366; font-weight: bold;">💬 చాట్ ఓపెన్ చేసి చూడండి (${phone})</a></p>
            <p><b>Amount:</b> ${formatRupees(details.total)}</p>
            <p><b>UTR / Text:</b> ${text || 'స్క్రీన్‌షాట్ పంపారు'}</p>`
         );
 
-        // అడ్మిన్‌కి నేరుగా వాట్సాప్‌లో స్క్రీన్‌షాట్/UTR మరియు 3 బటన్లు పంపడం
+        // అడ్మిన్‌కి UTR అలర్ట్ అండ్ బటన్లు పంపడం
         if (AVENTO_ADMIN_PHONE) {
           if (imageMediaId) {
             try {
@@ -1707,7 +1718,7 @@ app.post(
             `Customer: ${phone}\n` +
             `Amount: ${formatRupees(details.total)}\n` +
             `UTR / Info: ${text || 'Screenshot received'}\n\n` +
-            `దయచేసి PhonePe చెక్ చేసి క్రింది బటన్ ఎంచుకోండి:`,
+            `దయచేసి PhonePe/NetBanking చెక్ చేసి క్రింది బటన్ ఎంచుకోండి:`,
             [
               { id: `adm_paid_${order.id}`, title: "✅ Confirm / Paid" },
               { id: `adm_rej_${order.id}`, title: "❌ Reject Fraud" },
