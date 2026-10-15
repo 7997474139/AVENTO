@@ -963,6 +963,10 @@ async function showReview(phone, user) {
   await sendNavigation(phone);
 }
 
+// ==================================================
+// 10. PAYMENT (HIGHLIGHTED & BOLD INSTRUCTIONS)
+// ==================================================
+
 async function sendPaymentInstructions(phone, order, details) {
   const amount = Number(details.total || 0);
 
@@ -985,14 +989,14 @@ async function sendPaymentInstructions(phone, order, details) {
   const qrPath = serviceImage("payment-qr.png");
 
   const caption =
-    `💳 PhonePe / UPI Payment\n\n` +
-    `🧾 ఆర్డర్ నంబర్: #${order.id}\n` +
-    `💰 చెల్లించాల్సిన మొత్తం: ${formatRupees(amount)}\n\n` +
-    `📱 UPI ID: ${AVENTO_UPI_ID}\n` +
-    `👤 పేరు: ${AVENTO_UPI_NAME}\n\n` +
-    `QR కోడ్ స్కాన్ చేసి లేదా UPI IDకి చెల్లించండి.\n` +
-    `చెల్లింపు చేసిన తర్వాత UTR నంబర్ లేదా పేమెంట్ రసీదు/స్క్రీన్‌షాట్‌ను ఇక్కడ పంపండి.\n\n` +
-    `గమనిక: పేమెంట్‌ను వెరిఫై చేసిన తర్వాతే ఆర్డర్ కన్ఫర్మ్ అవుతుంది.`;
+    `💳 *PHONEPE / UPI PAYMENT* 💳\n\n` +
+    `🧾 ఆర్డర్ నంబర్: *#${order.id}*\n` +
+    `💰 చెల్లించాల్సిన మొత్తం: *${formatRupees(amount)}*\n\n` +
+    `📱 UPI ID: *${AVENTO_UPI_ID}*\n` +
+    `👤 పేరు: *${AVENTO_UPI_NAME}*\n\n` +
+    `━━━━━━━━━━━━━━━━━━━\n` +
+    `⚡ *గమనిక:* **క్యూఆర్ కోడ్ స్కాన్ చేసి లేదా యూపీఐ ఐడీకి చెల్లించి, చెల్లింపు చేసిన తర్వాత 12 అంకెల UTR నంబర్ లేదా పేమెంట్ స్క్రీన్‌షాట్‌ను ఇక్కడ పంపండి.**\n` +
+    `━━━━━━━━━━━━━━━━━━━`;
 
   if (fs.existsSync(qrPath)) {
     const sent = await sendLocalImage(phone, qrPath, caption);
@@ -1433,7 +1437,7 @@ app.post(
       }
 
       // ==========================================
-      // ADMIN BUTTON ACTIONS (Paid, Reject, Status)
+      // ADMIN BUTTON ACTIONS (Paid, Reject, UTR)
       // ==========================================
       if (String(command).startsWith("adm_")) {
         if (!isAdmin(phone)) return;
@@ -1485,7 +1489,7 @@ app.post(
         } else if (action === "utr") {
           await sendText(
             order.user_phone,
-            `⚠️ దయచేసి మీ సరియైన PhonePe UTR నంబర్ లేదా సరైన పేమెంట్ స్క్రీన్‌షాట్‌ను ఇక్కడ పంపండి.`
+            `⚠️ దయచేసి మీ సరియైన 12 అంకెల PhonePe UTR నంబర్ లేదా సరైన పేమెంట్ స్క్రీన్‌షాట్‌ను ఇక్కడ పంపండి.`
           );
 
           await sendText(phone, `ℹ️ Asked customer for correct UTR for Order #${orderId}.`);
@@ -1566,7 +1570,6 @@ app.post(
         else if (st === "DELIVERED") statusDesc = "✅ ఆర్డర్ విజయవంతంగా డెలివరీ చేయబడింది (Delivered).";
         else statusDesc = `స్థితి: ${st}`;
 
-        // కస్టమర్ ట్రాక్ నొక్కిన ప్రతీసారి అడ్మిన్‌కి అలర్ట్ పంపడం
         if (AVENTO_ADMIN_PHONE) {
           await sendText(
             AVENTO_ADMIN_PHONE,
@@ -1683,15 +1686,27 @@ app.post(
            <p><b>UTR / Text:</b> ${text || 'స్క్రీన్‌షాట్ పంపారు'}</p>`
         );
 
-        // అడ్మిన్‌కి పేమెంట్ అలర్ట్‌తో పాటు డైరెక్ట్ 3 బటన్లు పంపడం (Paid, Reject, Ask UTR)
+        // అడ్మిన్‌కి నేరుగా వాట్సాప్‌లో స్క్రీన్‌షాట్/UTR మరియు 3 బటన్లు పంపడం
         if (AVENTO_ADMIN_PHONE) {
+          if (imageMediaId) {
+            try {
+              await sendWhatsApp({
+                to: AVENTO_ADMIN_PHONE,
+                type: "image",
+                image: { id: imageMediaId }
+              });
+            } catch (err) {
+              console.error("Failed to forward payment image to admin:", err.message);
+            }
+          }
+
           await sendButtons(
             AVENTO_ADMIN_PHONE,
             `💳 **Payment Verification Required**\n\n` +
             `Order ID: #${order.id}\n` +
             `Customer: ${phone}\n` +
             `Amount: ${formatRupees(details.total)}\n` +
-            `UTR/Status: ${text || 'Screenshot received'}\n\n` +
+            `UTR / Info: ${text || 'Screenshot received'}\n\n` +
             `దయచేసి PhonePe చెక్ చేసి క్రింది బటన్ ఎంచుకోండి:`,
             [
               { id: `adm_paid_${order.id}`, title: "✅ Confirm / Paid" },
