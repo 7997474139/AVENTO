@@ -77,7 +77,7 @@ const RESTAURANT_LAT = 13.951505;
 const RESTAURANT_LNG = 79.356579;
 
 function calculateDistance(lat1, lon1, lat2, lon2) {
-  const R = 6371; // కిమీలలో భూమి వ్యాసార్థం
+  const R = 6371;
   const dLat = (lat2 - lat1) * (Math.PI / 180);
   const dLon = (lon2 - lon1) * (Math.PI / 180);
   const a =
@@ -90,9 +90,9 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
 
 function calculateDeliveryFee(distanceInKm) {
   if (distanceInKm <= 2) {
-    return 30; // మొదటి 2 కిమీలకు ₹30
+    return 30;
   } else {
-    return Math.round(30 + (distanceInKm - 2) * 10); // ఆపై ప్రతి కిమీకి ₹10 అదనంగా
+    return Math.round(30 + (distanceInKm - 2) * 10);
   }
 }
 
@@ -964,7 +964,7 @@ async function showReview(phone, user) {
 }
 
 // ==================================================
-// 10. PAYMENT (HIGHLIGHTED INSTRUCTIONS)
+// 10. PAYMENT
 // ==================================================
 
 async function sendPaymentInstructions(phone, order, details) {
@@ -1222,7 +1222,6 @@ async function handleAdminCommand(phone, text) {
 
   const trimmed = String(text || "").trim();
 
-  // 1. PRICE COMMAND: price ORDER_ID AMOUNT
   const priceMatch = trimmed.match(
     /^price\s+(\S+)\s+(\d+(?:\.\d{1,2})?)$/i
   );
@@ -1289,7 +1288,6 @@ async function handleAdminCommand(phone, text) {
     return true;
   }
 
-  // 2. PAID COMMAND: paid ORDER_ID
   const paidMatch = trimmed.match(/^paid\s+(\S+)$/i);
 
   if (paidMatch) {
@@ -1347,7 +1345,6 @@ async function handleAdminCommand(phone, text) {
     return true;
   }
 
-  // 3. STATUS COMMAND: status ORDER_ID
   const statusMatch = trimmed.match(/^status\s+(\S+)$/i);
 
   if (statusMatch) {
@@ -1442,7 +1439,7 @@ app.post(
       if (String(command).startsWith("adm_")) {
         if (!isAdmin(phone)) return;
 
-        const parts = String(command).split("_"); // ['adm', 'paid'/'rej'/'utr', '64']
+        const parts = String(command).split("_");
         const action = parts[1];
         const orderId = parts[2];
 
@@ -1487,7 +1484,6 @@ app.post(
 
           await sendText(phone, `❌ Order #${orderId} rejected successfully.`);
         } else if (action === "utr") {
-          // కస్టమర్ నంబర్‌ను AWAITING_UTR స్టేట్‌కి ఆటోమేటిక్‌గా మార్చడం
           await setState(order.user_phone, "AWAITING_UTR", {
             temp_selection: { pending_order_id: order.id }
           });
@@ -1508,7 +1504,7 @@ app.post(
       if (String(command).startsWith("st_")) {
         if (!isAdmin(phone)) return;
 
-        const parts = String(command).split("_"); // ['st', 'prep', '64']
+        const parts = String(command).split("_");
         const action = parts[1];
         const orderId = parts[2];
 
@@ -1517,43 +1513,54 @@ app.post(
 
         let newStatusText = "";
         let statusMessageToCustomer = "";
+        let isAdminActionDone = false;
 
         if (action === "prep") {
           newStatusText = "PREPARING";
           statusMessageToCustomer = `👨‍🍳 అప్‌డేట్: మీ ఆర్డర్‌ను హోటల్ వారు తయారు చేస్తున్నారు (Preparing). త్వరలో డెలివరీకి సిద్దమవుతుంది!`;
+          isAdminActionDone = true;
         } else if (action === "out") {
           newStatusText = "OUT_FOR_DELIVERY";
           statusMessageToCustomer = `🚀 అప్‌డేట్: మీ ఆర్డర్ డెలివరీ బాయ్ చేతికి ఇవ్వబడింది మరియు మీ లొకేషన్ వైపు బయలుదేరింది (Out for Delivery)!`;
+          isAdminActionDone = true;
         } else if (action === "del") {
           newStatusText = "DELIVERED";
-          statusMessageToCustomer = `✅ అప్‌డేట్: మీ ఆర్డర్ విజయవంతంగా డెలివరీ చేయబడింది! Avento వాడినందుకు ధన్యవాదాలు. 🙏`;
+          // ఆర్డర్ క్లోజ్ అయ్యేలా పర్ఫెక్ట్ మెసేజ్
+          statusMessageToCustomer = `✅ మీ ఆర్డర్ విజయవంతంగా డెలివరీ చేయబడింది! Avento సేవలను ఎంచుకున్నందుకు ధన్యవాదాలు. 🙏\n\nమరిన్ని ఆర్డర్‌ల కోసం మెయిన్ మెనూని సందర్శించండి.`;
+          isAdminActionDone = true;
         }
 
         await updateOrder(orderId, { status: newStatusText });
 
-        await sendButtons(
-          order.user_phone,
-          `📦 **Live Order Tracking** (#${order.id})\n\n${statusMessageToCustomer}`,
-          [
-            { id: "track_order", title: "📦 Track Order" },
-            { id: "nav_main", title: "🏠 Main Menu" }
-          ]
-        );
+        if (action === "del") {
+          // డెలివరీ అయిపోతే కస్టమర్‌కి ట్రాకింగ్ బటన్స్ ఇవ్వకుండా కేవలం క్లోజ్డ్ మెసేజ్ పంపడం
+          await sendText(order.user_phone, `📦 **Order Delivered** (#${order.id})\n\n${statusMessageToCustomer}`);
+          await sendText(phone, `✅ ఆర్డర్ #${orderId} విజయవంతంగా డెలివరీ చేయబడింది మరియు ఆర్డర్ క్లోజ్ చేయబడింది.`);
+        } else {
+          await sendButtons(
+            order.user_phone,
+            `📦 **Live Order Tracking** (#${order.id})\n\n${statusMessageToCustomer}`,
+            [
+              { id: "track_order", title: "📦 Track Order" },
+              { id: "nav_main", title: "🏠 Main Menu" }
+            ]
+          );
 
-        await sendButtons(
-          phone,
-          `✅ ఆర్డర్ #${orderId} స్టేటస్ విజయవంతంగా '${newStatusText}' కి మార్చబడింది.\n\nమరో స్టేటస్ మార్చడానికి ఎంచుకోండి:`,
-          [
-            { id: `st_prep_${orderId}`, title: "👨‍🍳 Preparing" },
-            { id: `st_out_${orderId}`, title: "🚀 Out for Delivery" },
-            { id: `st_del_${orderId}`, title: "✅ Delivered" }
-          ]
-        );
+          await sendButtons(
+            phone,
+            `✅ ఆర్డర్ #${orderId} స్టేటస్ విజయవంతంగా '${newStatusText}' కి మార్చబడింది.\n\nమరో స్టేటస్ మార్చడానికి ఎంచుకోండి:`,
+            [
+              { id: `st_prep_${orderId}`, title: "👨‍🍳 Preparing" },
+              { id: `st_out_${orderId}`, title: "🚀 Out for Delivery" },
+              { id: `st_del_${orderId}`, title: "✅ Delivered" }
+            ]
+          );
+        }
         return;
       }
 
       // ==========================================
-      // CUSTOMER TRACK ORDER (WITH ADMIN NOTIFICATION)
+      // CUSTOMER TRACK ORDER (WITH DELIVERED CHECK)
       // ==========================================
       if (command === "track_order" || ["track order", "where is my order", "order status", "ఆర్డర్ ఎక్కడుంది"].includes(normalized)) {
         const latestOrder = await getLatestCustomerOrder(phone);
@@ -1564,15 +1571,24 @@ app.post(
           return;
         }
 
-        let statusDesc = "";
         const st = latestOrder.status;
 
+        // ఒకవేళ ఆర్డర్ ఆల్రెడీ డెలివరీ అయిపోయి ఉంటే, మళ్లీ ట్రాక్ చేయకుండా మెయిన్ మెనూకి వెళ్లమని చెప్పడం
+        if (st === "DELIVERED" || st === "REJECTED") {
+          await sendText(
+            phone,
+            `📦 ఆర్డర్ నంబర్ #${latestOrder.id} ఇప్పటికే ముగిసింది (Status: ${st}).\n\nకొత్త ఆర్డర్ చేయడానికి దయచేసి 'Hi' లేదా 'Menu' అని పంపండి.`
+          );
+          await sendNavigation(phone);
+          return;
+        }
+
+        let statusDesc = "";
         if (st === "PRICE_PENDING") statusDesc = "🥩 మీట్ ధర నిర్ధారణ కోసం పెండింగ్‌లో ఉంది.";
         else if (st === "PENDING_PAYMENT") statusDesc = "💳 పేమెంట్ పెండింగ్‌లో ఉంది.";
         else if (st === "PAYMENT_REVIEW") statusDesc = "🔍 పేమెంట్ వెరిఫికేషన్ జరుగుతోంది.";
         else if (st === "PREPARING" || st === "CONFIRMED") statusDesc = "👨‍🍳 హోటల్‌లో మీ ఆర్డర్ తయారవుతోంది (Preparing).";
         else if (st === "OUT_FOR_DELIVERY") statusDesc = "🚀 డెలివరీ బాయ్ మీ లొకేషన్ వైపు బయలుదేరాడు (Out for Delivery)!";
-        else if (st === "DELIVERED") statusDesc = "✅ ఆర్డర్ విజయవంతంగా డెలివరీ చేయబడింది (Delivered).";
         else statusDesc = `స్థితి: ${st}`;
 
         if (AVENTO_ADMIN_PHONE) {
@@ -1676,7 +1692,6 @@ app.post(
           temp_selection: {},
         });
 
-        // కస్టమర్‌కి పంపే స్పష్టమైన కన్ఫర్మేషన్ మెసేజ్
         await sendText(
           phone,
           `✅ మీ UTR నంబర్ / వివరాలు అందాయి.\n\n` +
@@ -1697,7 +1712,6 @@ app.post(
            <p><b>UTR / Text:</b> ${text || 'స్క్రీన్‌షాట్ పంపారు'}</p>`
         );
 
-        // అడ్మిన్‌కి UTR అలర్ట్ అండ్ బటన్లు పంపడం
         if (AVENTO_ADMIN_PHONE) {
           if (imageMediaId) {
             try {
