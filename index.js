@@ -473,6 +473,24 @@ async function updateOrder(orderId, updates) {
   return data;
 }
 
+// కస్టమర్ నంబర్ ద్వారా లేటెస్ట్ ఆర్డర్ వెతికే ఫంక్షన్
+async function getLatestCustomerOrder(phone) {
+  const cleanPhone = normalizePhone(phone);
+  const { data, error } = await supabase
+    .from("orders")
+    .select("*")
+    .eq("user_phone", cleanPhone)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error) {
+    console.error("Get latest order error:", error);
+    return null;
+  }
+  return data;
+}
+
 // ==================================================
 // 4. MAIN MENU & WELCOME IMAGE
 // ==================================================
@@ -848,7 +866,7 @@ async function showRemoveItems(to, cart) {
 }
 
 // ==================================================
-// 9. LOCATION & REVIEW (ALL SERVICES DISTANCE & FEE)
+// 9. LOCATION & REVIEW
 // ==================================================
 
 async function askForLocation(phone, user) {
@@ -1217,7 +1235,7 @@ async function createServiceRequest(phone, user) {
 }
 
 // ==================================================
-// 12. ADMIN COMMANDS (PRICE, PAID, & LIVE ORDER STATUS TRACKING)
+// 12. ADMIN COMMANDS & LIVE TRACKING
 // ==================================================
 
 async function handleAdminCommand(phone, text) {
@@ -1292,7 +1310,7 @@ async function handleAdminCommand(phone, text) {
     return true;
   }
 
-  // 2. PAID COMMAND: paid ORDER_ID
+  // 2. PAID COMMAND: paid ORDER_ID (కస్టమర్‌కి ట్రాకింగ్ బటన్స్‌తో సహా మెసేజ్ వెళుతుంది)
   const paidMatch = trimmed.match(/^paid\s+(\S+)$/i);
 
   if (paidMatch) {
@@ -1326,16 +1344,21 @@ async function handleAdminCommand(phone, text) {
 
       await updateOrder(orderId, {
         details: JSON.stringify(details),
-        status: "CONFIRMED",
+        status: "PREPARING",
       });
 
-      await sendText(
+      // కస్టమర్‌కి ఆర్డర్ కన్ఫర్మ్ అయిందని చెప్పి, కింద "Track Order" బటన్ ఇవ్వడం
+      await sendButtons(
         order.user_phone,
         `🎉 మీ ఆర్డర్ విజయవంతంగా బుక్ చేయబడింది. ధన్యవాదాలు! 🙏\n\n` +
         `✅ మీ ఆర్డర్ కన్ఫర్మ్ అయింది.\n` +
         `🧾 ఆర్డర్ నంబర్: #${order.id}\n` +
         `💰 మొత్తం: ${formatRupees(details.total)}\n\n` +
-        `📦 స్టేటస్: హోటల్‌కు ఆర్డర్ పంపబడింది (Preparing).`
+        `📦 స్టేటస్: హోటల్‌కు ఆర్డర్ పంపబడింది (Preparing).`,
+        [
+          { id: "track_order", title: "📦 Track Order" },
+          { id: "nav_main", title: "🏠 Main Menu" }
+        ]
       );
 
       await sendText(
@@ -1350,7 +1373,7 @@ async function handleAdminCommand(phone, text) {
     return true;
   }
 
-  // 3. LIVE ORDER STATUS TRACKING COMMAND: status ORDER_ID [prep|out|delivered]
+  // 3. LIVE ORDER STATUS TRACKING COMMAND (సింపుల్‌గా prep, out, delivered)
   const statusMatch = trimmed.match(/^status\s+(\S+)\s+(prep|out|delivered)$/i);
 
   if (statusMatch) {
@@ -1381,8 +1404,15 @@ async function handleAdminCommand(phone, text) {
 
       await updateOrder(orderId, { status: newStatusText });
 
-      // కస్టమర్‌కి వాట్సాప్‌లో లైవ్ స్టేటస్ పంపడం
-      await sendText(order.user_phone, `📦 **Live Order Tracking** (#${order.id})\n\n${statusMessageToCustomer}`);
+      // కస్టమర్‌కి వాట్సాప్‌లో లైవ్ స్టేటస్ పంపడం (మళ్ళీ ట్రాక్ బటన్‌తో సహా)
+      await sendButtons(
+        order.user_phone,
+        `📦 **Live Order Tracking** (#${order.id})\n\n${statusMessageToCustomer}`,
+        [
+          { id: "track_order", title: "📦 Track Order" },
+          { id: "nav_main", title: "🏠 Main Menu" }
+        ]
+      );
 
       await sendText(phone, `✅ ఆర్డర్ #${order.id} స్టేటస్ '${newStatusText}' కి విజయవంతంగా మార్చబడింది మరియు కస్టమర్‌కి మెసేజ్ వెళ్ళింది.`);
     } catch (error) {
@@ -1461,6 +1491,41 @@ app.post(
       const temp = getTemp(user);
 
       if (type === "text" && await handleAdminCommand(phone, text)) {
+        return;
+      }
+
+      // కస్టమర్ "Track Order" నొక్కినప్పుడు డేటాబేస్ నుండి స్టేటస్ ఆటోమేటిక్‌గా చూపించడం
+      if (command === "track_order" || ["track order", "where is my order", "order status", "ఆర్డర్ ఎక్కడుంది"].includes(normalized)) {
+        const latestOrder = await getLatestCustomerOrder(phone);
+
+        if (!latestOrder) {
+          await sendText(phone, "మీ పేరు మీద ఎలాంటి యాక్టివ్ ఆర్డర్స్ కనుగొనబడలేదు.");
+          await sendNavigation(phone);
+          return;
+        }
+
+        let statusDesc = "";
+        const st = latestOrder.status;
+
+        if (st === "PRICE_PENDING") statusDesc = "🥩 మీట్ ధర నిర్ధారణ కోసం పెండింగ్‌లో ఉంది.";
+        else if (st === "PENDING_PAYMENT") statusDesc = "💳 పేమెంట్ పెండింగ్‌లో ఉంది.";
+        else if (st === "PAYMENT_REVIEW") statusDesc = "🔍 పేమెంట్ వెరిఫికేషన్ జరుగుతోంది.";
+        else if (st === "PREPARING" || st === "CONFIRMED") statusDesc = "👨‍🍳 హోటల్‌లో మీ ఆర్డర్ తయారవుతోంది (Preparing).";
+        else if (st === "OUT_FOR_DELIVERY") statusDesc = "🚀 డెలివరీ బాయ్ మీ లొకేషన్ వైపు బయలుదేరాడు (Out for Delivery)!";
+        else if (st === "DELIVERED") statusDesc = "✅ ఆర్డర్ విజయవంతంగా డెలివరీ చేయబడింది (Delivered).";
+        else statusDesc = `స్థితి: ${st}`;
+
+        await sendButtons(
+          phone,
+          `📦 **Order Tracking Details**\n\n` +
+          `🧾 ఆర్డర్ నంబర్: #${latestOrder.id}\n` +
+          `📌 ప్రస్తుత స్టేటస్: ${statusDesc}\n\n` +
+          `ఏదైనా సహాయం కావాలంటే Main Menu ఎంచుకోండి.`,
+          [
+            { id: "track_order", title: "🔄 Refresh Status" },
+            { id: "nav_main", title: "🏠 Main Menu" }
+          ]
+        );
         return;
       }
 
