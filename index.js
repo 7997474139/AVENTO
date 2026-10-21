@@ -23,7 +23,7 @@ const {
   SUPABASE_URL,
   SUPABASE_KEY,
   AVENTO_UPI_ID = "9550665977-5@ybl",
-  AVENTO_UPI_NAME = "Avento Multi-Services",
+  AVENTO_UPI_NAME = "VALLEPU MAHESH (Avento Services)",
   AVENTO_ADMIN_PHONE = "919550665977",
   RESEND_API_KEY,
   ADMIN_EMAIL = "smahesh0404@gmail.com",
@@ -484,18 +484,17 @@ async function getLatestCustomerOrder(phone) {
     .maybeSingle();
 
   if (error) {
-    console.error("Get latest order error:", error);
+    console.error("Get latest order error:", error.message);
     return null;
   }
   return data;
 }
 
 // ==================================================
-// 4. MAIN MENU & WELCOME IMAGE (CLEAN FULL LAYOUT)
+// 4. MAIN MENU
 // ==================================================
 
 async function showMainMenu(to) {
-  // ఇమేజ్ కింద విడిగా టెక్స్ట్ పంపకుండా కెప్షన్‌గా ఇస్తే రెండు హాఫ్‌లుగా కాకుండా పర్ఫెక్ట్‌గా వస్తుంది
   await sendLocalImage(
     to,
     serviceImage("welcome.jpg"),
@@ -965,7 +964,7 @@ async function showReview(phone, user) {
 }
 
 // ==================================================
-// 10. PAYMENT
+// 10. PAYMENT BANNER CARD (WITH QR & DIRECT UPI LINK)
 // ==================================================
 
 async function sendPaymentInstructions(phone, order, details) {
@@ -988,15 +987,18 @@ async function sendPaymentInstructions(phone, order, details) {
   }
 
   const qrPath = serviceImage("payment-qr.png");
+  const upiDeepLink = `upi://pay?pa=${AVENTO_UPI_ID}&pn=${encodeURIComponent(AVENTO_UPI_NAME)}&am=${amount}&cu=INR`;
 
   const caption =
-    `💳 *PHONEPE / UPI PAYMENT* 💳\n\n` +
+    `💳 *YOUR BILL IS GENERATED!* 💳\n\n` +
     `🧾 ఆర్డర్ నంబర్: *#${order.id}*\n` +
-    `💰 చెల్లించాల్సిన మొత్తం: *${formatRupees(amount)}*\n\n` +
+    `💰 చెల్లించాల్సిన మొత్తం: *${formatRupees(amount)}*\n` +
     `📱 UPI ID: *${AVENTO_UPI_ID}*\n` +
     `👤 పేరు: *${AVENTO_UPI_NAME}*\n\n` +
     `━━━━━━━━━━━━━━━━━━━\n` +
-    `⚡ *గమనిక:* **క్యూఆర్ కోడ్ స్కాన్ చేసి లేదా యూపీఐ ఐడీకి చెల్లించి, చెల్లింపు చేసిన తర్వాత 12 అంకెల UTR నంబర్ లేదా పేమెంట్ స్క్రీన్‌షాట్‌ను ఇక్కడ పంపండి.**\n` +
+    `👉 *డైరెక్ట్ పేమెంట్ లింక్ (Direct Pay):*\n` +
+    `${upiDeepLink}\n\n` +
+    `⚡ *గమనిక:* పైన ఉన్న PhonePe QR కోడ్ స్కాన్ చేసి లేదా Direct Link క్లిక్ చేసి చెల్లించవచ్చు. చెల్లింపు చేసిన తర్వాత *12 అంకెల UTR నంబర్ లేదా పేమెంట్ స్క్రీన్‌షాట్‌ను* ఇక్కడ పంపండి.\n` +
     `━━━━━━━━━━━━━━━━━━━`;
 
   if (fs.existsSync(qrPath)) {
@@ -1435,7 +1437,7 @@ app.post(
       }
 
       // ==========================================
-      // ADMIN BUTTON ACTIONS (Paid, Reject, UTR)
+      // ADMIN BUTTON ACTIONS
       // ==========================================
       if (String(command).startsWith("adm_")) {
         if (!isAdmin(phone)) return;
