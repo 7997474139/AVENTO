@@ -1059,6 +1059,7 @@ async function initiatePaymentFlow(phone, user) {
   try {
     const cleanPhone = normalizePhone(phone);
     const chatLink = `https://wa.me/${cleanPhone}`;
+    const loc = details.location ? `https://maps.google.com/?q=${details.location.latitude},${details.location.longitude}` : "లొకేషన్ లేదు";
 
     if (service === "fresh_meat" || hasPendingPrice) {
       details.payment.status = "PRICE_PENDING";
@@ -1086,9 +1087,23 @@ async function initiatePaymentFlow(phone, user) {
 
       await sendNavigation(phone);
 
-      const loc = details.location ? `https://maps.google.com/?q=${details.location.latitude},${details.location.longitude}` : "లొకేషన్ లేదు";
       const itemsList = cart.map(i => `${i.name} (${i.quantity} ${i.unit})`).join(", ");
       
+      // 1. అడ్మిన్ వాట్సాప్‌కి మెసేజ్ పంపడం
+      if (AVENTO_ADMIN_PHONE) {
+        await sendText(
+          AVENTO_ADMIN_PHONE,
+          `🥩 *కొత్త ఫ్రెష్ మీట్ ఆర్డర్ వచ్చింది! (#${order.id})*\n\n` +
+          `👤 కస్టమర్ వాట్సాప్: ${cleanPhone}\n` +
+          `💬 చాట్ లింక్: ${chatLink}\n` +
+          `🛒 ఐటమ్స్: ${itemsList}\n` +
+          `🚚 డెలివరీ చార్జ్: ${formatRupees(deliveryFee)}\n` +
+          `📍 లొకేషన్: ${loc}\n\n` +
+          `👉 ధర నమోదు చేయడానికి పంపండి: *price ${order.id} <AMOUNT>*`
+        );
+      }
+
+      // 2. అడ్మిన్ ఈమెయిల్ పంపడం
       await sendOrderEmail(
         `🚀 కొత్త ఫ్రెష్ మీట్ ఆర్డర్ వచ్చింది! (#${order.id})`,
         `<h2>🥩 కొత్త ఫ్రెష్ మీట్ ఆర్డర్</h2>
@@ -1126,9 +1141,23 @@ async function initiatePaymentFlow(phone, user) {
     await sendPaymentInstructions(phone, order, details);
     await sendNavigation(phone);
 
-    const loc = details.location ? `https://maps.google.com/?q=${details.location.latitude},${details.location.longitude}` : "లొకేషన్ లేదు";
     const itemsList = cart.map(i => `${i.name} (Qty: ${i.quantity})`).join(", ");
 
+    // 1. అడ్మిన్ వాట్సాప్‌కి మెసేజ్ పంపడం
+    if (AVENTO_ADMIN_PHONE) {
+      await sendText(
+        AVENTO_ADMIN_PHONE,
+        `🍽️ *కొత్త ఫుడ్ ఆర్డర్ వచ్చింది! (#${order.id})*\n\n` +
+        `🏨 హోటల్: ${details.hotel_name || 'Food Palace'}\n` +
+        `👤 కస్టమర్ వాట్సాప్: ${cleanPhone}\n` +
+        `💬 చాట్ లింక్: ${chatLink}\n` +
+        `🛒 ఐటమ్స్: ${itemsList}\n` +
+        `💰 మొత్తం చెల్లించాల్సింది: ${formatRupees(totalAmount)}\n` +
+        `📍 లొకేషన్: ${loc}`
+      );
+    }
+
+    // 2. అడ్మిన్ ఈమెయిల్ పంపడం
     await sendOrderEmail(
       `🚀 కొత్త ఫుడ్ ఆర్డర్ వచ్చింది! (#${order.id})`,
       `<h2>🍽️ కొత్త ఫుడ్ ఆర్డర్ (${details.hotel_name || 'Food Palace'})</h2>
@@ -1196,10 +1225,42 @@ async function createServiceRequest(phone, user) {
     const loc = details.location ? `https://maps.google.com/?q=${details.location.latitude},${details.location.longitude}` : "లొకేషన్ లేదు";
     const cleanPhone = normalizePhone(phone);
     const chatLink = `https://wa.me/${cleanPhone}`;
+    const serviceTitle = getServiceName(temp.service);
 
+    // 1. అడ్మిన్ వాట్సాప్‌కి ఇన్స్టంట్ అలర్ట్ మెసేజ్ (Medicine, Home Repairs, Shifting, etc.)
+    if (AVENTO_ADMIN_PHONE) {
+      let extraInfo = details.notes ? `📝 వివరాలు: ${details.notes}\n` : "";
+      if (details.media_id) extraInfo += `📸 ఫోటో/ప్రిస్క్రిప్షన్ అప్‌లోడ్ చేయబడింది.\n`;
+
+      // ప్రిస్క్రిప్షన్/ఫోటో ఉంటే అడ్మిన్‌కి కూడా ఫార్వర్డ్ చేయడం
+      if (details.media_id) {
+        try {
+          await sendWhatsApp({
+            to: AVENTO_ADMIN_PHONE,
+            type: "image",
+            image: { id: details.media_id },
+          });
+        } catch (e) {
+          console.error("Failed to forward media to admin:", e.message);
+        }
+      }
+
+      await sendText(
+        AVENTO_ADMIN_PHONE,
+        `🔔 *కొత్త సర్వీస్ రిక్వెస్ట్ వచ్చింది! (#${order.id})*\n\n` +
+        `🛠️ సర్వీస్ రకం: *${serviceTitle}*\n` +
+        `👤 కస్టమర్ వాట్సాప్: ${cleanPhone}\n` +
+        `💬 చాట్ లింక్: ${chatLink}\n` +
+        `${extraInfo}` +
+        `🚚 అంచనా డెలివరీ చార్జ్: ${formatRupees(deliveryFee)}\n` +
+        `📍 లొకేషన్: ${loc}`
+      );
+    }
+
+    // 2. అడ్మిన్ ఈమెయిల్ పంపడం
     await sendOrderEmail(
       `🚀 కొత్త సర్వీస్ రిక్వెస్ట్ వచ్చింది! (#${order.id})`,
-      `<h2>🛠️ కొత్త సర్వీస్ రిక్వెస్ట్ (${getServiceName(temp.service)})</h2>
+      `<h2>🛠️ కొత్త సర్వీస్ రిక్వెస్ట్ (${serviceTitle})</h2>
        <p><b>ఫోన్ నంబర్ / వాట్సాప్:</b> <a href="${chatLink}" target="_blank" style="padding: 6px 12px; background-color: #25D366; color: white; text-decoration: none; border-radius: 4px; font-weight: bold;">💬 కస్టమర్ వాట్సాప్ చాట్ ఓపెన్ చేయండి (${phone})</a></p>
        <p><b>వివరాలు:</b> ${details.notes || 'వివరాలు లేవు'}</p>
        <p><b>అంచనా డెలివరీ చార్జీలు:</b> ${formatRupees(deliveryFee)}</p>
