@@ -25,6 +25,7 @@ const {
   AVENTO_UPI_ID = "9550665977-5@ybl",
   AVENTO_UPI_NAME = "VALLEPU MAHESH (Avento Services)",
   AVENTO_ADMIN_PHONE = "919550665977",
+  AVENTO_CALL_PHONE = "9059135163",
   RESEND_API_KEY,
   ADMIN_EMAIL = "smahesh0404@gmail.com",
 } = process.env;
@@ -198,14 +199,16 @@ function getServiceName(service) {
 }
 
 // ==================================================
-// TIME ZONE & WORKING HOURS CHECK (IST: 8 AM to 6 PM)
+// TIME ZONE & WORKING HOURS CHECK (IST: 6:00 AM to 9:00 PM)
 // ==================================================
 function isServiceAvailableNow() {
   const options = { timeZone: 'Asia/Kolkata', hour: '2-digit', hour12: false };
   const currentHour = parseInt(new Intl.DateTimeFormat([], options).format(new Date()));
-  // ఉదయం 8:00 AM నుండి సాయంత్రం 6:00 PM (18:00) వరకు మాత్రమే అనుమతి
-  return currentHour >= 8 && currentHour < 18;
+  // ఉదయం 6:00 AM (6) నుండి రాత్రి 9:00 PM (21:00) వరకు మాత్రమే
+  return currentHour >= 6 && currentHour < 21;
 }
+
+const CALL_NOTICE = `\n\n📞 *మీరు వాట్సాప్ ద్వారానే కాకుండా నేరుగా మా నంబర్ ${AVENTO_CALL_PHONE} కి కాల్ చేసి కూడా ఆర్డర్ ఇవ్వవచ్చు!*`;
 
 // ==================================================
 // 2. WHATSAPP API & IMAGES
@@ -335,7 +338,7 @@ async function sendNavigation(to) {
   try {
     await sendButtons(
       to,
-      "⬇️ మరిన్ని ఎంపికలు",
+      `⬇️ మరిన్ని ఎంపికలు${CALL_NOTICE}`,
       [
         { id: "nav_back", title: "⬅️ Back" },
         { id: "nav_main", title: "🏠 Main Menu" },
@@ -508,7 +511,7 @@ async function showMainMenu(to) {
   await sendLocalImage(
     to,
     serviceImage("welcome.jpg"),
-    "🙏 *నమస్కారం! Avento Services కి స్వాగతం.*\n\nమీకు కావాల్సిన సర్వీస్‌ను కింద ఉన్న బటన్‌ను నొక్కి ఎంచుకోండి."
+    "🙏 *నమస్కారం! Avento Services కి స్వాగతం.*\n\n⏰ *సేవల సమయం: ఉదయం 6:00 AM నుండి రాత్రి 9:00 PM వరకు*\n\nమీకు కావాల్సిన సర్వీస్‌ను కింద ఉన్న బటన్‌ను నొక్కి ఎంచుకోండి."
   );
 
   await sendList(
@@ -517,7 +520,7 @@ async function showMainMenu(to) {
     "సేవలు ఎంచుకోండి",
     [
       {
-        title: "మా సేవలు",
+        title: "మా సేవలు (6:00 AM - 9:00 PM)",
         rows: [
           {
             id: "srv_food",
@@ -652,7 +655,7 @@ async function showHotels(to) {
 
   await sendList(
     to,
-    "🍽️ Food Order\n\nదయచేసి మీకు కావాల్సిన హోటల్‌ను ఎంచుకోండి.",
+    "🍽️ Food Order (6:00 AM - 9:00 PM)\n\nదయచేసి మీకు కావాల్సిన హోటల్‌ను ఎంచుకోండి.",
     "హోటల్ ఎంచుకోండి",
     [
       {
@@ -760,7 +763,7 @@ async function showMeatCategories(to) {
 
   await sendList(
     to,
-    "🥩 Fresh Meat Delivery\n\nమీకు కావాల్సిన మీట్ రకం ఎంచుకోండి.",
+    "🥩 Fresh Meat Delivery (6:00 AM - 9:00 PM)\n\nమీకు కావాల్సిన మీట్ రకం ఎంచుకోండి.",
     "Meat Categories",
     [
       {
@@ -1098,7 +1101,7 @@ async function initiatePaymentFlow(phone, user) {
       await sendNavigation(phone);
 
       const itemsList = cart.map(i => `${i.name} (${i.quantity} ${i.unit})`).join(", ");
-      
+
       if (AVENTO_ADMIN_PHONE) {
         await sendText(
           AVENTO_ADMIN_PHONE,
@@ -1152,7 +1155,6 @@ async function initiatePaymentFlow(phone, user) {
     const itemsList = cart.map(i => `${i.name} (Qty: ${i.quantity})`).join(", ");
 
     if (AVENTO_ADMIN_PHONE) {
-      // ఫుడ్ ఆర్డర్‌కి కూడా Ask Screenshot బటన్‌తో కూడిన అడ్మిన్ అలర్ట్
       await sendWhatsApp({
         to: AVENTO_ADMIN_PHONE,
         type: "interactive",
@@ -1263,7 +1265,6 @@ async function createServiceRequest(phone, user) {
         }
       }
 
-      // హోమ్ రిపేర్స్ / షిఫ్టింగ్ / మెడిసిన్ కోసం అడ్మిన్ వాట్సాప్‌కి Accept/Reject బటన్లు
       await sendWhatsApp({
         to: AVENTO_ADMIN_PHONE,
         type: "interactive",
@@ -1534,11 +1535,9 @@ app.post(
         if (!isAdmin(phone)) return;
 
         const parts = String(command).split("_");
-        // parts format: adm, action..., orderId (e.g. adm_paid_89 or adm_accept_89 or adm_ask_ss_89)
         const action = parts[1];
-        let orderId = parts.slice(2).join("_"); // handles IDs correctly
+        let orderId = parts.slice(2).join("_");
 
-        // Special check for multi-word action like adm_ask_ss or adm_reject_srv
         let subAction = action;
         if (action === "ask" && parts[2] === "ss") {
           subAction = "ask_ss";
@@ -1580,7 +1579,6 @@ app.post(
             ]
           );
         } else if (subAction === "ask_ss") {
-          // అడ్మిన్ "Ask Screenshot" నొక్కినప్పుడు కస్టమర్‌కి స్క్రీన్‌షాట్ అడగడం
           await sendText(
             order.user_phone,
             `📸 *పేమెంట్ స్క్రీన్‌షాట్ అవసరం! (#${order.id})*\n\n` +
@@ -1588,7 +1586,6 @@ app.post(
           );
           await sendText(phone, `📸 Order #${orderId} కోసం స్క్రీన్‌షాట్ రిక్వెస్ట్ కస్టమర్‌కి పంపబడింది.`);
         } else if (subAction === "accept") {
-          // హోమ్ రిపేర్స్ / షిఫ్టింగ్ / సర్వీస్ అడ్మిన్ యాక్సెప్ట్ చేసినప్పుడు
           await updateOrder(orderId, { status: "CONFIRMED" });
           await sendText(
             order.user_phone,
@@ -1924,7 +1921,21 @@ app.post(
         return;
       }
 
+      // ==========================================
+      // ALL SERVICES (TIME CHECK: 6:00 AM - 9:00 PM)
+      // ==========================================
       if (command === "srv_food") {
+        if (!isServiceAvailableNow()) {
+          await sendText(
+            phone,
+            "⚠️ *సమయం ముగిసింది!*\n\n" +
+            "Avento సేవలు ఉదయం 6:00 AM నుండి రాత్రి 9:00 PM వరకు మాత్రమే అందుబాటులో ఉంటాయి.\n\n" +
+            `దయచేసి రేపు ఉదయం మళ్లీ ప్రయత్నించండి. లేదా అత్యవసరము అయితే మా నంబర్ ${AVENTO_CALL_PHONE} కి కాల్ చేయండి. ధన్యవాదాలు! 🙏`
+          );
+          await sendNavigation(phone);
+          return;
+        }
+
         await startService(phone, "food");
 
         await setState(phone, "SELECT_HOTEL", {
@@ -1934,7 +1945,7 @@ app.post(
         await sendLocalImage(
           phone,
           serviceImage("food.jpg"),
-          "🍽️ Food Order\n\nమీరు ఫుడ్ ఆర్డర్ చేయాలనుకుంటే మీ లొకేషన్ షేర్ చేయండి."
+          "🍽️ Food Order\n\n⏰ సర్వీస్ సమయం: ఉదయం 6:00 AM నుండి రాత్రి 9:00 PM వరకు.\n\nమీరు ఫుడ్ ఆర్డర్ చేయాలనుకుంటే మీ లొకేషన్ షేర్ చేయండి."
         );
 
         await showHotels(phone);
@@ -1964,6 +1975,17 @@ app.post(
       }
 
       if (command === "srv_meat") {
+        if (!isServiceAvailableNow()) {
+          await sendText(
+            phone,
+            "⚠️ *సమయం ముగిసింది!*\n\n" +
+            "Avento సేవలు ఉదయం 6:00 AM నుండి రాత్రి 9:00 PM వరకు మాత్రమే అందుబాటులో ఉంటాయి.\n\n" +
+            `దయచేసి రేపు ఉదయం మళ్లీ ప్రయత్నించండి లేదా ${AVENTO_CALL_PHONE} కి కాల్ చేయండి. ధన్యవాదాలు! 🙏`
+          );
+          await sendNavigation(phone);
+          return;
+        }
+
         await startService(phone, "fresh_meat");
 
         await setState(phone, "MEAT_CATEGORY", {
@@ -1973,7 +1995,7 @@ app.post(
         await sendLocalImage(
           phone,
           serviceImage("fresh-meat.jpg"),
-          "🥩 Fresh Meat Delivery\n\nచికెన్, మటన్, చేపలు ఫ్రీ ఫ్రెష్ డెలివరీ."
+          "🥩 Fresh Meat Delivery\n\n⏰ సర్వీస్ సమయం: 6:00 AM నుండి 9:00 PM వరకు.\nచికెన్, మటన్, చేపలు ఫ్రీ ఫ్రెష్ డెలివరీ."
         );
 
         await showMeatCategories(phone);
@@ -1981,6 +2003,17 @@ app.post(
       }
 
       if (command === "srv_med") {
+        if (!isServiceAvailableNow()) {
+          await sendText(
+            phone,
+            "⚠️ *సమయం ముగిసింది!*\n\n" +
+            "Avento సేవలు ఉదయం 6:00 AM నుండి రాత్రి 9:00 PM వరకు మాత్రమే అందుబాటులో ఉంటాయి.\n\n" +
+            `అత్యవసర మందుల కోసం నేరుగా మా నంబర్ ${AVENTO_CALL_PHONE} కి కాల్ చేయండి. ధన్యవాదాలు! 🙏`
+          );
+          await sendNavigation(phone);
+          return;
+        }
+
         await startService(phone, "medicine");
 
         await setState(phone, "AWAITING_PRESCRIPTION", {
@@ -1990,7 +2023,7 @@ app.post(
         await sendLocalImage(
           phone,
           serviceImage("medicine.jpg"),
-          "💊 Medicines\n\nమందుల డెలివరీ కోసం ప్రిస్క్రిప్షన్ ఫోటోను పంపండి."
+          "💊 Medicines\n\n⏰ సర్వీస్ సమయం: 6:00 AM నుండి 9:00 PM వరకు.\nమందుల డెలివరీ కోసం ప్రిస్క్రిప్షన్ ఫోటోను పంపండి."
         );
 
         await sendText(
@@ -2002,16 +2035,13 @@ app.post(
         return;
       }
 
-      // ==========================================
-      // HOME REPAIRS & SHIFTING (WITH TIME RESTRICTION CHECK AFTER 6 PM)
-      // ==========================================
       if (command === "srv_plumbing") {
         if (!isServiceAvailableNow()) {
           await sendText(
             phone,
-            "⚠️ *సర్వీస్ అందుబాటులో లేదు!*\n\n" +
-            "హోమ్ రిపేర్స్ మరియు షిఫ్టింగ్ సేవలు ఉదయం 8:00 AM నుండి సాయంత్రం 6:00 PM వరకు మాత్రమే అందుబాటులో ఉంటాయి.\n\n" +
-            "దయచేసి రేపు ఉదయం మళ్లీ ప్రయత్నించండి. ధన్యవాదాలు! 🙏"
+            "⚠️ *సమయం ముగిసింది!*\n\n" +
+            "హోమ్ రిపేర్స్ మరియు ఇతర సేవలు ఉదయం 6:00 AM నుండి రాత్రి 9:00 PM వరకు మాత్రమే అందుబాటులో ఉంటాయి.\n\n" +
+            `దయచేసి రేపు ఉదయం మళ్లీ ప్రయత్నించండి లేదా నేరుగా ${AVENTO_CALL_PHONE} కి కాల్ చేయండి. ధన్యవాదాలు! 🙏`
           );
           await sendNavigation(phone);
           return;
@@ -2029,7 +2059,7 @@ app.post(
         await sendLocalImage(
           phone,
           serviceImage("plumbing-electrical.jpg"),
-          "🔧 Home Repairs\n\nప్లంబింగ్, ఎలక్ట్రికల్ పనుల వివరాలు తెలియజేయండి."
+          "🔧 Home Repairs\n\n⏰ సర్వీస్ సమయం: 6:00 AM నుండి 9:00 PM వరకు.\nప్లంబింగ్, ఎలక్ట్రికల్ పనుల వివరాలు తెలియజేయండి."
         );
 
         await sendText(
@@ -2045,9 +2075,9 @@ app.post(
         if (!isServiceAvailableNow()) {
           await sendText(
             phone,
-            "⚠️ *సర్వీస్ అందుబాటులో లేదు!*\n\n" +
-            "హోమ్ రిపేర్స్ మరియు షిఫ్టింగ్ సేవలు ఉదయం 8:00 AM నుండి సాయంత్రం 6:00 PM వరకు మాత్రమే అందుబాటులో ఉంటాయి.\n\n" +
-            "దయచేసి రేపు ఉదయం మళ్లీ ప్రయత్నించండి. ధన్యవాదాలు! 🙏"
+            "⚠️ *సమయం ముగిసింది!*\n\n" +
+            "హోమ్ షిఫ్టింగ్ మరియు పార్సెల్ సేవలు ఉదయం 6:00 AM నుండి రాత్రి 9:00 PM వరకు మాత్రమే అందుబాటులో ఉంటాయి.\n\n" +
+            `దయచేసి రేపు ఉదయం మళ్లీ ప్రయత్నించండి లేదా నేరుగా ${AVENTO_CALL_PHONE} కి కాల్ చేయండి. ధన్యవాదాలు! 🙏`
           );
           await sendNavigation(phone);
           return;
@@ -2058,7 +2088,7 @@ app.post(
         await sendLocalImage(
           phone,
           serviceImage("shifting-parcel.jpg"),
-          "🚚 Home Shifting / Parcel\n\nఇల్లు మారడం, పార్సెల్ డెలివరీ సేవల కోసం ఎంచుకోండి."
+          "🚚 Home Shifting / Parcel\n\n⏰ సర్వీస్ సమయం: 6:00 AM నుండి 9:00 PM వరకు.\nఇల్లు మారడం, పార్సెల్ డెలివరీ సేవల కోసం ఎంచుకోండి."
         );
 
         await sendList(
