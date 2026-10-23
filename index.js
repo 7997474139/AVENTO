@@ -198,6 +198,16 @@ function getServiceName(service) {
 }
 
 // ==================================================
+// TIME ZONE & WORKING HOURS CHECK (IST: 8 AM to 6 PM)
+// ==================================================
+function isServiceAvailableNow() {
+  const options = { timeZone: 'Asia/Kolkata', hour: '2-digit', hour12: false };
+  const currentHour = parseInt(new Intl.DateTimeFormat([], options).format(new Date()));
+  // ఉదయం 8:00 AM నుండి సాయంత్రం 6:00 PM (18:00) వరకు మాత్రమే అనుమతి
+  return currentHour >= 8 && currentHour < 18;
+}
+
+// ==================================================
 // 2. WHATSAPP API & IMAGES
 // ==================================================
 
@@ -1089,7 +1099,6 @@ async function initiatePaymentFlow(phone, user) {
 
       const itemsList = cart.map(i => `${i.name} (${i.quantity} ${i.unit})`).join(", ");
       
-      // 1. అడ్మిన్ వాట్సాప్‌కి మెసేజ్ పంపడం
       if (AVENTO_ADMIN_PHONE) {
         await sendText(
           AVENTO_ADMIN_PHONE,
@@ -1103,7 +1112,6 @@ async function initiatePaymentFlow(phone, user) {
         );
       }
 
-      // 2. అడ్మిన్ ఈమెయిల్ పంపడం
       await sendOrderEmail(
         `🚀 కొత్త ఫ్రెష్ మీట్ ఆర్డర్ వచ్చింది! (#${order.id})`,
         `<h2>🥩 కొత్త ఫ్రెష్ మీట్ ఆర్డర్</h2>
@@ -1143,21 +1151,33 @@ async function initiatePaymentFlow(phone, user) {
 
     const itemsList = cart.map(i => `${i.name} (Qty: ${i.quantity})`).join(", ");
 
-    // 1. అడ్మిన్ వాట్సాప్‌కి మెసేజ్ పంపడం
     if (AVENTO_ADMIN_PHONE) {
-      await sendText(
-        AVENTO_ADMIN_PHONE,
-        `🍽️ *కొత్త ఫుడ్ ఆర్డర్ వచ్చింది! (#${order.id})*\n\n` +
-        `🏨 హోటల్: ${details.hotel_name || 'Food Palace'}\n` +
-        `👤 కస్టమర్ వాట్సాప్: ${cleanPhone}\n` +
-        `💬 చాట్ లింక్: ${chatLink}\n` +
-        `🛒 ఐటమ్స్: ${itemsList}\n` +
-        `💰 మొత్తం చెల్లించాల్సింది: ${formatRupees(totalAmount)}\n` +
-        `📍 లొకేషన్: ${loc}`
-      );
+      // ఫుడ్ ఆర్డర్‌కి కూడా Ask Screenshot బటన్‌తో కూడిన అడ్మిన్ అలర్ట్
+      await sendWhatsApp({
+        to: AVENTO_ADMIN_PHONE,
+        type: "interactive",
+        interactive: {
+          type: "button",
+          body: {
+            text: `🍽️ *కొత్త ఫుడ్ ఆర్డర్ వచ్చింది! (#${order.id})*\n\n` +
+                  `🏨 హోటల్: ${details.hotel_name || 'Food Palace'}\n` +
+                  `👤 కస్టమర్ వాట్సాప్: ${cleanPhone}\n` +
+                  `💬 చాట్ లింక్: ${chatLink}\n` +
+                  `🛒 ఐటమ్స్: ${itemsList}\n` +
+                  `💰 మొత్తం చెల్లించాల్సింది: ${formatRupees(totalAmount)}\n` +
+                  `📍 లొకేషన్: ${loc}`
+          },
+          action: {
+            buttons: [
+              { type: "reply", reply: { id: `adm_paid_${order.id}`, title: "✅ Confirm / Paid" } },
+              { type: "reply", reply: { id: `adm_ask_ss_${order.id}`, title: "📸 Ask Screenshot" } },
+              { type: "reply", reply: { id: `adm_rej_${order.id}`, title: "❌ Reject" } }
+            ]
+          }
+        }
+      });
     }
 
-    // 2. అడ్మిన్ ఈమెయిల్ పంపడం
     await sendOrderEmail(
       `🚀 కొత్త ఫుడ్ ఆర్డర్ వచ్చింది! (#${order.id})`,
       `<h2>🍽️ కొత్త ఫుడ్ ఆర్డర్ (${details.hotel_name || 'Food Palace'})</h2>
@@ -1227,12 +1247,10 @@ async function createServiceRequest(phone, user) {
     const chatLink = `https://wa.me/${cleanPhone}`;
     const serviceTitle = getServiceName(temp.service);
 
-    // 1. అడ్మిన్ వాట్సాప్‌కి ఇన్స్టంట్ అలర్ట్ మెసేజ్ (Medicine, Home Repairs, Shifting, etc.)
     if (AVENTO_ADMIN_PHONE) {
       let extraInfo = details.notes ? `📝 వివరాలు: ${details.notes}\n` : "";
       if (details.media_id) extraInfo += `📸 ఫోటో/ప్రిస్క్రిప్షన్ అప్‌లోడ్ చేయబడింది.\n`;
 
-      // ప్రిస్క్రిప్షన్/ఫోటో ఉంటే అడ్మిన్‌కి కూడా ఫార్వర్డ్ చేయడం
       if (details.media_id) {
         try {
           await sendWhatsApp({
@@ -1245,19 +1263,31 @@ async function createServiceRequest(phone, user) {
         }
       }
 
-      await sendText(
-        AVENTO_ADMIN_PHONE,
-        `🔔 *కొత్త సర్వీస్ రిక్వెస్ట్ వచ్చింది! (#${order.id})*\n\n` +
-        `🛠️ సర్వీస్ రకం: *${serviceTitle}*\n` +
-        `👤 కస్టమర్ వాట్సాప్: ${cleanPhone}\n` +
-        `💬 చాట్ లింక్: ${chatLink}\n` +
-        `${extraInfo}` +
-        `🚚 అంచనా డెలివరీ చార్జ్: ${formatRupees(deliveryFee)}\n` +
-        `📍 లొకేషన్: ${loc}`
-      );
+      // హోమ్ రిపేర్స్ / షిఫ్టింగ్ / మెడిసిన్ కోసం అడ్మిన్ వాట్సాప్‌కి Accept/Reject బటన్లు
+      await sendWhatsApp({
+        to: AVENTO_ADMIN_PHONE,
+        type: "interactive",
+        interactive: {
+          type: "button",
+          body: {
+            text: `🔔 *కొత్త సర్వీస్ రిక్వెస్ట్ వచ్చింది! (#${order.id})*\n\n` +
+                  `🛠️ సర్వీస్ రకం: *${serviceTitle}*\n` +
+                  `👤 కస్టమర్ వాట్సాప్: ${cleanPhone}\n` +
+                  `💬 చాట్ లింక్: ${chatLink}\n` +
+                  `${extraInfo}` +
+                  `🚚 అంచనా డెలివరీ చార్జ్: ${formatRupees(deliveryFee)}\n` +
+                  `📍 లొకేషన్: ${loc}`
+          },
+          action: {
+            buttons: [
+              { type: "reply", reply: { id: `adm_accept_${order.id}`, title: "✅ Accept Service" } },
+              { type: "reply", reply: { id: `adm_reject_srv_${order.id}`, title: "❌ Reject Service" } }
+            ]
+          }
+        }
+      });
     }
 
-    // 2. అడ్మిన్ ఈమెయిల్ పంపడం
     await sendOrderEmail(
       `🚀 కొత్త సర్వీస్ రిక్వెస్ట్ వచ్చింది! (#${order.id})`,
       `<h2>🛠️ కొత్త సర్వీస్ రిక్వెస్ట్ (${serviceTitle})</h2>
@@ -1504,13 +1534,24 @@ app.post(
         if (!isAdmin(phone)) return;
 
         const parts = String(command).split("_");
+        // parts format: adm, action..., orderId (e.g. adm_paid_89 or adm_accept_89 or adm_ask_ss_89)
         const action = parts[1];
-        const orderId = parts[2];
+        let orderId = parts.slice(2).join("_"); // handles IDs correctly
+
+        // Special check for multi-word action like adm_ask_ss or adm_reject_srv
+        let subAction = action;
+        if (action === "ask" && parts[2] === "ss") {
+          subAction = "ask_ss";
+          orderId = parts.slice(3).join("_");
+        } else if (action === "reject" && parts[2] === "srv") {
+          subAction = "reject_srv";
+          orderId = parts.slice(3).join("_");
+        }
 
         const order = await getOrderById(orderId);
         if (!order) return;
 
-        if (action === "paid") {
+        if (subAction === "paid") {
           const details = parseOrderDetails(order.details);
           details.payment = { ...(details.payment || {}), status: "PAID", verified_manually: true };
           
@@ -1538,16 +1579,33 @@ app.post(
               { id: `st_del_${orderId}`, title: "✅ Delivered" }
             ]
           );
-        } else if (action === "rej") {
+        } else if (subAction === "ask_ss") {
+          // అడ్మిన్ "Ask Screenshot" నొక్కినప్పుడు కస్టమర్‌కి స్క్రీన్‌షాట్ అడగడం
+          await sendText(
+            order.user_phone,
+            `📸 *పేమెంట్ స్క్రీన్‌షాట్ అవసరం! (#${order.id})*\n\n` +
+            `దయచేసి మీ UPI పేమెంట్ సక్సెస్ అయిన స్క్రీన్‌షాట్‌ను ఇక్కడ వాట్సాప్‌లో పంపండి. మా టీమ్ వెరిఫై చేసి ఆర్డర్ ప్రాసెస్ చేస్తుంది.`
+          );
+          await sendText(phone, `📸 Order #${orderId} కోసం స్క్రీన్‌షాట్ రిక్వెస్ట్ కస్టమర్‌కి పంపబడింది.`);
+        } else if (subAction === "accept") {
+          // హోమ్ రిపేర్స్ / షిఫ్టింగ్ / సర్వీస్ అడ్మిన్ యాక్సెప్ట్ చేసినప్పుడు
+          await updateOrder(orderId, { status: "CONFIRMED" });
+          await sendText(
+            order.user_phone,
+            `✅ *మీ సర్వీస్ రిక్వెస్ట్ కన్ఫర్మ్ చేయబడింది! (#${order.id})*\n\n` +
+            `త్వరలోనే మా టెక్నీషియన్/బృందం వచ్చి మిమ్మల్ని కాంటాక్ట్ అవుతారు. ధన్యవాదాలు! 🛠️`
+          );
+          await sendText(phone, `👍 Order #${orderId} సర్వీస్ కన్ఫర్మ్ చేయబడింది.`);
+        } else if (subAction === "rej" || subAction === "reject_srv") {
           await updateOrder(orderId, { status: "REJECTED" });
 
           await sendText(
             order.user_phone,
-            `❌ క్షమించండి, మీ ఆర్డర్ #${orderId} పేమెంట్ ఫెయిల్/ఫ్రాడ్ కారణంగా తిరస్కరించబడింది. దయచేసి సరియైన UTR తో మళ్లీ ప్రయత్నించండి.`
+            `❌ క్షమించండి, మీ ఆర్డర్/రిక్వెస్ట్ #${orderId} ప్రస్తుతం అందుబాటులో లేనందున తిరస్కరించబడింది. దయచేసి మళ్లీ ప్రయత్నించండి.`
           );
 
           await sendText(phone, `❌ Order #${orderId} rejected successfully.`);
-        } else if (action === "utr") {
+        } else if (subAction === "utr") {
           await setState(order.user_phone, "AWAITING_UTR", {
             temp_selection: { pending_order_id: order.id }
           });
@@ -1644,7 +1702,7 @@ app.post(
         if (st === "PRICE_PENDING") statusDesc = "🥩 మీట్ ధర నిర్ధారణ కోసం పెండింగ్‌లో ఉంది.";
         else if (st === "PENDING_PAYMENT") statusDesc = "💳 పేమెంట్ పెండింగ్‌లో ఉంది.";
         else if (st === "PAYMENT_REVIEW") statusDesc = "🔍 పేమెంట్ వెరిఫికేషన్ జరుగుతోంది.";
-        else if (st === "PREPARING" || st === "CONFIRMED") statusDesc = "👨‍🍳 హోటల్‌లో మీ ఆర్డర్ తయారవుతోంది (Preparing).";
+        else if (st === "PREPARING" || st === "CONFIRMED") statusDesc = "👨‍🍳 హోటల్‌లో/టీమ్ వద్ద మీ ఆర్డర్ తయారవుతోంది/పరిశీలనలో ఉంది.";
         else if (st === "OUT_FOR_DELIVERY") statusDesc = "🚀 డెలివరీ బాయ్ మీ లొకేషన్ వైపు బయలుదేరాడు (Out for Delivery)!";
         else statusDesc = `స్థితి: ${st}`;
 
@@ -1782,20 +1840,28 @@ app.post(
             }
           }
 
-          await sendButtons(
-            AVENTO_ADMIN_PHONE,
-            `💳 **Payment Verification Required**\n\n` +
-            `Order ID: #${order.id}\n` +
-            `Customer: ${phone}\n` +
-            `Amount: ${formatRupees(details.total)}\n` +
-            `UTR / Info: ${text || 'Screenshot received'}\n\n` +
-            `దయచేసి PhonePe/NetBanking చెక్ చేసి క్రింది బటన్ ఎంచుకోండి:`,
-            [
-              { id: `adm_paid_${order.id}`, title: "✅ Confirm / Paid" },
-              { id: `adm_rej_${order.id}`, title: "❌ Reject Fraud" },
-              { id: `adm_utr_${order.id}`, title: "⚠️ Ask UTR" }
-            ]
-          );
+          await sendWhatsApp({
+            to: AVENTO_ADMIN_PHONE,
+            type: "interactive",
+            interactive: {
+              type: "button",
+              body: {
+                text: `💳 **Payment Verification Required**\n\n` +
+                      `Order ID: #${order.id}\n` +
+                      `Customer: ${phone}\n` +
+                      `Amount: ${formatRupees(details.total)}\n` +
+                      `UTR / Info: ${text || 'Screenshot received'}\n\n` +
+                      `దయచేసి PhonePe/NetBanking చెక్ చేసి క్రింది బటన్ ఎంచుకోండి:`
+              },
+              action: {
+                buttons: [
+                  { type: "reply", reply: { id: `adm_paid_${order.id}`, title: "✅ Confirm / Paid" } },
+                  { type: "reply", reply: { id: `adm_ask_ss_${order.id}`, title: "📸 Ask Screenshot" } },
+                  { type: "reply", reply: { id: `adm_rej_${order.id}`, title: "❌ Reject" } }
+                ]
+              }
+            }
+          });
         }
 
         return;
@@ -1936,7 +2002,21 @@ app.post(
         return;
       }
 
+      // ==========================================
+      // HOME REPAIRS & SHIFTING (WITH TIME RESTRICTION CHECK AFTER 6 PM)
+      // ==========================================
       if (command === "srv_plumbing") {
+        if (!isServiceAvailableNow()) {
+          await sendText(
+            phone,
+            "⚠️ *సర్వీస్ అందుబాటులో లేదు!*\n\n" +
+            "హోమ్ రిపేర్స్ మరియు షిఫ్టింగ్ సేవలు ఉదయం 8:00 AM నుండి సాయంత్రం 6:00 PM వరకు మాత్రమే అందుబాటులో ఉంటాయి.\n\n" +
+            "దయచేసి రేపు ఉదయం మళ్లీ ప్రయత్నించండి. ధన్యవాదాలు! 🙏"
+          );
+          await sendNavigation(phone);
+          return;
+        }
+
         await startService(phone, "plumbing_electrical");
 
         await setState(phone, "AWAITING_SERVICE_DETAILS", {
@@ -1954,7 +2034,7 @@ app.post(
 
         await sendText(
           phone,
-          "🔧 మీకు కావాల్సిన పని లేదా సమస్య వివరాలు టైప్ చేయండి లేదా ఫోటో పంపండి."
+          "🔧 మీకు కావాల్సిన పని లేదా సమస్య వివరాలు టైప్ చేయండి (ఉదాహరణకు: వాషింగ్ మిషన్ డ్రైయర్ ప్రాబ్లం) లేదా ఫోటో పంపండి."
         );
 
         await sendNavigation(phone);
@@ -1962,6 +2042,17 @@ app.post(
       }
 
       if (command === "srv_shifting") {
+        if (!isServiceAvailableNow()) {
+          await sendText(
+            phone,
+            "⚠️ *సర్వీస్ అందుబాటులో లేదు!*\n\n" +
+            "హోమ్ రిపేర్స్ మరియు షిఫ్టింగ్ సేవలు ఉదయం 8:00 AM నుండి సాయంత్రం 6:00 PM వరకు మాత్రమే అందుబాటులో ఉంటాయి.\n\n" +
+            "దయచేసి రేపు ఉదయం మళ్లీ ప్రయత్నించండి. ధన్యవాదాలు! 🙏"
+          );
+          await sendNavigation(phone);
+          return;
+        }
+
         await startService(phone, "shifting");
 
         await sendLocalImage(
