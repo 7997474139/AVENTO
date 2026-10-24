@@ -1,4 +1,3 @@
-
 require("dotenv").config();
 
 const fs = require("fs");
@@ -12,6 +11,190 @@ const { Resend } = require("resend");
 
 const brindavanMenu = require("./services/brindavanMenu");
 const freshMeatMenu = require("./services/freshMeatMenu");
+
+// ==================================================
+// FOOD PALACE MENU (from PDF, +₹30 on every item)
+// ==================================================
+const foodPalaceMenu = {
+  categories: [
+    {
+      id: "fp_soups",
+      title: "Soups",
+      items: [
+        { id: "fp_s1", name: "Veg Hot & Sour Soup", price: 150 },
+        { id: "fp_s2", name: "Veg Manchow Soup", price: 150 },
+        { id: "fp_s3", name: "Chicken Hot & Sour Soup", price: 170 },
+        { id: "fp_s4", name: "Chicken Manchow Soup", price: 170 },
+      ],
+    },
+    {
+      id: "fp_curries",
+      title: "Non-Veg Curries",
+      items: [
+        { id: "fp_c1", name: "Mutton Roghan Josh", price: 380 },
+        { id: "fp_c2", name: "Mutton Curry", price: 380 },
+        { id: "fp_c3", name: "Kadai Mutton", price: 380 },
+        { id: "fp_c4", name: "Prawns Curry", price: 270 },
+        { id: "fp_c5", name: "Egg Masala", price: 180 },
+        { id: "fp_c6", name: "Miryali Chicken Curry (Bone)", price: 310 },
+        { id: "fp_c7", name: "Spl. Chicken Curry (Chef Special)", price: 280 },
+        { id: "fp_c8", name: "Kaju Chicken Curry (Boneless)", price: 280 },
+        { id: "fp_c9", name: "Methi Chicken Curry", price: 260 },
+        { id: "fp_c10", name: "Chicken Dhopyaza", price: 260 },
+        { id: "fp_c11", name: "Chicken Tikka Masala", price: 260 },
+        { id: "fp_c12", name: "Tawde Masala (Leg Piece)", price: 280 },
+        { id: "fp_c13", name: "Butter Chicken", price: 250 },
+        { id: "fp_c14", name: "Chicken Curry (Bone)", price: 230 },
+        { id: "fp_c15", name: "Chicken Curry (Boneless)", price: 250 },
+        { id: "fp_c16", name: "Chicken Chhatpata Curry", price: 250 },
+        { id: "fp_c17", name: "Kadai Chicken Curry", price: 230 },
+        { id: "fp_c18", name: "Kollapuri Chicken Curry", price: 230 },
+        { id: "fp_c19", name: "Hyderabadi Chicken Curry", price: 240 },
+        { id: "fp_c20", name: "Chicken Kheema Curry", price: 250 },
+        { id: "fp_c21", name: "Afghani Chicken Curry", price: 270 },
+        { id: "fp_c22", name: "Moghlai Chicken Curry", price: 250 },
+        { id: "fp_c23", name: "Punjabi Chicken Curry", price: 250 },
+      ],
+    },
+    {
+      id: "fp_biryani",
+      title: "Biryanis",
+      items: [
+        { id: "fp_b1", name: "Chicken Dum Biryani", price: 230 },
+        { id: "fp_b2", name: "Spl. Chicken Biryani (Boneless)", price: 280 },
+        { id: "fp_b3", name: "Prawns Biryani", price: 310 },
+        { id: "fp_b4", name: "Fish Biryani (Boneless)", price: 270 },
+        { id: "fp_b5", name: "Chicken Fry Piece Biryani (Bone)", price: 270 },
+        { id: "fp_b6", name: "Chicken Lollipop Biryani", price: 280 },
+        { id: "fp_b7", name: "Mutton Fry Piece Biryani (Bone)", price: 380 },
+        { id: "fp_b8", name: "Mutton Dum Biryani", price: 380 },
+        { id: "fp_b9", name: "Hongkong Biryani (Boneless)", price: 290 },
+        { id: "fp_b10", name: "Rambo Biryani (Leg Piece)", price: 300 },
+        { id: "fp_b11", name: "Egg Biryani", price: 180 },
+        { id: "fp_b12", name: "Chicken 65 Biryani", price: 280 },
+        { id: "fp_b13", name: "Gongura Mutton Biryani", price: 400 },
+        { id: "fp_b14", name: "Tandoor Biryani", price: 300 },
+        { id: "fp_b15", name: "Paneer Biryani", price: 240 },
+        { id: "fp_b16", name: "Mushroom Biryani", price: 240 },
+        { id: "fp_b17", name: "Kaju Biryani", price: 270 },
+        { id: "fp_b18", name: "Veg Biryani", price: 200 },
+      ],
+    },
+    {
+      id: "fp_breads",
+      title: "Tandoor — Breads",
+      items: [
+        { id: "fp_br1", name: "Tandoori Roti", price: 55 },
+        { id: "fp_br2", name: "Butter Roti", price: 60 },
+        { id: "fp_br3", name: "Butter Naan", price: 60 },
+        { id: "fp_br4", name: "Plain Naan", price: 55 },
+        { id: "fp_br5", name: "Garlic Naan", price: 80 },
+        { id: "fp_br6", name: "Plain Kulcha", price: 60 },
+        { id: "fp_br7", name: "Butter Kulcha", price: 65 },
+        { id: "fp_br8", name: "Methi Roti", price: 65 },
+        { id: "fp_br9", name: "Kothimeera Roti", price: 60 },
+        { id: "fp_br10", name: "Pulka", price: 50 },
+      ],
+    },
+    {
+      id: "fp_kababs",
+      title: "Tandoor — Kababs",
+      items: [
+        { id: "fp_k1", name: "Tandoori Chicken (Full)", price: 469 },
+        { id: "fp_k2", name: "Tandoori Chicken (Half)", price: 269 },
+        { id: "fp_k3", name: "Chicken Tikka", price: 269 },
+        { id: "fp_k4", name: "Haryali Tikka", price: 279 },
+        { id: "fp_k5", name: "Tangdi Kabab Full (Leg Piece)", price: 279 },
+        { id: "fp_k6", name: "Malai Tikka", price: 279 },
+        { id: "fp_k7", name: "Tangdi Kabab Half (Leg Piece)", price: 169 },
+      ],
+    },
+    {
+      id: "fp_veg_fried_rice",
+      title: "Veg Fried Rice",
+      items: [
+        { id: "fp_vfr1", name: "Veg Fried Rice", price: 170 },
+        { id: "fp_vfr2", name: "Veg Schezwan Fried Rice", price: 180 },
+        { id: "fp_vfr3", name: "Mushroom Fried Rice", price: 200 },
+        { id: "fp_vfr4", name: "Paneer Fried Rice", price: 200 },
+        { id: "fp_vfr5", name: "Gobi Fried Rice", price: 180 },
+        { id: "fp_vfr6", name: "Mixed Veg Fried Rice", price: 200 },
+        { id: "fp_vfr7", name: "Kaju Fried Rice", price: 250 },
+      ],
+    },
+    {
+      id: "fp_nonveg_fried_rice",
+      title: "Non-Veg Fried Rice",
+      items: [
+        { id: "fp_nfr1", name: "Egg Fried Rice", price: 170 },
+        { id: "fp_nfr2", name: "Egg Schezwan Fried Rice", price: 180 },
+        { id: "fp_nfr3", name: "Chicken Fried Rice", price: 200 },
+        { id: "fp_nfr4", name: "Chicken Schezwan Fried Rice", price: 210 },
+        { id: "fp_nfr5", name: "Spl. Chicken Fried Rice", price: 200 },
+        { id: "fp_nfr6", name: "Prawns Fried Rice", price: 230 },
+        { id: "fp_nfr7", name: "Shagapossi Fried Rice", price: 230 },
+        { id: "fp_nfr8", name: "Saugai Fried Rice", price: 230 },
+      ],
+    },
+    {
+      id: "fp_desserts",
+      title: "Desserts",
+      items: [
+        { id: "fp_d1", name: "Vennela Ice Cream (Single Scoop)", price: 70 },
+        { id: "fp_d2", name: "Vennela Ice Cream (Double Scoop)", price: 100 },
+        { id: "fp_d3", name: "Chocolate Ice Cream (Single Scoop)", price: 80 },
+        { id: "fp_d4", name: "Chocolate Ice Cream (Double Scoop)", price: 120 },
+        { id: "fp_d5", name: "Strawberry Ice Cream (Single Scoop)", price: 70 },
+        { id: "fp_d6", name: "Strawberry Ice Cream (Double Scoop)", price: 100 },
+        { id: "fp_d7", name: "Butterscotch Ice Cream (Single Scoop)", price: 80 },
+        { id: "fp_d8", name: "Butterscotch Ice Cream (Double Scoop)", price: 120 },
+      ],
+    },
+  ],
+};
+
+// ==================================================
+// KING BIRYANI MENU (PLACEHOLDER — replace with real menu)
+// ==================================================
+const kingBiryaniMenu = {
+  categories: [
+    {
+      id: "kb_biryani",
+      title: "Biryani",
+      items: [
+        { id: "kb_1", name: "Chicken Biryani", price: 230 },
+        { id: "kb_2", name: "Mutton Biryani", price: 350 },
+        { id: "kb_3", name: "Egg Biryani", price: 170 },
+        { id: "kb_4", name: "Veg Biryani", price: 180 },
+      ],
+    },
+    {
+      id: "kb_starters",
+      title: "Starters",
+      items: [
+        { id: "kb_5", name: "Chicken 65", price: 220 },
+        { id: "kb_6", name: "Paneer 65", price: 200 },
+      ],
+    },
+  ],
+};
+
+// ==================================================
+// HOTEL → MENU REGISTRY (single source of truth)
+// Each hotel maps strictly to its own menu — no cross-hotel fallback.
+// ==================================================
+const restaurantMenus = {
+  brindavanam: brindavanMenu,
+  king_biryani: kingBiryaniMenu,
+  food_palace: foodPalaceMenu,
+};
+
+// Ordered list for hotel-selection list + webhook dispatch
+const HOTEL_LIST = [
+  { id: "brindavanam", name: "Brindavanam", description: "బృందావనం రెస్టారెంట్" },
+  { id: "food_palace", name: "Food Palace", description: "ఫుడ్ ప్యాలెస్ రెస్టారెంట్" },
+  { id: "king_biryani", name: "King Biryani", description: "కింగ్ బిర్యానీ" },
+];
 
 const app = express();
 app.use(express.json({ limit: "10mb" }));
@@ -45,17 +228,12 @@ if (
   process.exit(1);
 }
 
-// ✅ FIX #17: warn about missing optional envs at startup
 if (!RESEND_API_KEY) console.warn("⚠️  RESEND_API_KEY not set — email notifications disabled.");
 if (!ADMIN_EMAIL) console.warn("⚠️  ADMIN_EMAIL not set — email notifications disabled.");
 if (!AVENTO_ADMIN_PHONE) console.warn("⚠️  AVENTO_ADMIN_PHONE not set — admin WhatsApp notifications disabled.");
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// ==================================================
-// RESEND API CLIENT SETUP
-// ==================================================
-// ✅ FIX #10: guard against undefined API key at startup
 const resend = RESEND_API_KEY ? new Resend(RESEND_API_KEY) : null;
 
 async function sendOrderEmail(subject, htmlContent) {
@@ -63,7 +241,6 @@ async function sendOrderEmail(subject, htmlContent) {
     console.warn("Resend API key or Admin email not configured properly.");
     return;
   }
-
   try {
     await resend.emails.send({
       from: "Avento Bot <onboarding@resend.dev>",
@@ -133,10 +310,12 @@ function getLocation(user) {
   return user?.location || null;
 }
 
-function getFoodCategories() {
-  return Array.isArray(brindavanMenu.categories)
-    ? brindavanMenu.categories
-    : [];
+// Hotel-aware via registry. Defaults to Brindavanam only when hotelId is missing
+// (legacy sessions) — never falls back to a *different* hotel's menu.
+function getFoodCategories(hotelId = "brindavanam") {
+  const key = String(hotelId || "brindavanam").trim().toLowerCase();
+  const menu = restaurantMenus[key] || restaurantMenus.brindavanam;
+  return Array.isArray(menu?.categories) ? menu.categories : [];
 }
 
 function getMeatCategories() {
@@ -145,8 +324,8 @@ function getMeatCategories() {
     : [];
 }
 
-function getFoodItem(itemId) {
-  return getFoodCategories()
+function getFoodItem(itemId, hotelId = null) {
+  return getFoodCategories(hotelId)
     .flatMap(category => category.items || [])
     .find(item => String(item.id) === String(itemId));
 }
@@ -197,7 +376,6 @@ function getServiceName(service) {
 // ==================================================
 // TIME ZONE & WORKING HOURS CHECK (IST: 6:00 AM to 9:00 PM)
 // ==================================================
-// ✅ FIX #5: use explicit locale + h23 to avoid "24" hour and locale drift
 function isServiceAvailableNow() {
   const currentHour = Number(
     new Intl.DateTimeFormat("en-US", {
@@ -269,7 +447,6 @@ async function uploadWhatsAppImage(filePath) {
   return response.data.id;
 }
 
-// ✅ FIX #2: auto-fallback to caption if image missing/fails
 async function sendLocalImage(phone, filePath, caption = "") {
   try {
     if (!fs.existsSync(filePath)) {
@@ -381,7 +558,6 @@ async function sendList(to, body, buttonText, sections) {
 // 3. SUPABASE
 // ==================================================
 
-// ✅ FIX #4: race-safe getOrCreateUser (retries on unique violation)
 async function getOrCreateUser(phone) {
   const { data, error } = await supabase
     .from("users")
@@ -404,7 +580,6 @@ async function getOrCreateUser(phone) {
     .single();
 
   if (insertError) {
-    // Another concurrent request created the user first — re-fetch
     if (insertError.code === "23505") {
       const { data: retried, error: retryError } = await supabase
         .from("users")
@@ -544,7 +719,7 @@ async function goBack(phone, user) {
       await showHotels(phone);
       return;
     case "FOOD_ITEMS":
-      await showFoodCategories(phone, temp.hotel_name);
+      await showFoodCategories(phone, temp.hotel_name, temp.hotel_id);
       return;
     case "MEAT_CATEGORY":
       await goToMainMenu(phone);
@@ -556,7 +731,7 @@ async function goBack(phone, user) {
       if (temp.service === "fresh_meat") {
         await showMeatCategories(phone);
       } else if (temp.service === "food") {
-        await showFoodCategories(phone, temp.hotel_name);
+        await showFoodCategories(phone, temp.hotel_name, temp.hotel_id);
       } else {
         await goToMainMenu(phone);
       }
@@ -610,17 +785,18 @@ async function showHotels(to) {
     [
       {
         title: "Available Hotels",
-        rows: [
-          { id: "hotel_brindavanam", title: "Brindavanam", description: "బృందావనం రెస్టారెంట్" },
-          { id: "hotel_king_biryani", title: "King Biryani", description: "కింగ్ బిర్యానీ" },
-        ],
+        rows: HOTEL_LIST.map(h => ({
+          id: `hotel_${h.id}`,
+          title: h.name,
+          description: h.description,
+        })),
       },
     ]
   );
 }
 
-async function showFoodCategories(to, hotelName) {
-  const categories = getFoodCategories();
+async function showFoodCategories(to, hotelName, hotelId = null) {
+  const categories = getFoodCategories(hotelId);
   await setState(to, "FOOD_CATEGORY");
   await sendList(
     to,
@@ -638,8 +814,8 @@ async function showFoodCategories(to, hotelName) {
   );
 }
 
-async function showFoodItems(to, categoryId, page = 0) {
-  const category = getFoodCategories().find(
+async function showFoodItems(to, categoryId, page = 0, hotelId = null) {
+  const category = getFoodCategories(hotelId).find(
     item => String(item.id) === String(categoryId)
   );
   if (!category) {
@@ -682,6 +858,7 @@ async function showFoodItems(to, categoryId, page = 0) {
       ...(getTemp(await getOrCreateUser(to))),
       current_category_id: categoryId,
       current_page: page,
+      ...(hotelId ? { hotel_id: hotelId } : {}),
     },
   });
 
@@ -955,6 +1132,7 @@ async function initiatePaymentFlow(phone, user) {
     location: location,
     notes: temp.notes || null,
     hotel_name: temp.hotel_name || null,
+    hotel_id: temp.hotel_id || null,
     service_name: temp.service_name || null,
     payment: {
       method: "UPI_MANUAL",
@@ -1263,7 +1441,6 @@ async function handleAdminCommand(phone, text) {
         status: "PREPARING",
       });
 
-      // ✅ FIX #21: clear customer's state after manual payment confirm
       await setState(order.user_phone, "IDLE", {
         cart: [],
         location: null,
@@ -1408,7 +1585,6 @@ app.post(["/webhook", "/whatsapp/webhook", "/whatsapp/webhook/"], async (req, re
           status: "PREPARING",
         });
 
-        // ✅ FIX #21: clear customer's state after admin-paid button
         await setState(order.user_phone, "IDLE", {
           cart: [],
           location: null,
@@ -1438,7 +1614,6 @@ app.post(["/webhook", "/whatsapp/webhook", "/whatsapp/webhook/"], async (req, re
           ]
         );
       } else if (subAction === "ask_ss") {
-        // ✅ FIX #1: set customer state so their screenshot is captured
         await setState(order.user_phone, "AWAITING_UTR", {
           temp_selection: { pending_order_id: order.id },
         });
@@ -1514,7 +1689,6 @@ app.post(["/webhook", "/whatsapp/webhook", "/whatsapp/webhook/"], async (req, re
           order.user_phone,
           `📦 **Order Delivered** (#${order.id})\n\n${statusMessageToCustomer}`
         );
-        // ✅ FIX #18: reset customer to IDLE once delivered
         await setState(order.user_phone, "IDLE", {
           cart: [],
           location: null,
@@ -1809,21 +1983,25 @@ app.post(["/webhook", "/whatsapp/webhook", "/whatsapp/webhook/"], async (req, re
       return;
     }
 
-    if (command === "hotel_brindavanam" || command === "hotel_king_biryani") {
-      const selectedHotel =
-        command === "hotel_brindavanam"
-          ? { id: "brindavanam", name: "Brindavanam" }
-          : { id: "king_biryani", name: "King Biryani" };
+    // Hotel selection — driven entirely by HOTEL_LIST (per-hotel menus)
+    const hotelMatch = String(command).match(/^hotel_(.+)$/);
+    if (hotelMatch) {
+      const hotel = HOTEL_LIST.find(h => h.id === hotelMatch[1]);
+      if (!hotel) {
+        await sendText(phone, "హోటల్ దొరకలేదు.");
+        await sendNavigation(phone);
+        return;
+      }
 
       await setState(phone, "FOOD_CATEGORY", {
         cart: [],
         temp_selection: {
           service: "food",
-          hotel_id: selectedHotel.id,
-          hotel_name: selectedHotel.name,
+          hotel_id: hotel.id,
+          hotel_name: hotel.name,
         },
       });
-      await showFoodCategories(phone, selectedHotel.name);
+      await showFoodCategories(phone, hotel.name, hotel.id);
       return;
     }
 
@@ -1944,17 +2122,17 @@ app.post(["/webhook", "/whatsapp/webhook", "/whatsapp/webhook/"], async (req, re
 
     const pageMatch = String(command).match(/^foodpage_(.+)_(\d+)$/);
     if (pageMatch) {
-      await showFoodItems(phone, pageMatch[1], Number(pageMatch[2]));
+      await showFoodItems(phone, pageMatch[1], Number(pageMatch[2]), temp.hotel_id);
       return;
     }
 
     if (String(command).startsWith("cat_")) {
-      await showFoodItems(phone, String(command).slice(4), 0);
+      await showFoodItems(phone, String(command).slice(4), 0, temp.hotel_id);
       return;
     }
 
     if (String(command).startsWith("item_")) {
-      const item = getFoodItem(String(command).slice(5));
+      const item = getFoodItem(String(command).slice(5), temp.hotel_id);
       if (!item) {
         await sendText(phone, "ఈ ఐటమ్ దొరకలేదు.");
         await sendNavigation(phone);
@@ -2062,7 +2240,7 @@ app.post(["/webhook", "/whatsapp/webhook", "/whatsapp/webhook/"], async (req, re
       if (temp.service === "fresh_meat") {
         await showMeatCategories(phone);
       } else if (temp.service === "food") {
-        await showFoodCategories(phone, temp.hotel_name);
+        await showFoodCategories(phone, temp.hotel_name, temp.hotel_id);
       } else {
         await showMainMenu(phone);
       }
@@ -2085,7 +2263,6 @@ app.post(["/webhook", "/whatsapp/webhook", "/whatsapp/webhook/"], async (req, re
       const updatedCart = cart.filter((_, i) => i !== index);
       await setState(phone, "CART", { cart: updatedCart });
 
-      // ✅ FIX #9: don't render empty cart with action buttons
       if (!updatedCart.length) {
         await sendText(phone, "మీ కార్ట్ ఇప్పుడు ఖాళీగా ఉంది.");
         await sendNavigation(phone);
@@ -2176,7 +2353,6 @@ app.post(["/webhook", "/whatsapp/webhook", "/whatsapp/webhook/"], async (req, re
       return;
     }
 
-    // ✅ FIX #3: handle non-text messages in unrecognized states
     if (type === "text") {
       await sendText(
         phone,
@@ -2199,7 +2375,6 @@ app.post(["/webhook", "/whatsapp/webhook", "/whatsapp/webhook/"], async (req, re
 // 15. HEALTH CHECK & LANDING PAGE
 // ==================================================
 
-// ✅ FIX #16: lightweight health endpoint for uptime monitors
 app.get("/health", (req, res) => {
   res.status(200).json({
     status: "ok",
