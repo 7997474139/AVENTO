@@ -10,7 +10,6 @@ const { createClient } = require("@supabase/supabase-js");
 const { Resend } = require("resend");
 
 const brindavanMenu = require("./services/brindavanMenu");
-const freshMeatMenu = require("./services/freshMeatMenu");
 
 // ==================================================
 // FOOD PALACE MENU (from PDF, +₹30 on every item)
@@ -318,27 +317,14 @@ function getFoodCategories(hotelId = "brindavanam") {
   return Array.isArray(menu?.categories) ? menu.categories : [];
 }
 
-function getMeatCategories() {
-  return Array.isArray(freshMeatMenu.categories)
-    ? freshMeatMenu.categories
-    : [];
-}
-
 function getFoodItem(itemId, hotelId = null) {
   return getFoodCategories(hotelId)
     .flatMap(category => category.items || [])
     .find(item => String(item.id) === String(itemId));
 }
 
-function getMeatItem(itemId) {
-  return getMeatCategories()
-    .flatMap(category => category.items || [])
-    .find(item => String(item.id) === String(itemId));
-}
-
 function getCartTotal(cart) {
   return cart.reduce((total, item) => {
-    if (item.price_pending) return total;
     return total + Number(item.price || 0) * Number(item.quantity || 1);
   }, 0);
 }
@@ -365,10 +351,9 @@ function serviceImage(filename) {
 function getServiceName(service) {
   const names = {
     food: "Food Order",
-    fresh_meat: "Fresh Meat Delivery",
     medicine: "Medicine Order",
     plumbing_electrical: "Home Repairs",
-    shifting: "Home Shifting / Parcel",
+    shifting: "Parcel Deliveries",
   };
   return names[service] || "Avento Multi-Services";
 }
@@ -683,10 +668,9 @@ async function showMainMenu(to) {
         title: "మా సేవలు (6:00 AM - 9:00 PM)",
         rows: [
           { id: "srv_food", title: "Food Order", description: "హోటల్ ఫుడ్ డెలివరీ" },
-          { id: "srv_meat", title: "Fresh Meat Delivery", description: "చికెన్, మటన్, చేపలు" },
           { id: "srv_med", title: "Medicine Order", description: "మందుల డెలివరీ" },
           { id: "srv_plumbing", title: "Home Repairs", description: "ప్లంబింగ్, ఎలక్ట్రికల్" },
-          { id: "srv_shifting", title: "Home Shifting / Parcel", description: "ఇల్లు మారడం, పార్సెల్ డెలివరీ" },
+          { id: "srv_shifting", title: "Parcel Deliveries", description: "పార్సెల్ డెలివరీ" },
         ],
       },
     ]
@@ -721,16 +705,8 @@ async function goBack(phone, user) {
     case "FOOD_ITEMS":
       await showFoodCategories(phone, temp.hotel_name, temp.hotel_id);
       return;
-    case "MEAT_CATEGORY":
-      await goToMainMenu(phone);
-      return;
-    case "MEAT_QUANTITY":
-      await showMeatCategories(phone);
-      return;
     case "CART":
-      if (temp.service === "fresh_meat") {
-        await showMeatCategories(phone);
-      } else if (temp.service === "food") {
+      if (temp.service === "food") {
         await showFoodCategories(phone, temp.hotel_name, temp.hotel_id);
       } else {
         await goToMainMenu(phone);
@@ -870,54 +846,10 @@ async function showFoodItems(to, categoryId, page = 0, hotelId = null) {
   );
 }
 
-async function showMeatCategories(to) {
-  const categories = getMeatCategories();
-  await setState(to, "MEAT_CATEGORY");
-  await sendList(
-    to,
-    "🥩 Fresh Meat Delivery (6:00 AM - 9:00 PM)\n\nమీకు కావాల్సిన మీట్ రకం ఎంచుకోండి.",
-    "Meat Categories",
-    [
-      {
-        title: "Fresh Meat",
-        rows: categories.slice(0, 10).map(category => ({
-          id: String(category.id),
-          title: category.title || category.name || category.id,
-        })),
-      },
-    ]
-  );
-}
-
-async function showMeatQuantities(to, meatItem) {
-  const quantities = freshMeatMenu.quantities || [];
-  await sendList(
-    to,
-    `🥩 ${meatItem.name}\n\nఎన్ని కిలోలు కావాలి? ధరను మా బృందం నిర్ధారిస్తుంది.`,
-    "Select KG",
-    [
-      {
-        title: "Quantity",
-        rows: quantities.slice(0, 10).map((quantity, index) => ({
-          id: `qty_${index}_${meatItem.id}`,
-          title: quantity.title || `${quantity.id}`,
-        })),
-      },
-    ]
-  );
-}
-
 function renderCart(cart) {
   if (!cart.length) return "మీ కార్ట్ ఖాళీగా ఉంది.";
 
   const lines = cart.map((item, index) => {
-    if (item.price_pending) {
-      return (
-        `${index + 1}. ${item.name}\n` +
-        `   పరిమాణం: ${item.quantity} KG\n` +
-        `   ధర: నిర్ధారించాలి`
-      );
-    }
     const quantity = Number(item.quantity || 1);
     const price = Number(item.price || 0);
     return (
@@ -1001,30 +933,17 @@ function renderServiceReview(user) {
       lines.push("--------------------");
       lines.push(`💰 చెల్లించాల్సిన మొత్తం: ${formatRupees(grandTotal)}`);
     }
-  } else if (service === "fresh_meat") {
-    lines.push("🥩 Fresh Meat Order");
-    lines.push("");
-    lines.push(renderCart(cart));
-    if (location) {
-      const distance = calculateDistance(
-        RESTAURANT_LAT, RESTAURANT_LNG, location.latitude, location.longitude
-      );
-      const deliveryFee = calculateDeliveryFee(distance);
-      lines.push("");
-      lines.push(`📏 లొకేషన్ నుండి దూరం: ${distance.toFixed(1)} KM`);
-      lines.push(`🚚 డెలివరీ చార్జీలు: ${formatRupees(deliveryFee)} (మీట్ ధర నిర్ధారించాలి)`);
-    }
   } else if (service === "medicine") {
     lines.push("💊 మెడిసిన్ రిక్వెస్ట్ (ప్రిస్క్రిప్షన్ అందింది)");
   } else if (service === "plumbing_electrical") {
     lines.push("🔧 Home Repairs (ప్లంబింగ్ / ఎలక్ట్రికల్)");
     lines.push(`వివరాలు: ${temp.notes || "వివరాలు అందించబడ్డాయి"}`);
   } else if (service === "shifting") {
-    lines.push(`🚚 ${temp.service_name || "Home Shifting / Parcel"}`);
+    lines.push(`🚚 ${temp.service_name || "Parcel Deliveries"}`);
     lines.push(`వివరాలు: ${temp.notes || "వివరాలు అందించబడ్డాయి"}`);
   }
 
-  if (location && service !== "food" && service !== "fresh_meat") {
+  if (location && service !== "food") {
     const distance = calculateDistance(
       RESTAURANT_LAT, RESTAURANT_LNG, location.latitude, location.longitude
     );
@@ -1032,9 +951,6 @@ function renderServiceReview(user) {
     lines.push("");
     lines.push(`📏 దూరం: ${distance.toFixed(1)} KM`);
     lines.push(`🚚 అంచనా డెలివరీ చార్జీలు: ${formatRupees(deliveryFee)}`);
-    lines.push(`📍 Location: ${location.latitude}, ${location.longitude}`);
-  } else if (location && service === "fresh_meat") {
-    lines.push("");
     lines.push(`📍 Location: ${location.latitude}, ${location.longitude}`);
   }
 
@@ -1098,7 +1014,7 @@ async function initiatePaymentFlow(phone, user) {
   const temp = getTemp(user);
   const service = temp.service;
 
-  if (!["food", "fresh_meat"].includes(service)) {
+  if (service !== "food") {
     await createServiceRequest(phone, user);
     return;
   }
@@ -1109,8 +1025,7 @@ async function initiatePaymentFlow(phone, user) {
     return;
   }
 
-  const hasPendingPrice = cart.some(item => item.price_pending);
-  let foodTotal = getCartTotal(cart);
+  const foodTotal = getCartTotal(cart);
   let deliveryFee = 0;
 
   const location = getLocation(user);
@@ -1122,6 +1037,11 @@ async function initiatePaymentFlow(phone, user) {
   }
 
   const totalAmount = foodTotal + deliveryFee;
+
+  if (totalAmount <= 0) {
+    await sendText(phone, "ఆర్డర్ మొత్తం సరిగ్గా లేదు. దయచేసి కార్ట్‌ను మళ్లీ చెక్ చేయండి.");
+    return;
+  }
 
   const details = {
     service,
@@ -1136,7 +1056,7 @@ async function initiatePaymentFlow(phone, user) {
     service_name: temp.service_name || null,
     payment: {
       method: "UPI_MANUAL",
-      status: hasPendingPrice ? "PRICE_PENDING" : "PENDING",
+      status: "PENDING",
       utr_transaction_id: null,
     },
     created_at: new Date().toISOString(),
@@ -1148,53 +1068,6 @@ async function initiatePaymentFlow(phone, user) {
     const loc = details.location
       ? `https://maps.google.com/?q=${details.location.latitude},${details.location.longitude}`
       : "లొకేషన్ లేదు";
-
-    if (service === "fresh_meat" || hasPendingPrice) {
-      details.payment.status = "PRICE_PENDING";
-      const order = await saveOrder(phone, service, details, "PRICE_PENDING");
-
-      await setState(phone, "IDLE", { cart: [], temp_selection: {} });
-
-      await sendText(
-        phone,
-        `✅ మీ Fresh Meat ఆర్డర్ రిక్వెస్ట్ నమోదు అయింది.\n\n` +
-        `🧾 ఆర్డర్ నంబర్: #${order.id}\n` +
-        `🥩 మీట్ ధరను మా బృందం నిర్ధారిస్తుంది.\n` +
-        `ధర నిర్ధారించిన తర్వాత చెల్లింపు వివరాలు పంపిస్తాము.\n\n` +
-        `ధన్యవాదాలు! 🙏`
-      );
-      await sendNavigation(phone);
-
-      const itemsList = cart.map(i => `${i.name} (${i.quantity} ${i.unit})`).join(", ");
-
-      if (AVENTO_ADMIN_PHONE) {
-        await sendText(
-          AVENTO_ADMIN_PHONE,
-          `🥩 *కొత్త ఫ్రెష్ మీట్ ఆర్డర్ వచ్చింది! (#${order.id})*\n\n` +
-          `👤 కస్టమర్ వాట్సాప్: ${cleanPhone}\n` +
-          `💬 చాట్ లింక్: ${chatLink}\n` +
-          `🛒 ఐటమ్స్: ${itemsList}\n` +
-          `🚚 డెలివరీ చార్జ్: ${formatRupees(deliveryFee)}\n` +
-          `📍 లొకేషన్: ${loc}\n\n` +
-          `👉 ధర నమోదు చేయడానికి పంపండి: *price ${order.id} <AMOUNT>*`
-        );
-      }
-
-      await sendOrderEmail(
-        `🚀 కొత్త ఫ్రెష్ మీట్ ఆర్డర్ వచ్చింది! (#${order.id})`,
-        `<h2>🥩 కొత్త ఫ్రెష్ మీట్ ఆర్డర్</h2>
-         <p><b>ఫోన్ నంబర్ / వాట్సాప్:</b> <a href="${chatLink}" target="_blank">${phone} (చాట్ ఓపెన్ చేయండి)</a></p>
-         <p><b>ఐటమ్స్:</b> ${itemsList}</p>
-         <p><b>డెలివరీ చార్జీలు:</b> ${formatRupees(deliveryFee)}</p>
-         <p><b>లొకేషన్:</b> <a href="${loc}" target="_blank">Google Maps లో చూడండి</a></p>`
-      );
-      return;
-    }
-
-    if (totalAmount <= 0) {
-      await sendText(phone, "ఆర్డర్ మొత్తం సరిగ్గా లేదు. దయచేసి కార్ట్‌ను మళ్లీ చెక్ చేయండి.");
-      return;
-    }
 
     const order = await saveOrder(phone, service, details, "PENDING_PAYMENT");
     await setState(phone, "AWAITING_UTR", {
@@ -1359,64 +1232,6 @@ async function handleAdminCommand(phone, text) {
   if (!isAdmin(phone)) return false;
 
   const trimmed = String(text || "").trim();
-
-  const priceMatch = trimmed.match(/^price\s+(\S+)\s+(\d+(?:\.\d{1,2})?)$/i);
-  if (priceMatch) {
-    const orderId = priceMatch[1];
-    const amount = Number(priceMatch[2]);
-
-    if (!Number.isFinite(amount) || amount <= 0) {
-      await sendText(phone, "ధర సరిగ్గా ఇవ్వండి. ఉదాహరణ: price ORDER_ID 450");
-      return true;
-    }
-
-    try {
-      const order = await getOrderById(orderId);
-      if (!order) {
-        await sendText(phone, `ఆర్డర్ దొరకలేదు: ${orderId}`);
-        return true;
-      }
-      if (order.status !== "PRICE_PENDING") {
-        await sendText(
-          phone,
-          `ఈ ఆర్డర్ PRICE_PENDING స్థితిలో లేదు. ప్రస్తుత స్థితి: ${order.status}`
-        );
-        return true;
-      }
-
-      const details = parseOrderDetails(order.details);
-      details.total = amount;
-      details.payment = {
-        ...(details.payment || {}),
-        method: "UPI_MANUAL",
-        status: "PENDING",
-        quoted_at: new Date().toISOString(),
-        utr_transaction_id: null,
-      };
-
-      await updateOrder(orderId, {
-        details: JSON.stringify(details),
-        status: "PENDING_PAYMENT",
-      });
-
-      await setState(order.user_phone, "AWAITING_UTR", {
-        temp_selection: {
-          service: details.service || order.service_type,
-          pending_order_id: order.id,
-        },
-      });
-
-      await sendPaymentInstructions(order.user_phone, order, details);
-      await sendText(
-        phone,
-        `ధర నమోదు అయింది.\nOrder: #${order.id}\nAmount: ${formatRupees(amount)}`
-      );
-    } catch (error) {
-      console.error("Admin price command error:", error.message);
-      await sendText(phone, "ధర అప్‌డేట్ చేయలేకపోయాం. Order ID మరియు DBను చెక్ చేయండి.");
-    }
-    return true;
-  }
 
   const paidMatch = trimmed.match(/^paid\s+(\S+)$/i);
   if (paidMatch) {
@@ -1747,8 +1562,7 @@ app.post(["/webhook", "/whatsapp/webhook", "/whatsapp/webhook/"], async (req, re
       }
 
       let statusDesc = "";
-      if (st === "PRICE_PENDING") statusDesc = "🥩 మీట్ ధర నిర్ధారణ కోసం పెండింగ్‌లో ఉంది.";
-      else if (st === "PENDING_PAYMENT") statusDesc = "💳 పేమెంట్ పెండింగ్‌లో ఉంది.";
+      if (st === "PENDING_PAYMENT") statusDesc = "💳 పేమెంట్ పెండింగ్‌లో ఉంది.";
       else if (st === "PAYMENT_REVIEW") statusDesc = "🔍 పేమెంట్ వెరిఫికేషన్ జరుగుతోంది.";
       else if (st === "PREPARING" || st === "CONFIRMED") statusDesc = "👨‍🍳 హోటల్‌లో/టీమ్ వద్ద మీ ఆర్డర్ తయారవుతోంది/పరిశీలనలో ఉంది.";
       else if (st === "OUT_FOR_DELIVERY") statusDesc = "🚀 డెలివరీ బాయ్ మీ లొకేషన్ వైపు బయలుదేరాడు (Out for Delivery)!";
@@ -2005,29 +1819,6 @@ app.post(["/webhook", "/whatsapp/webhook", "/whatsapp/webhook/"], async (req, re
       return;
     }
 
-    if (command === "srv_meat") {
-      if (!isServiceAvailableNow()) {
-        await sendText(
-          phone,
-          "⚠️ *సమయం ముగిసింది!*\n\n" +
-          "Avento సేవలు ఉదయం 6:00 AM నుండి రాత్రి 9:00 PM వరకు మాత్రమే అందుబాటులో ఉంటాయి.\n\n" +
-          `దయచేసి రేపు ఉదయం మళ్లీ ప్రయత్నించండి లేదా ${AVENTO_CALL_PHONE} కి కాల్ చేయండి. ధన్యవాదాలు! 🙏`
-        );
-        await sendNavigation(phone);
-        return;
-      }
-      await startService(phone, "fresh_meat");
-      await setState(phone, "MEAT_CATEGORY", { temp_selection: { service: "fresh_meat" } });
-
-      await sendLocalImage(
-        phone,
-        serviceImage("fresh-meat.jpg"),
-        "🥩 Fresh Meat Delivery\n\n⏰ సర్వీస్ సమయం: 6:00 AM నుండి 9:00 PM వరకు.\nచికెన్, మటన్, చేపలు ఫ్రీ ఫ్రెష్ డెలివరీ."
-      );
-      await showMeatCategories(phone);
-      return;
-    }
-
     if (command === "srv_med") {
       if (!isServiceAvailableNow()) {
         await sendText(
@@ -2089,34 +1880,32 @@ app.post(["/webhook", "/whatsapp/webhook", "/whatsapp/webhook/"], async (req, re
         await sendText(
           phone,
           "⚠️ *సమయం ముగిసింది!*\n\n" +
-          "హోమ్ షిఫ్టింగ్ మరియు పార్సెల్ సేవలు ఉదయం 6:00 AM నుండి రాత్రి 9:00 PM వరకు మాత్రమే అందుబాటులో ఉంటాయి.\n\n" +
+          "పార్సెల్ డెలివరీ సేవలు ఉదయం 6:00 AM నుండి రాత్రి 9:00 PM వరకు మాత్రమే అందుబాటులో ఉంటాయి.\n\n" +
           `దయచేసి రేపు ఉదయం మళ్లీ ప్రయత్నించండి లేదా నేరుగా ${AVENTO_CALL_PHONE} కి కాల్ చేయండి. ధన్యవాదాలు! 🙏`
         );
         await sendNavigation(phone);
         return;
       }
       await startService(phone, "shifting");
+      await setState(phone, "AWAITING_SERVICE_DETAILS", {
+        temp_selection: {
+          service: "shifting",
+          service_name: "Parcel Deliveries",
+          notes: "",
+        },
+      });
 
       await sendLocalImage(
         phone,
         serviceImage("shifting-parcel.jpg"),
-        "🚚 Home Shifting / Parcel\n\n⏰ సర్వీస్ సమయం: 6:00 AM నుండి 9:00 PM వరకు.\nఇల్లు మారడం, పార్సెల్ డెలివరీ సేవల కోసం ఎంచుకోండి."
+        "🚚 Parcel Deliveries\n\n⏰ సర్వీస్ సమయం: 6:00 AM నుండి 9:00 PM వరకు.\nపార్సెల్ డెలివరీ సేవల కోసం మీ వివరాలు తెలియజేయండి."
       );
-
-      await sendList(
+      await sendText(
         phone,
-        "🚚 ఏ సర్వీస్ కావాలి?",
-        "సర్వీస్ ఎంచుకోండి",
-        [
-          {
-            title: "Shifting Services",
-            rows: [
-              { id: "shift_home", title: "Home Shifting" },
-              { id: "shift_parcel", title: "Parcel Delivery" },
-            ],
-          },
-        ]
+        "🚚 Parcel Deliveries\n\n" +
+        "దయచేసి పికప్ లొకేషన్, డ్రాప్ లొకేషన్, మరియు పార్సెల్ వివరాలు పంపండి."
       );
+      await sendNavigation(phone);
       return;
     }
 
@@ -2156,90 +1945,8 @@ app.post(["/webhook", "/whatsapp/webhook", "/whatsapp/webhook/"], async (req, re
       return;
     }
 
-    const meatCategory = getMeatCategories().find(
-      category => String(category.id) === String(command)
-    );
-    if (meatCategory) {
-      const meatItem = meatCategory.items?.[0];
-      if (!meatItem) {
-        await sendText(phone, "ఈ మీట్ కేటగిరీలో ప్రస్తుతం ఐటమ్స్ లేవు.");
-        await sendNavigation(phone);
-        return;
-      }
-
-      await setState(phone, "MEAT_QUANTITY", {
-        temp_selection: {
-          ...temp,
-          service: "fresh_meat",
-          selected_meat_id: meatItem.id,
-        },
-      });
-      await showMeatQuantities(phone, meatItem);
-      return;
-    }
-
-    const quantityMatch = String(command).match(/^qty_(\d+)_([A-Za-z0-9_-]+)$/);
-    if (quantityMatch) {
-      const quantityIndex = Number(quantityMatch[1]);
-      const meatItem = getMeatItem(quantityMatch[2]);
-      const quantityOption = (freshMeatMenu.quantities || [])[quantityIndex];
-
-      if (!meatItem || !quantityOption) {
-        await sendText(
-          phone,
-          "మీట్ ఐటమ్ లేదా పరిమాణం సరిగ్గా లేదు. మళ్లీ ఎంచుకోండి."
-        );
-        await sendNavigation(phone);
-        return;
-      }
-
-      const rawQuantity =
-        quantityOption.value ??
-        quantityOption.kg ??
-        quantityOption.quantity ??
-        quantityOption.id ??
-        quantityOption.title;
-
-      const parsedQuantity = Number(
-        String(rawQuantity).match(/\d+(?:\.\d+)?/)?.[0]
-      );
-
-      if (!Number.isFinite(parsedQuantity) || parsedQuantity <= 0) {
-        await sendText(phone, "ఈ పరిమాణాన్ని గుర్తించలేకపోయాం.");
-        return;
-      }
-
-      const titleText = String(quantityOption.title || "").toLowerCase();
-      const quantityKg =
-        /g\b|grams?/.test(titleText) && !/kg/.test(titleText)
-          ? parsedQuantity / 1000
-          : parsedQuantity;
-
-      const updatedCart = [
-        ...cart,
-        {
-          id: `${meatItem.id}_${Date.now()}`,
-          name: meatItem.name,
-          quantity: quantityKg,
-          unit: "KG",
-          price: 0,
-          price_pending: true,
-          service: "fresh_meat",
-        },
-      ];
-
-      await setState(phone, "CART", {
-        cart: updatedCart,
-        temp_selection: { ...temp, service: "fresh_meat" },
-      });
-      await showCart(phone, updatedCart);
-      return;
-    }
-
     if (command === "cart_add_more") {
-      if (temp.service === "fresh_meat") {
-        await showMeatCategories(phone);
-      } else if (temp.service === "food") {
+      if (temp.service === "food") {
         await showFoodCategories(phone, temp.hotel_name, temp.hotel_id);
       } else {
         await showMainMenu(phone);
@@ -2280,20 +1987,6 @@ app.post(["/webhook", "/whatsapp/webhook", "/whatsapp/webhook/"], async (req, re
         return;
       }
       await askForLocation(phone, user);
-      return;
-    }
-
-    if (command === "shift_home" || command === "shift_parcel") {
-      const serviceName = command === "shift_home" ? "Home Shifting" : "Parcel Delivery";
-      await setState(phone, "AWAITING_SERVICE_DETAILS", {
-        temp_selection: { service: "shifting", service_name: serviceName, notes: "" },
-      });
-      await sendText(
-        phone,
-        `🚚 ${serviceName}\n\n` +
-        `దయచేసి పికప్ లొకేషన్, డ్రాప్ లొకేషన్, వస్తువుల వివరాలు పంపండి.`
-      );
-      await sendNavigation(phone);
       return;
     }
 
