@@ -311,6 +311,12 @@ function serviceImage(filename) {
 }
 
 function isServiceAvailableNow() {
+  // 🔧 TEMP BYPASS for testing — set BYPASS_SERVICE_HOURS=true in .env
+  // Remove this block (or unset the env var) to restore normal 6 AM–9 PM IST hours.
+  if (String(process.env.BYPASS_SERVICE_HOURS || "").toLowerCase() === "true") {
+    return true;
+  }
+
   const currentHour = Number(
     new Intl.DateTimeFormat("en-US", {
       timeZone: "Asia/Kolkata",
@@ -598,8 +604,11 @@ async function goToHotels(phone) {
 async function showHotels(to) {
   await setState(to, "SELECT_HOTEL");
 
+  const available = isServiceAvailableNow();
+  console.log(`[showHotels] to=${to} service_available=${available}`);
+
   // After-hours / late-night special message
-  if (!isServiceAvailableNow()) {
+  if (!available) {
     await sendText(
       to,
       "🌙 *Avento Food Delivery ప్రస్తుతం మూసివేయబడింది.*\n\n" +
@@ -611,12 +620,16 @@ async function showHotels(to) {
     return;
   }
 
-  // Normal-flow welcome (no timing text)
-  await sendLocalImage(
-    to,
-    serviceImage("welcome.jpg"),
-    "🙏 *నమస్కారం! Avento Food Delivery కి స్వాగతం.*\n\nదయచేసి మీకు కావాల్సిన హోటల్‌ను ఎంచుకోండి."
-  );
+  // Welcome image is optional — never block the hotel list if it fails
+  try {
+    await sendLocalImage(
+      to,
+      serviceImage("welcome.jpg"),
+      "🙏 *నమస్కారం! Avento Food Delivery కి స్వాగతం.*\n\nదయచేసి మీకు కావాల్సిన హోటల్‌ను ఎంచుకోండి."
+    );
+  } catch (e) {
+    console.error("[showHotels] welcome image error (ignored):", e.message);
+  }
 
   await sendList(to, "🍽️ హోటల్ ఎంచుకోండి:", "హోటల్ ఎంచుకోండి", [
     {
@@ -1773,8 +1786,11 @@ app.get("/", (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Avento WhatsApp bot running on port ${PORT}`);
+  console.log(`Avento WhatsApp Bot running on port ${PORT}`);
   console.log(
     `Service hours (IST): 6:00 AM – 9:00 PM | Currently open: ${isServiceAvailableNow()}`
   );
+  if (String(process.env.BYPASS_SERVICE_HOURS || "").toLowerCase() === "true") {
+    console.log("⚠️  BYPASS_SERVICE_HOURS=true — service-hours check is DISABLED (testing mode).");
+  }
 });
