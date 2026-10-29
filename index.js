@@ -312,7 +312,6 @@ function serviceImage(filename) {
 
 function isServiceAvailableNow() {
   // 🔧 TEMP BYPASS for testing — set BYPASS_SERVICE_HOURS=true in .env
-  // Remove this block (or unset the env var) to restore normal 6 AM–9 PM IST hours.
   if (String(process.env.BYPASS_SERVICE_HOURS || "").toLowerCase() === "true") {
     return true;
   }
@@ -326,8 +325,6 @@ function isServiceAvailableNow() {
   );
   return currentHour >= 6 && currentHour < 21;
 }
-
-const CALL_NOTICE = `\n\n📞 *మీరు వాట్సాప్ ద్వారానే కాకుండా నేరుగా మా నంబర్ ${AVENTO_CALL_PHONE} కి కాల్ చేసి కూడా ఆర్డర్ ఇవ్వవచ్చు!*`;
 
 // ==================================================
 // WHATSAPP API
@@ -429,9 +426,10 @@ async function sendButtons(to, body, buttons) {
   });
 }
 
+// CALL_NOTICE removed — navigation is now simple text only
 async function sendNavigation(to) {
   try {
-    await sendButtons(to, `⬇️ మరిన్ని ఎంపికలు${CALL_NOTICE}`, [
+    await sendButtons(to, "⬇️ మరిన్ని ఎంపికలు", [
       { id: "nav_back", title: "⬅️ Back" },
       { id: "nav_main", title: "🏠 Main Menu" },
     ]);
@@ -605,9 +603,36 @@ async function showHotels(to) {
   await setState(to, "SELECT_HOTEL");
 
   const available = isServiceAvailableNow();
-  console.log(`[showHotels] to=${to} service_available=${available}`);
+  console.log(
+    `[showHotels] phone=${to} service_available=${available} bypass=${process.env.BYPASS_SERVICE_HOURS || "off"}`
+  );
 
-  // After-hours / late-night special message
+  // ─────────────────────────────────────────────────
+  // 1) ALWAYS SHOW WELCOME IMAGE + WELCOME MESSAGE FIRST
+  // ─────────────────────────────────────────────────
+  const welcomeText =
+    "🙏 *నమస్కారం! Avento Food Delivery కి స్వాగతం.*\n\n" +
+    "దయచేసి మీకు కావాల్సిన హోటల్‌ను ఎంచుకోండి.";
+  const welcomeImagePath = serviceImage("welcome.jpg");
+  console.log(
+    `[showHotels] welcome image path=${welcomeImagePath} exists=${fs.existsSync(welcomeImagePath)}`
+  );
+
+  try {
+    const sent = await sendLocalImage(to, welcomeImagePath, welcomeText);
+    console.log(
+      `[showHotels] welcome result: ${sent ? "image+caption sent" : "fallback text sent"}`
+    );
+  } catch (e) {
+    console.error(
+      "[showHotels] welcome send error:",
+      e.response?.data || e.message
+    );
+  }
+
+  // ─────────────────────────────────────────────────
+  // 2) THEN CHECK SERVICE HOURS
+  // ─────────────────────────────────────────────────
   if (!available) {
     await sendText(
       to,
@@ -620,17 +645,9 @@ async function showHotels(to) {
     return;
   }
 
-  // Welcome image is optional — never block the hotel list if it fails
-  try {
-    await sendLocalImage(
-      to,
-      serviceImage("welcome.jpg"),
-      "🙏 *నమస్కారం! Avento Food Delivery కి స్వాగతం.*\n\nదయచేసి మీకు కావాల్సిన హోటల్‌ను ఎంచుకోండి."
-    );
-  } catch (e) {
-    console.error("[showHotels] welcome image error (ignored):", e.message);
-  }
-
+  // ─────────────────────────────────────────────────
+  // 3) SHOW HOTEL LIST
+  // ─────────────────────────────────────────────────
   await sendList(to, "🍽️ హోటల్ ఎంచుకోండి:", "హోటల్ ఎంచుకోండి", [
     {
       title: "Available Hotels",
