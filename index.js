@@ -12,7 +12,7 @@ const { Resend } = require("resend");
 const brindavanMenu = require("./services/brindavanMenu");
 
 // ==================================================
-// FOOD PALACE MENU (with item emojis)
+// FOOD PALACE MENU (with item emojis, +₹20 on every item)
 // ==================================================
 const foodPalaceMenu = {
   categories: [
@@ -20,133 +20,133 @@ const foodPalaceMenu = {
       id: "fp_soups",
       title: "Soups",
       items: [
-        { id: "fp_s1", name: "🥗 Veg Hot & Sour Soup", price: 150 },
-        { id: "fp_s2", name: "🥗 Veg Manchow Soup", price: 150 },
-        { id: "fp_s3", name: "🍗 Chicken Hot & Sour Soup", price: 170 },
-        { id: "fp_s4", name: "🍗 Chicken Manchow Soup", price: 170 },
+        { id: "fp_s1", name: "🥗 Veg Hot & Sour Soup", price: 170 },
+        { id: "fp_s2", name: "🥗 Veg Manchow Soup", price: 170 },
+        { id: "fp_s3", name: "🍗 Chicken Hot & Sour Soup", price: 190 },
+        { id: "fp_s4", name: "🍗 Chicken Manchow Soup", price: 190 },
       ],
     },
     {
       id: "fp_curries",
       title: "Non-Veg Curries",
       items: [
-        { id: "fp_c1", name: "🥩 Mutton Roghan Josh", price: 380 },
-        { id: "fp_c2", name: "🥩 Mutton Curry", price: 380 },
-        { id: "fp_c3", name: "🥩 Kadai Mutton", price: 380 },
-        { id: "fp_c4", name: "🦐 Prawns Curry", price: 270 },
-        { id: "fp_c5", name: "🥚 Egg Masala", price: 180 },
-        { id: "fp_c6", name: "🍗 Miryali Chicken Curry (Bone)", price: 310 },
-        { id: "fp_c7", name: "🍗 Spl. Chicken Curry (Chef Special)", price: 280 },
-        { id: "fp_c8", name: "🍗 Kaju Chicken Curry (Boneless)", price: 280 },
-        { id: "fp_c9", name: "🍗 Methi Chicken Curry", price: 260 },
-        { id: "fp_c10", name: "🍗 Chicken Dhopyaza", price: 260 },
-        { id: "fp_c11", name: "🍗 Chicken Tikka Masala", price: 260 },
-        { id: "fp_c12", name: "🍗 Tawde Masala (Leg Piece)", price: 280 },
-        { id: "fp_c13", name: "🍗 Butter Chicken", price: 250 },
-        { id: "fp_c14", name: "🍗 Chicken Curry (Bone)", price: 230 },
-        { id: "fp_c15", name: "🍗 Chicken Curry (Boneless)", price: 250 },
-        { id: "fp_c16", name: "🍗 Chicken Chhatpata Curry", price: 250 },
-        { id: "fp_c17", name: "🍗 Kadai Chicken Curry", price: 230 },
-        { id: "fp_c18", name: "🍗 Kollapuri Chicken Curry", price: 230 },
-        { id: "fp_c19", name: "🍗 Hyderabadi Chicken Curry", price: 240 },
-        { id: "fp_c20", name: "🍗 Chicken Kheema Curry", price: 250 },
-        { id: "fp_c21", name: "🍗 Afghani Chicken Curry", price: 270 },
-        { id: "fp_c22", name: "🍗 Moghlai Chicken Curry", price: 250 },
-        { id: "fp_c23", name: "🍗 Punjabi Chicken Curry", price: 250 },
+        { id: "fp_c1", name: "🥩 Mutton Roghan Josh", price: 400 },
+        { id: "fp_c2", name: "🥩 Mutton Curry", price: 400 },
+        { id: "fp_c3", name: "🥩 Kadai Mutton", price: 400 },
+        { id: "fp_c4", name: "🦐 Prawns Curry", price: 290 },
+        { id: "fp_c5", name: "🥚 Egg Masala", price: 200 },
+        { id: "fp_c6", name: "🍗 Miryali Chicken Curry (Bone)", price: 330 },
+        { id: "fp_c7", name: "🍗 Spl. Chicken Curry (Chef Special)", price: 300 },
+        { id: "fp_c8", name: "🍗 Kaju Chicken Curry (Boneless)", price: 300 },
+        { id: "fp_c9", name: "🍗 Methi Chicken Curry", price: 280 },
+        { id: "fp_c10", name: "🍗 Chicken Dhopyaza", price: 280 },
+        { id: "fp_c11", name: "🍗 Chicken Tikka Masala", price: 280 },
+        { id: "fp_c12", name: "🍗 Tawde Masala (Leg Piece)", price: 300 },
+        { id: "fp_c13", name: "🍗 Butter Chicken", price: 270 },
+        { id: "fp_c14", name: "🍗 Chicken Curry (Bone)", price: 250 },
+        { id: "fp_c15", name: "🍗 Chicken Curry (Boneless)", price: 270 },
+        { id: "fp_c16", name: "🍗 Chicken Chhatpata Curry", price: 270 },
+        { id: "fp_c17", name: "🍗 Kadai Chicken Curry", price: 250 },
+        { id: "fp_c18", name: "🍗 Kollapuri Chicken Curry", price: 250 },
+        { id: "fp_c19", name: "🍗 Hyderabadi Chicken Curry", price: 260 },
+        { id: "fp_c20", name: "🍗 Chicken Kheema Curry", price: 270 },
+        { id: "fp_c21", name: "🍗 Afghani Chicken Curry", price: 290 },
+        { id: "fp_c22", name: "🍗 Moghlai Chicken Curry", price: 270 },
+        { id: "fp_c23", name: "🍗 Punjabi Chicken Curry", price: 270 },
       ],
     },
     {
       id: "fp_biryani",
       title: "Biryanis",
       items: [
-        { id: "fp_b1", name: "🍗 Chicken Dum Biryani", price: 230 },
-        { id: "fp_b2", name: "🍗 Spl. Chicken Biryani (Boneless)", price: 280 },
-        { id: "fp_b3", name: "🦐 Prawns Biryani", price: 310 },
-        { id: "fp_b4", name: "🐟 Fish Biryani (Boneless)", price: 270 },
-        { id: "fp_b5", name: "🍗 Chicken Fry Piece Biryani (Bone)", price: 270 },
-        { id: "fp_b6", name: "🍗 Chicken Lollipop Biryani", price: 280 },
-        { id: "fp_b7", name: "🥩 Mutton Fry Piece Biryani (Bone)", price: 380 },
-        { id: "fp_b8", name: "🥩 Mutton Dum Biryani", price: 380 },
-        { id: "fp_b9", name: "🍗 Hongkong Biryani (Boneless)", price: 290 },
-        { id: "fp_b10", name: "🍗 Rambo Biryani (Leg Piece)", price: 300 },
-        { id: "fp_b11", name: "🥚 Egg Biryani", price: 180 },
-        { id: "fp_b12", name: "🍗 Chicken 65 Biryani", price: 280 },
-        { id: "fp_b13", name: "🥩 Gongura Mutton Biryani", price: 400 },
-        { id: "fp_b14", name: "🍗 Tandoor Biryani", price: 300 },
-        { id: "fp_b15", name: "🧀 Paneer Biryani", price: 240 },
-        { id: "fp_b16", name: "🍄 Mushroom Biryani", price: 240 },
-        { id: "fp_b17", name: "🥜 Kaju Biryani", price: 270 },
-        { id: "fp_b18", name: "🥗 Veg Biryani", price: 200 },
+        { id: "fp_b1", name: "🍗 Chicken Dum Biryani", price: 250 },
+        { id: "fp_b2", name: "🍗 Spl. Chicken Biryani (Boneless)", price: 300 },
+        { id: "fp_b3", name: "🦐 Prawns Biryani", price: 330 },
+        { id: "fp_b4", name: "🐟 Fish Biryani (Boneless)", price: 290 },
+        { id: "fp_b5", name: "🍗 Chicken Fry Piece Biryani (Bone)", price: 290 },
+        { id: "fp_b6", name: "🍗 Chicken Lollipop Biryani", price: 300 },
+        { id: "fp_b7", name: "🥩 Mutton Fry Piece Biryani (Bone)", price: 400 },
+        { id: "fp_b8", name: "🥩 Mutton Dum Biryani", price: 400 },
+        { id: "fp_b9", name: "🍗 Hongkong Biryani (Boneless)", price: 310 },
+        { id: "fp_b10", name: "🍗 Rambo Biryani (Leg Piece)", price: 320 },
+        { id: "fp_b11", name: "🥚 Egg Biryani", price: 200 },
+        { id: "fp_b12", name: "🍗 Chicken 65 Biryani", price: 300 },
+        { id: "fp_b13", name: "🥩 Gongura Mutton Biryani", price: 420 },
+        { id: "fp_b14", name: "🍗 Tandoor Biryani", price: 320 },
+        { id: "fp_b15", name: "🧀 Paneer Biryani", price: 260 },
+        { id: "fp_b16", name: "🍄 Mushroom Biryani", price: 260 },
+        { id: "fp_b17", name: "🥜 Kaju Biryani", price: 290 },
+        { id: "fp_b18", name: "🥗 Veg Biryani", price: 220 },
       ],
     },
     {
       id: "fp_breads",
       title: "Tandoor — Breads",
       items: [
-        { id: "fp_br1", name: "🫓 Tandoori Roti", price: 55 },
-        { id: "fp_br2", name: "🫓 Butter Roti", price: 60 },
-        { id: "fp_br3", name: "🫓 Butter Naan", price: 60 },
-        { id: "fp_br4", name: "🫓 Plain Naan", price: 55 },
-        { id: "fp_br5", name: "🫓 Garlic Naan", price: 80 },
-        { id: "fp_br6", name: "🫓 Plain Kulcha", price: 60 },
-        { id: "fp_br7", name: "🫓 Butter Kulcha", price: 65 },
-        { id: "fp_br8", name: "🫓 Methi Roti", price: 65 },
-        { id: "fp_br9", name: "🫓 Kothimeera Roti", price: 60 },
-        { id: "fp_br10", name: "🫓 Pulka", price: 50 },
+        { id: "fp_br1", name: "🫓 Tandoori Roti", price: 75 },
+        { id: "fp_br2", name: "🫓 Butter Roti", price: 80 },
+        { id: "fp_br3", name: "🫓 Butter Naan", price: 80 },
+        { id: "fp_br4", name: "🫓 Plain Naan", price: 75 },
+        { id: "fp_br5", name: "🫓 Garlic Naan", price: 100 },
+        { id: "fp_br6", name: "🫓 Plain Kulcha", price: 80 },
+        { id: "fp_br7", name: "🫓 Butter Kulcha", price: 85 },
+        { id: "fp_br8", name: "🫓 Methi Roti", price: 85 },
+        { id: "fp_br9", name: "🫓 Kothimeera Roti", price: 80 },
+        { id: "fp_br10", name: "🫓 Pulka", price: 70 },
       ],
     },
     {
       id: "fp_kababs",
       title: "Tandoor — Kababs",
       items: [
-        { id: "fp_k1", name: "🍗 Tandoori Chicken (Full)", price: 469 },
-        { id: "fp_k2", name: "🍗 Tandoori Chicken (Half)", price: 269 },
-        { id: "fp_k3", name: "🍗 Chicken Tikka", price: 269 },
-        { id: "fp_k4", name: "🍗 Haryali Tikka", price: 279 },
-        { id: "fp_k5", name: "🍗 Tangdi Kabab Full (Leg Piece)", price: 279 },
-        { id: "fp_k6", name: "🍗 Malai Tikka", price: 279 },
-        { id: "fp_k7", name: "🍗 Tangdi Kabab Half (Leg Piece)", price: 169 },
+        { id: "fp_k1", name: "🍗 Tandoori Chicken (Full)", price: 489 },
+        { id: "fp_k2", name: "🍗 Tandoori Chicken (Half)", price: 289 },
+        { id: "fp_k3", name: "🍗 Chicken Tikka", price: 289 },
+        { id: "fp_k4", name: "🍗 Haryali Tikka", price: 299 },
+        { id: "fp_k5", name: "🍗 Tangdi Kabab Full (Leg Piece)", price: 299 },
+        { id: "fp_k6", name: "🍗 Malai Tikka", price: 299 },
+        { id: "fp_k7", name: "🍗 Tangdi Kabab Half (Leg Piece)", price: 189 },
       ],
     },
     {
       id: "fp_veg_fried_rice",
       title: "Veg Fried Rice",
       items: [
-        { id: "fp_vfr1", name: "🥗 Veg Fried Rice", price: 170 },
-        { id: "fp_vfr2", name: "🥗 Veg Schezwan Fried Rice", price: 180 },
-        { id: "fp_vfr3", name: "🍄 Mushroom Fried Rice", price: 200 },
-        { id: "fp_vfr4", name: "🧀 Paneer Fried Rice", price: 200 },
-        { id: "fp_vfr5", name: "🥦 Gobi Fried Rice", price: 180 },
-        { id: "fp_vfr6", name: "🥗 Mixed Veg Fried Rice", price: 200 },
-        { id: "fp_vfr7", name: "🥜 Kaju Fried Rice", price: 250 },
+        { id: "fp_vfr1", name: "🥗 Veg Fried Rice", price: 190 },
+        { id: "fp_vfr2", name: "🥗 Veg Schezwan Fried Rice", price: 200 },
+        { id: "fp_vfr3", name: "🍄 Mushroom Fried Rice", price: 220 },
+        { id: "fp_vfr4", name: "🧀 Paneer Fried Rice", price: 220 },
+        { id: "fp_vfr5", name: "🥦 Gobi Fried Rice", price: 200 },
+        { id: "fp_vfr6", name: "🥗 Mixed Veg Fried Rice", price: 220 },
+        { id: "fp_vfr7", name: "🥜 Kaju Fried Rice", price: 270 },
       ],
     },
     {
       id: "fp_nonveg_fried_rice",
       title: "Non-Veg Fried Rice",
       items: [
-        { id: "fp_nfr1", name: "🥚 Egg Fried Rice", price: 170 },
-        { id: "fp_nfr2", name: "🥚 Egg Schezwan Fried Rice", price: 180 },
-        { id: "fp_nfr3", name: "🍗 Chicken Fried Rice", price: 200 },
-        { id: "fp_nfr4", name: "🍗 Chicken Schezwan Fried Rice", price: 210 },
-        { id: "fp_nfr5", name: "🍗 Spl. Chicken Fried Rice", price: 200 },
-        { id: "fp_nfr6", name: "🦐 Prawns Fried Rice", price: 230 },
-        { id: "fp_nfr7", name: "🍗 Shagapossi Fried Rice", price: 230 },
-        { id: "fp_nfr8", name: "🍗 Saugai Fried Rice", price: 230 },
+        { id: "fp_nfr1", name: "🥚 Egg Fried Rice", price: 190 },
+        { id: "fp_nfr2", name: "🥚 Egg Schezwan Fried Rice", price: 200 },
+        { id: "fp_nfr3", name: "🍗 Chicken Fried Rice", price: 220 },
+        { id: "fp_nfr4", name: "🍗 Chicken Schezwan Fried Rice", price: 230 },
+        { id: "fp_nfr5", name: "🍗 Spl. Chicken Fried Rice", price: 220 },
+        { id: "fp_nfr6", name: "🦐 Prawns Fried Rice", price: 250 },
+        { id: "fp_nfr7", name: "🍗 Shagapossi Fried Rice", price: 250 },
+        { id: "fp_nfr8", name: "🍗 Saugai Fried Rice", price: 250 },
       ],
     },
     {
       id: "fp_desserts",
       title: "Desserts",
       items: [
-        { id: "fp_d1", name: "🍦 Vennela Ice Cream (Single Scoop)", price: 70 },
-        { id: "fp_d2", name: "🍦 Vennela Ice Cream (Double Scoop)", price: 100 },
-        { id: "fp_d3", name: "🍫 Chocolate Ice Cream (Single Scoop)", price: 80 },
-        { id: "fp_d4", name: "🍫 Chocolate Ice Cream (Double Scoop)", price: 120 },
-        { id: "fp_d5", name: "🍓 Strawberry Ice Cream (Single Scoop)", price: 70 },
-        { id: "fp_d6", name: "🍓 Strawberry Ice Cream (Double Scoop)", price: 100 },
-        { id: "fp_d7", name: "🍦 Butterscotch Ice Cream (Single Scoop)", price: 80 },
-        { id: "fp_d8", name: "🍦 Butterscotch Ice Cream (Double Scoop)", price: 120 },
+        { id: "fp_d1", name: "🍦 Vennela Ice Cream (Single Scoop)", price: 90 },
+        { id: "fp_d2", name: "🍦 Vennela Ice Cream (Double Scoop)", price: 120 },
+        { id: "fp_d3", name: "🍫 Chocolate Ice Cream (Single Scoop)", price: 100 },
+        { id: "fp_d4", name: "🍫 Chocolate Ice Cream (Double Scoop)", price: 140 },
+        { id: "fp_d5", name: "🍓 Strawberry Ice Cream (Single Scoop)", price: 90 },
+        { id: "fp_d6", name: "🍓 Strawberry Ice Cream (Double Scoop)", price: 120 },
+        { id: "fp_d7", name: "🍦 Butterscotch Ice Cream (Single Scoop)", price: 100 },
+        { id: "fp_d8", name: "🍦 Butterscotch Ice Cream (Double Scoop)", price: 140 },
       ],
     },
   ],
@@ -311,7 +311,6 @@ function serviceImage(filename) {
 }
 
 function isServiceAvailableNow() {
-  // 🔧 TEMP BYPASS for testing — set BYPASS_SERVICE_HOURS=true in .env
   if (String(process.env.BYPASS_SERVICE_HOURS || "").toLowerCase() === "true") {
     return true;
   }
@@ -426,7 +425,6 @@ async function sendButtons(to, body, buttons) {
   });
 }
 
-// CALL_NOTICE removed — navigation is now simple text only
 async function sendNavigation(to) {
   try {
     await sendButtons(to, "⬇️ మరిన్ని ఎంపికలు", [
@@ -607,9 +605,6 @@ async function showHotels(to) {
     `[showHotels] phone=${to} service_available=${available} bypass=${process.env.BYPASS_SERVICE_HOURS || "off"}`
   );
 
-  // ─────────────────────────────────────────────────
-  // 1) ALWAYS SHOW WELCOME IMAGE + WELCOME MESSAGE FIRST
-  // ─────────────────────────────────────────────────
   const welcomeText =
     "🙏 *నమస్కారం! Avento Food Delivery కి స్వాగతం.*\n\n" +
     "దయచేసి మీకు కావాల్సిన హోటల్‌ను ఎంచుకోండి.";
@@ -630,9 +625,6 @@ async function showHotels(to) {
     );
   }
 
-  // ─────────────────────────────────────────────────
-  // 2) THEN CHECK SERVICE HOURS
-  // ─────────────────────────────────────────────────
   if (!available) {
     await sendText(
       to,
@@ -645,9 +637,6 @@ async function showHotels(to) {
     return;
   }
 
-  // ─────────────────────────────────────────────────
-  // 3) SHOW HOTEL LIST
-  // ─────────────────────────────────────────────────
   await sendList(to, "🍽️ హోటల్ ఎంచుకోండి:", "హోటల్ ఎంచుకోండి", [
     {
       title: "Available Hotels",
@@ -880,10 +869,6 @@ async function sendPaymentInstructions(phone, order, details) {
 
   // ============================================================
   // DIRECT UPI DEEP LINK — HIDDEN FROM USER (kept for future use)
-  // ------------------------------------------------------------
-  // PhonePe direct-link issues వల్ల ఇది ప్రస్తుతం customer కి
-  // చూపించడం లేదు. Future లో మళ్లీ enable చేయాలంటే, కింద ఉన్న
-  // line ని uncomment చేసి, caption లో add చేయండి.
   // ============================================================
   // const upiDeepLink = `upi://pay?pa=${AVENTO_UPI_ID}&pn=${encodeURIComponent(
   //   AVENTO_UPI_NAME
