@@ -678,7 +678,16 @@ async function showFoodCategories(to, hotelName, hotelId = null) {
   const categories = getFoodCategories(hotelId);
   await setState(to, "FOOD_CATEGORY");
 
-  // అనవసరమైన separate message రాకుండా నావిగేషన్ ఆప్షన్‌లను లిస్ట్ లోపలికి చేర్చాము
+  // హోటల్ సెలెక్ట్ చేయగానే ఆయా హోటల్ ఇమేజ్ పంపే లాజిక్ (ఉదాహరణకు food_palace.jpg లేదా brindavanam.jpg)
+  const hotelImagePath = serviceImage(`${hotelId}.jpg`);
+  const hotelCaption = `🏨 *${hotelName || "Restaurant"}*\n\nPlease select the food category you would like below.`;
+
+  try {
+    await sendLocalImage(to, hotelImagePath, hotelCaption);
+  } catch (e) {
+    console.error("Hotel image send error:", e.message);
+  }
+
   const rows = categories.slice(0, 8).map(category => ({
     id: `cat_${category.id}`,
     title: category.title || category.name || category.id,
@@ -689,7 +698,7 @@ async function showFoodCategories(to, hotelName, hotelId = null) {
 
   await sendList(
     to,
-    `🏨 ${hotelName || "Food Place Restaurant"}\n\n🍽️ Please select the food category you would like.`,
+    `🍽️ Please select a category:`,
     "Food Categories",
     [
       {
