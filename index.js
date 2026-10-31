@@ -12,7 +12,7 @@ const { Resend } = require("resend");
 const brindavanMenu = require("./services/brindavanMenu");
 
 // ==================================================
-// FOOD PALACE MENU (with item emojis, +₹20 on every item)
+// FOOD PALACE RESTAURANT MENU (+₹20 on every item)
 // ==================================================
 const foodPalaceMenu = {
   categories: [
@@ -153,7 +153,7 @@ const foodPalaceMenu = {
 };
 
 // ==================================================
-// HOTEL → MENU REGISTRY (Brindavan & Food Palace only)
+// RESTAURANT REGISTRY (Brindavan & Food Place Restaurant only)
 // ==================================================
 const restaurantMenus = {
   brindavanam: brindavanMenu,
@@ -161,8 +161,8 @@ const restaurantMenus = {
 };
 
 const HOTEL_LIST = [
-  { id: "brindavanam", name: "Brindavanam", description: "Brindavanam Restaurant" },
-  { id: "food_palace", name: "Food Palace Restaurant", description: "Food Palace Restaurant" },
+  { id: "brindavanam", name: "Brindavan", description: "Brindavan Restaurant" },
+  { id: "food_palace", name: "Food Place Restaurant", description: "Food Place Restaurant" },
 ];
 
 const app = express();
@@ -695,7 +695,7 @@ async function showFoodCategories(to, hotelName, hotelId = null) {
   await setState(to, "FOOD_CATEGORY");
   await sendList(
     to,
-    `🏨 ${hotelName || "Food Palace Restaurant"}\n\n🍽️ Please select the food category you would like.`,
+    `🏨 ${hotelName || "Food Place Restaurant"}\n\n🍽️ Please select the food category you would like.`,
     "Food Categories",
     [
       {
@@ -869,8 +869,6 @@ async function sendPaymentInstructions(phone, order, details) {
 
   // ============================================================
   // DIRECT UPI DEEP LINK — HIDDEN FROM USER (kept for future use)
-  // To re-enable later, uncomment the two lines below and add
-  // ${upiDeepLink} back into the caption.
   // ============================================================
   // const upiDeepLink = `upi://pay?pa=${AVENTO_UPI_ID}&pn=${encodeURIComponent(
   //   AVENTO_UPI_NAME
@@ -879,7 +877,7 @@ async function sendPaymentInstructions(phone, order, details) {
   const caption =
     `💳 *PAYMENT REQUIRED* 💳\n\n` +
     `🧾 Order Number: *#${order.id}*\n` +
-    `🏨 Hotel: ${details.hotel_name || "Food Palace Restaurant"}\n\n` +
+    `🏨 Hotel: ${details.hotel_name || "Food Place Restaurant"}\n\n` +
     `🍽️ Food Total: ${formatRupees(details.food_total)}\n` +
     `🚚 Delivery Charges: ${formatRupees(details.delivery_fee)}\n` +
     `━━━━━━━━━━━━━━━━━━━\n` +
@@ -969,7 +967,7 @@ async function initiatePaymentFlow(phone, user) {
           body: {
             text:
               `🍽️ *New food order received! (#${order.id})*\n\n` +
-              `🏨 Hotel: ${details.hotel_name || "Food Palace Restaurant"}\n` +
+              `🏨 Hotel: ${details.hotel_name || "Food Place Restaurant"}\n` +
               `👤 Customer WhatsApp: ${cleanPhone}\n` +
               `💬 Chat link: ${chatLink}\n` +
               `🛒 Items: ${itemsList}\n` +
@@ -998,7 +996,7 @@ async function initiatePaymentFlow(phone, user) {
 
     await sendOrderEmail(
       `🚀 New food order received! (#${order.id})`,
-      `<h2>🍽️ New Food Order (${details.hotel_name || "Food Palace Restaurant"})</h2>
+      `<h2>🍽️ New Food Order (${details.hotel_name || "Food Place Restaurant"})</h2>
        <p><b>Phone / WhatsApp:</b> <a href="${chatLink}" target="_blank">${phone} (Open chat)</a></p>
        <p><b>Items:</b> ${itemsList}</p>
        <p><b>Food Total:</b> ${formatRupees(foodTotal)}</p>
@@ -1311,7 +1309,7 @@ app.post(["/webhook", "/whatsapp/webhook", "/whatsapp/webhook/"], async (req, re
     // ==========================================
     if (
       command === "track_order" ||
-      ["track order", "where is my order", "order status", "ఆర్డర్ ఎక్కడుంది"].includes(normalized)
+      ["track order", "where is my order", "order status"].includes(normalized)
     ) {
       const latestOrder = await getLatestCustomerOrder(phone);
 
@@ -1368,7 +1366,7 @@ app.post(["/webhook", "/whatsapp/webhook", "/whatsapp/webhook/"], async (req, re
     if (
       command === "nav_main" ||
       command === "srv_food" ||
-      ["hi", "hello", "menu", "start", "హాయ్", "మెనూ", "hi avento services", "hi avento"].includes(normalized)
+      ["hi", "hello", "menu", "start", "hi avento services", "hi avento"].includes(normalized)
     ) {
       await goToHotels(phone);
       return;
@@ -1376,7 +1374,7 @@ app.post(["/webhook", "/whatsapp/webhook", "/whatsapp/webhook/"], async (req, re
 
     if (
       command === "nav_back" ||
-      ["back", "వెనక్కి", "వెనుకకు"].includes(normalized)
+      ["back"].includes(normalized)
     ) {
       await goBack(phone, user);
       return;
@@ -1510,7 +1508,7 @@ app.post(["/webhook", "/whatsapp/webhook", "/whatsapp/webhook/"], async (req, re
       return;
     }
 
-    if (command === "order_cancel" || ["cancel", "రద్దు"].includes(normalized)) {
+    if (command === "order_cancel" || ["cancel"].includes(normalized)) {
       await setState(phone, "IDLE", {
         cart: [],
         location: null,
@@ -1582,7 +1580,7 @@ app.post(["/webhook", "/whatsapp/webhook", "/whatsapp/webhook/"], async (req, re
     }
 
     // ==========================================
-    // MENU BROWSING
+    // MENU BROWSING (Direct items list on category click)
     // ==========================================
     const pageMatch = String(command).match(/^foodpage_(.+)_(\d+)$/);
     if (pageMatch) {
@@ -1732,7 +1730,7 @@ async function showReviewAndConfirm(phone, user) {
 
   const summary =
     `🧾 *Your Order Summary*\n\n` +
-    `🏨 Hotel: ${temp.hotel_name || "Food Palace Restaurant"}\n\n` +
+    `🏨 Hotel: ${temp.hotel_name || "Food Place Restaurant"}\n\n` +
     `${renderCart(cart)}\n\n` +
     `📏 Distance: ${distanceKm.toFixed(1)} KM\n` +
     `🚚 Delivery Charges: ${formatRupees(deliveryFee)}\n` +
@@ -1762,6 +1760,9 @@ app.get("/health", (req, res) => {
 });
 
 app.get("/", (req, res) => {
+  res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+  res.setHeader("Pragma", "no-cache");
+  res.setHeader("Expires", "0");
   res.send(`
     <!DOCTYPE html>
     <html lang="en">
