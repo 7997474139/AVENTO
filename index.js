@@ -12,7 +12,7 @@ const { Resend } = require("resend");
 const brindavanMenu = require("./services/brindavanMenu");
 
 // ==================================================
-// FOOD PALACE RESTAURANT MENU (+₹20 on every item)
+// FOOD PALACE MENU (with item emojis, +₹20 on every item)
 // ==================================================
 const foodPalaceMenu = {
   categories: [
@@ -153,7 +153,7 @@ const foodPalaceMenu = {
 };
 
 // ==================================================
-// RESTAURANT REGISTRY (Brindavan & Food Place Restaurant only)
+// HOTEL → MENU REGISTRY (Brindavan & Food Palace only)
 // ==================================================
 const restaurantMenus = {
   brindavanam: brindavanMenu,
@@ -161,8 +161,8 @@ const restaurantMenus = {
 };
 
 const HOTEL_LIST = [
-  { id: "brindavanam", name: "Brindavan", description: "Brindavan Restaurant" },
-  { id: "food_palace", name: "Food Place Restaurant", description: "Food Place Restaurant" },
+  { id: "brindavanam", name: "Brindavanam", description: "Brindavanam Restaurant" },
+  { id: "food_palace", name: "Food Palace Restaurant", description: "Food Palace Restaurant" },
 ];
 
 const app = express();
@@ -662,7 +662,6 @@ async function goBack(phone, user) {
       await goToHotels(phone);
       return;
     case "FOOD_ITEMS":
-    case "FOOD_ITEM_TEXT":
       await showFoodCategories(phone, temp.hotel_name, temp.hotel_id);
       return;
     case "CART":
@@ -696,7 +695,7 @@ async function showFoodCategories(to, hotelName, hotelId = null) {
   await setState(to, "FOOD_CATEGORY");
   await sendList(
     to,
-    `🏨 ${hotelName || "Food Place Restaurant"}\n\n🍽️ Please select the food category you would like.`,
+    `🏨 ${hotelName || "Food Palace Restaurant"}\n\n🍽️ Please select the food category you would like.`,
     "Food Categories",
     [
       {
@@ -721,30 +720,32 @@ async function showFoodItems(to, categoryId, page = 0, hotelId = null) {
   }
 
   const items = category.items || [];
-  const pageSize = 10;
+  const pageSize = 7;
   const totalPages = Math.max(1, Math.ceil(items.length / pageSize));
   page = Math.max(0, Math.min(page, totalPages - 1));
 
   const visibleItems = items.slice(page * pageSize, page * pageSize + pageSize);
 
-  const lines = [];
-  lines.push(`🍽️ *${category.title || category.name || category.id}*`);
-  if (totalPages > 1) lines.push(`📄 Page ${page + 1} of ${totalPages}`);
-  lines.push("");
+  const rows = visibleItems.map(item => ({
+    id: `item_${item.id}`,
+    title: item.name,
+    description: formatRupees(item.price),
+  }));
 
-  visibleItems.forEach((item, idx) => {
-    lines.push(`*${idx + 1}.* ${item.name} — ${formatRupees(item.price)}`);
-  });
+  if (page > 0) {
+    rows.push({
+      id: `foodpage_${categoryId}_${page - 1}`,
+      title: "Previous Page",
+    });
+  }
+  if (page < totalPages - 1) {
+    rows.push({
+      id: `foodpage_${categoryId}_${page + 1}`,
+      title: "Next Page",
+    });
+  }
 
-  lines.push("");
-  lines.push("👉 *Reply with the item number* to add it to your cart.");
-
-  const hints = [];
-  if (page > 0) hints.push("*P* for previous page");
-  if (page < totalPages - 1) hints.push("*N* for next page");
-  if (hints.length) lines.push(`➡️ Type ${hints.join(" or ")}.`);
-
-  await setState(to, "FOOD_ITEM_TEXT", {
+  await setState(to, "FOOD_ITEMS", {
     temp_selection: {
       ...getTemp(await getOrCreateUser(to)),
       current_category_id: categoryId,
@@ -753,8 +754,12 @@ async function showFoodItems(to, categoryId, page = 0, hotelId = null) {
     },
   });
 
-  await sendText(to, lines.join("\n"));
-  await sendNavigation(to);
+  await sendList(
+    to,
+    `${category.title || category.name || category.id}\nPage ${page + 1}/${totalPages}\n\nPlease select the item you would like.`,
+    "Food Items",
+    [{ title: "Available Items", rows }]
+  );
 }
 
 // ==================================================
@@ -864,6 +869,8 @@ async function sendPaymentInstructions(phone, order, details) {
 
   // ============================================================
   // DIRECT UPI DEEP LINK — HIDDEN FROM USER (kept for future use)
+  // To re-enable later, uncomment the two lines below and add
+  // ${upiDeepLink} back into the caption.
   // ============================================================
   // const upiDeepLink = `upi://pay?pa=${AVENTO_UPI_ID}&pn=${encodeURIComponent(
   //   AVENTO_UPI_NAME
@@ -872,7 +879,7 @@ async function sendPaymentInstructions(phone, order, details) {
   const caption =
     `💳 *PAYMENT REQUIRED* 💳\n\n` +
     `🧾 Order Number: *#${order.id}*\n` +
-    `🏨 Hotel: ${details.hotel_name || "Food Place Restaurant"}\n\n` +
+    `🏨 Hotel: ${details.hotel_name || "Food Palace Restaurant"}\n\n` +
     `🍽️ Food Total: ${formatRupees(details.food_total)}\n` +
     `🚚 Delivery Charges: ${formatRupees(details.delivery_fee)}\n` +
     `━━━━━━━━━━━━━━━━━━━\n` +
@@ -962,7 +969,7 @@ async function initiatePaymentFlow(phone, user) {
           body: {
             text:
               `🍽️ *New food order received! (#${order.id})*\n\n` +
-              `🏨 Hotel: ${details.hotel_name || "Food Place Restaurant"}\n` +
+              `🏨 Hotel: ${details.hotel_name || "Food Palace Restaurant"}\n` +
               `👤 Customer WhatsApp: ${cleanPhone}\n` +
               `💬 Chat link: ${chatLink}\n` +
               `🛒 Items: ${itemsList}\n` +
@@ -991,7 +998,7 @@ async function initiatePaymentFlow(phone, user) {
 
     await sendOrderEmail(
       `🚀 New food order received! (#${order.id})`,
-      `<h2>🍽️ New Food Order (${details.hotel_name || "Food Place Restaurant"})</h2>
+      `<h2>🍽️ New Food Order (${details.hotel_name || "Food Palace Restaurant"})</h2>
        <p><b>Phone / WhatsApp:</b> <a href="${chatLink}" target="_blank">${phone} (Open chat)</a></p>
        <p><b>Items:</b> ${itemsList}</p>
        <p><b>Food Total:</b> ${formatRupees(foodTotal)}</p>
@@ -1304,7 +1311,7 @@ app.post(["/webhook", "/whatsapp/webhook", "/whatsapp/webhook/"], async (req, re
     // ==========================================
     if (
       command === "track_order" ||
-      ["track order", "where is my order", "order status"].includes(normalized)
+      ["track order", "where is my order", "order status", "ఆర్డర్ ఎక్కడుంది"].includes(normalized)
     ) {
       const latestOrder = await getLatestCustomerOrder(phone);
 
@@ -1361,7 +1368,7 @@ app.post(["/webhook", "/whatsapp/webhook", "/whatsapp/webhook/"], async (req, re
     if (
       command === "nav_main" ||
       command === "srv_food" ||
-      ["hi", "hello", "menu", "start", "hi avento services", "hi avento"].includes(normalized)
+      ["hi", "hello", "menu", "start", "హాయ్", "మెనూ", "hi avento services", "hi avento"].includes(normalized)
     ) {
       await goToHotels(phone);
       return;
@@ -1369,7 +1376,7 @@ app.post(["/webhook", "/whatsapp/webhook", "/whatsapp/webhook/"], async (req, re
 
     if (
       command === "nav_back" ||
-      ["back"].includes(normalized)
+      ["back", "వెనక్కి", "వెనుకకు"].includes(normalized)
     ) {
       await goBack(phone, user);
       return;
@@ -1503,7 +1510,7 @@ app.post(["/webhook", "/whatsapp/webhook", "/whatsapp/webhook/"], async (req, re
       return;
     }
 
-    if (command === "order_cancel" || ["cancel"].includes(normalized)) {
+    if (command === "order_cancel" || ["cancel", "రద్దు"].includes(normalized)) {
       await setState(phone, "IDLE", {
         cart: [],
         location: null,
@@ -1551,86 +1558,6 @@ app.post(["/webhook", "/whatsapp/webhook", "/whatsapp/webhook/"], async (req, re
     }
 
     // ==========================================
-    // FOOD ITEM SELECTION (text-based, no popup)
-    // ==========================================
-    if (user.current_state === "FOOD_ITEM_TEXT" && type === "text") {
-      const reply = text.trim().toLowerCase();
-      const categoryId = temp.current_category_id;
-      const currentPage = Number(temp.current_page || 0);
-
-      const category = getFoodCategories(temp.hotel_id).find(
-        c => String(c.id) === String(categoryId)
-      );
-
-      if (!category) {
-        await sendText(phone, "This category was not found. Please start again from the menu.");
-        await goToHotels(phone);
-        return;
-      }
-
-      const items = category.items || [];
-      const pageSize = 10;
-      const totalPages = Math.max(1, Math.ceil(items.length / pageSize));
-      const itemsOnPage = Math.min(
-        pageSize,
-        Math.max(0, items.length - currentPage * pageSize)
-      );
-
-      // Pagination: next page
-      if (reply === "n" || reply === "next") {
-        if (currentPage < totalPages - 1) {
-          await showFoodItems(phone, categoryId, currentPage + 1, temp.hotel_id);
-        } else {
-          await sendText(phone, "You are already on the last page.");
-          await sendNavigation(phone);
-        }
-        return;
-      }
-
-      // Pagination: previous page
-      if (reply === "p" || reply === "prev" || reply === "previous") {
-        if (currentPage > 0) {
-          await showFoodItems(phone, categoryId, currentPage - 1, temp.hotel_id);
-        } else {
-          await sendText(phone, "You are already on the first page.");
-          await sendNavigation(phone);
-        }
-        return;
-      }
-
-      // Item selection by number
-      const num = Number(reply);
-      if (Number.isInteger(num) && num >= 1 && num <= itemsOnPage) {
-        const itemIndex = currentPage * pageSize + (num - 1);
-        const item = items[itemIndex];
-
-        const updatedCart = [
-          ...cart,
-          {
-            id: item.id,
-            name: item.name,
-            price: Number(item.price || 0),
-            quantity: 1,
-            unit: "item",
-            service: "food",
-          },
-        ];
-
-        await setState(phone, "CART", { cart: updatedCart });
-        await showCart(phone, updatedCart, temp.hotel_name);
-        return;
-      }
-
-      await sendText(
-        phone,
-        `Please reply with a valid item number (1–${itemsOnPage}) from the list above.\n` +
-          (totalPages > 1 ? `Or type *N* for next page / *P* for previous page.` : "")
-      );
-      await sendNavigation(phone);
-      return;
-    }
-
-    // ==========================================
     // HOTEL SELECTION
     // ==========================================
     const hotelMatch = String(command).match(/^hotel_(.+)$/);
@@ -1655,7 +1582,7 @@ app.post(["/webhook", "/whatsapp/webhook", "/whatsapp/webhook/"], async (req, re
     }
 
     // ==========================================
-    // MENU BROWSING (Direct items list on category click)
+    // MENU BROWSING
     // ==========================================
     const pageMatch = String(command).match(/^foodpage_(.+)_(\d+)$/);
     if (pageMatch) {
@@ -1805,7 +1732,7 @@ async function showReviewAndConfirm(phone, user) {
 
   const summary =
     `🧾 *Your Order Summary*\n\n` +
-    `🏨 Hotel: ${temp.hotel_name || "Food Place Restaurant"}\n\n` +
+    `🏨 Hotel: ${temp.hotel_name || "Food Palace Restaurant"}\n\n` +
     `${renderCart(cart)}\n\n` +
     `📏 Distance: ${distanceKm.toFixed(1)} KM\n` +
     `🚚 Delivery Charges: ${formatRupees(deliveryFee)}\n` +
@@ -1835,9 +1762,6 @@ app.get("/health", (req, res) => {
 });
 
 app.get("/", (req, res) => {
-  res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
-  res.setHeader("Pragma", "no-cache");
-  res.setHeader("Expires", "0");
   res.send(`
     <!DOCTYPE html>
     <html lang="en">
