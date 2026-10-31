@@ -662,6 +662,7 @@ async function goBack(phone, user) {
       await goToHotels(phone);
       return;
     case "FOOD_ITEMS":
+    case "FOOD_ITEM_TEXT":
       await showFoodCategories(phone, temp.hotel_name, temp.hotel_id);
       return;
     case "CART":
@@ -720,32 +721,30 @@ async function showFoodItems(to, categoryId, page = 0, hotelId = null) {
   }
 
   const items = category.items || [];
-  const pageSize = 7;
+  const pageSize = 10;
   const totalPages = Math.max(1, Math.ceil(items.length / pageSize));
   page = Math.max(0, Math.min(page, totalPages - 1));
 
   const visibleItems = items.slice(page * pageSize, page * pageSize + pageSize);
 
-  const rows = visibleItems.map(item => ({
-    id: `item_${item.id}`,
-    title: item.name,
-    description: formatRupees(item.price),
-  }));
+  const lines = [];
+  lines.push(`🍽️ *${category.title || category.name || category.id}*`);
+  if (totalPages > 1) lines.push(`📄 Page ${page + 1} of ${totalPages}`);
+  lines.push("");
 
-  if (page > 0) {
-    rows.push({
-      id: `foodpage_${categoryId}_${page - 1}`,
-      title: "Previous Page",
-    });
-  }
-  if (page < totalPages - 1) {
-    rows.push({
-      id: `foodpage_${categoryId}_${page + 1}`,
-      title: "Next Page",
-    });
-  }
+  visibleItems.forEach((item, idx) => {
+    lines.push(`*${idx + 1}.* ${item.name} — ${formatRupees(item.price)}`);
+  });
 
-  await setState(to, "FOOD_ITEMS", {
+  lines.push("");
+  lines.push("👉 *Reply with the item number* to add it to your cart.");
+
+  const hints = [];
+  if (page > 0) hints.push("*P* for previous page");
+  if (page < totalPages - 1) hints.push("*N* for next page");
+  if (hints.length) lines.push(`➡️ Type ${hints.join(" or ")}.`);
+
+  await setState(to, "FOOD_ITEM_TEXT", {
     temp_selection: {
       ...getTemp(await getOrCreateUser(to)),
       current_category_id: categoryId,
@@ -754,12 +753,8 @@ async function showFoodItems(to, categoryId, page = 0, hotelId = null) {
     },
   });
 
-  await sendList(
-    to,
-    `${category.title || category.name || category.id}\nPage ${page + 1}/${totalPages}\n\nPlease select the item you would like.`,
-    "Food Items",
-    [{ title: "Available Items", rows }]
-  );
+  await sendText(to, lines.join("\n"));
+  await sendNavigation(to);
 }
 
 // ==================================================
@@ -1550,6 +1545,86 @@ app.post(["/webhook", "/whatsapp/webhook", "/whatsapp/webhook/"], async (req, re
         "📍 *Your location is very important!*\n\n" +
           "To help our service team reach you quickly and confirm delivery, your location is essential.\n\n" +
           "Instead of typing, please use WhatsApp's *Share Location* to share your location. 🙏"
+      );
+      await sendNavigation(phone);
+      return;
+    }
+
+    // ==========================================
+    // FOOD ITEM SELECTION (text-based, no popup)
+    // ==========================================
+    if (user.current_state === "FOOD_ITEM_TEXT" && type === "text") {
+      const reply = text.trim().toLowerCase();
+      const categoryId = temp.current_category_id;
+      const currentPage = Number(temp.current_page || 0);
+
+      const category = getFoodCategories(temp.hotel_id).find(
+        c => String(c.id) === String(categoryId)
+      );
+
+      if (!category) {
+        await sendText(phone, "This category was not found. Please start again from the menu.");
+        await goToHotels(phone);
+        return;
+      }
+
+      const items = category.items || [];
+      const pageSize = 10;
+      const totalPages = Math.max(1, Math.ceil(items.length / pageSize));
+      const itemsOnPage = Math.min(
+        pageSize,
+        Math.max(0, items.length - currentPage * pageSize)
+      );
+
+      // Pagination: next page
+      if (reply === "n" || reply === "next") {
+        if (currentPage < totalPages - 1) {
+          await showFoodItems(phone, categoryId, currentPage + 1, temp.hotel_id);
+        } else {
+          await sendText(phone, "You are already on the last page.");
+          await sendNavigation(phone);
+        }
+        return;
+      }
+
+      // Pagination: previous page
+      if (reply === "p" || reply === "prev" || reply === "previous") {
+        if (currentPage > 0) {
+          await showFoodItems(phone, categoryId, currentPage - 1, temp.hotel_id);
+        } else {
+          await sendText(phone, "You are already on the first page.");
+          await sendNavigation(phone);
+        }
+        return;
+      }
+
+      // Item selection by number
+      const num = Number(reply);
+      if (Number.isInteger(num) && num >= 1 && num <= itemsOnPage) {
+        const itemIndex = currentPage * pageSize + (num - 1);
+        const item = items[itemIndex];
+
+        const updatedCart = [
+          ...cart,
+          {
+            id: item.id,
+            name: item.name,
+            price: Number(item.price || 0),
+            quantity: 1,
+            unit: "item",
+            service: "food",
+          },
+        ];
+
+        await setState(phone, "CART", { cart: updatedCart });
+        await showCart(phone, updatedCart, temp.hotel_name);
+        return;
+      }
+
+      await sendText(
+        phone,
+        `Please reply with a valid item number (1–${itemsOnPage}) from the list above.\n` +
+          (totalPages > 1 ? `Or type *N* for next page / *P* for previous page.` : "")
       );
       await sendNavigation(phone);
       return;
