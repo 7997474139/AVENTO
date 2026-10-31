@@ -425,17 +425,6 @@ async function sendButtons(to, body, buttons) {
   });
 }
 
-async function sendNavigation(to) {
-  try {
-    await sendButtons(to, "⬇️ More options", [
-      { id: "nav_back", title: "⬅️ Back" },
-      { id: "nav_main", title: "🏠 Main Menu" },
-    ]);
-  } catch (error) {
-    console.error("Navigation buttons error:", error.message);
-  }
-}
-
 async function sendList(to, body, buttonText, sections) {
   const safeSections = sections
     .map(section => ({
@@ -455,7 +444,6 @@ async function sendList(to, body, buttonText, sections) {
       to,
       "No options are available right now. Please try again in a moment."
     );
-    await sendNavigation(to);
     return;
   }
 
@@ -471,8 +459,6 @@ async function sendList(to, body, buttonText, sections) {
       },
     },
   });
-
-  await sendNavigation(to);
 }
 
 // ==================================================
@@ -633,7 +619,6 @@ async function showHotels(to) {
         `⚡ *If it is urgent*, please call this number: *${AVENTO_CALL_PHONE}*\n\n` +
         `Thank you! 🙏`
     );
-    await sendNavigation(to);
     return;
   }
 
@@ -679,7 +664,6 @@ async function goBack(phone, user) {
         phone,
         "Your payment reference is still pending. You can complete verification by sending the UTR or a payment photo."
       );
-      await sendNavigation(phone);
       return;
     default:
       await goToHotels(phone);
@@ -693,6 +677,16 @@ async function goBack(phone, user) {
 async function showFoodCategories(to, hotelName, hotelId = null) {
   const categories = getFoodCategories(hotelId);
   await setState(to, "FOOD_CATEGORY");
+
+  // అనవసరమైన separate message రాకుండా నావిగేషన్ ఆప్షన్‌లను లిస్ట్ లోపలికి చేర్చాము
+  const rows = categories.slice(0, 8).map(category => ({
+    id: `cat_${category.id}`,
+    title: category.title || category.name || category.id,
+  }));
+
+  rows.push({ id: "nav_back", title: "⬅️ Back to Hotels" });
+  rows.push({ id: "nav_main", title: "🏠 Main Menu" });
+
   await sendList(
     to,
     `🏨 ${hotelName || "Food Place Restaurant"}\n\n🍽️ Please select the food category you would like.`,
@@ -700,10 +694,7 @@ async function showFoodCategories(to, hotelName, hotelId = null) {
     [
       {
         title: "Restaurant Menu",
-        rows: categories.slice(0, 10).map(category => ({
-          id: `cat_${category.id}`,
-          title: category.title || category.name || category.id,
-        })),
+        rows,
       },
     ]
   );
@@ -715,12 +706,11 @@ async function showFoodItems(to, categoryId, page = 0, hotelId = null) {
   );
   if (!category) {
     await sendText(to, "This category was not found.");
-    await sendNavigation(to);
     return;
   }
 
   const items = category.items || [];
-  const pageSize = 7;
+  const pageSize = 6;
   const totalPages = Math.max(1, Math.ceil(items.length / pageSize));
   page = Math.max(0, Math.min(page, totalPages - 1));
 
@@ -735,15 +725,18 @@ async function showFoodItems(to, categoryId, page = 0, hotelId = null) {
   if (page > 0) {
     rows.push({
       id: `foodpage_${categoryId}_${page - 1}`,
-      title: "Previous Page",
+      title: "⬅️ Previous Page",
     });
   }
   if (page < totalPages - 1) {
     rows.push({
       id: `foodpage_${categoryId}_${page + 1}`,
-      title: "Next Page",
+      title: "➡️ Next Page",
     });
   }
+
+  rows.push({ id: "nav_back", title: "⬅️ Back to Categories" });
+  rows.push({ id: "nav_main", title: "🏠 Main Menu" });
 
   await setState(to, "FOOD_ITEMS", {
     temp_selection: {
@@ -803,9 +796,10 @@ async function showCart(to, cart, hotelName) {
             title: "Cart Actions",
             rows: [
               { id: "cart_add_more", title: "➕ Add more items" },
-              { id: "cart_back", title: "⬅️ Back" },
               { id: "cart_remove", title: "🗑️ Remove item" },
               { id: "cart_checkout", title: "✅ Confirm order" },
+              { id: "nav_back", title: "⬅️ Back to Menu" },
+              { id: "nav_main", title: "🏠 Main Menu" },
             ],
           },
         ],
@@ -817,16 +811,18 @@ async function showCart(to, cart, hotelName) {
 async function showRemoveItems(to, cart) {
   if (!cart.length) {
     await sendText(to, "Your cart is empty.");
-    await sendNavigation(to);
     return;
   }
+  const rows = cart.slice(0, 8).map((item, index) => ({
+    id: `remove_${index}`,
+    title: `${index + 1}. ${item.name}`,
+  }));
+  rows.push({ id: "cart_checkout", title: "⬅️ Back to Cart" });
+
   await sendList(to, "Please select the item to remove.", "Remove Item", [
     {
       title: "Cart Items",
-      rows: cart.slice(0, 10).map((item, index) => ({
-        id: `remove_${index}`,
-        title: `${index + 1}. ${item.name}`,
-      })),
+      rows,
     },
   ]);
 }
@@ -844,7 +840,6 @@ async function askForLocation(phone, user) {
     "📍 Please share your location.\n\n" +
       "This is required to calculate delivery charges and for the delivery boy to reach you."
   );
-  await sendNavigation(phone);
 }
 
 async function sendPaymentInstructions(phone, order, details) {
@@ -866,13 +861,6 @@ async function sendPaymentInstructions(phone, order, details) {
   }
 
   const qrPath = serviceImage("payment-qr.png");
-
-  // ============================================================
-  // DIRECT UPI DEEP LINK — HIDDEN FROM USER (kept for future use)
-  // ============================================================
-  // const upiDeepLink = `upi://pay?pa=${AVENTO_UPI_ID}&pn=${encodeURIComponent(
-  //   AVENTO_UPI_NAME
-  // )}&am=${amount}&cu=INR`;
 
   const caption =
     `💳 *PAYMENT REQUIRED* 💳\n\n` +
@@ -898,7 +886,6 @@ async function initiatePaymentFlow(phone, user) {
 
   if (!cart.length) {
     await sendText(phone, "Your cart is empty. Please select items first.");
-    await sendNavigation(phone);
     return;
   }
 
@@ -952,7 +939,6 @@ async function initiatePaymentFlow(phone, user) {
     });
 
     await sendPaymentInstructions(phone, order, details);
-    await sendNavigation(phone);
 
     const itemsList = cart
       .map(i => `${i.name} (Qty: ${i.quantity})`)
@@ -1315,7 +1301,6 @@ app.post(["/webhook", "/whatsapp/webhook", "/whatsapp/webhook/"], async (req, re
 
       if (!latestOrder) {
         await sendText(phone, "No active orders were found for your number.");
-        await sendNavigation(phone);
         return;
       }
 
@@ -1326,7 +1311,6 @@ app.post(["/webhook", "/whatsapp/webhook", "/whatsapp/webhook/"], async (req, re
           phone,
           `📦 Order Number #${latestOrder.id} is already complete (Status: ${st}).\n\nTo place a new order, please send 'Hi' or 'Menu'.`
         );
-        await sendNavigation(phone);
         return;
       }
 
@@ -1528,7 +1512,6 @@ app.post(["/webhook", "/whatsapp/webhook", "/whatsapp/webhook/"], async (req, re
           phone,
           "Please enter the order process first and send your location when asked."
         );
-        await sendNavigation(phone);
         return;
       }
 
@@ -1551,7 +1534,6 @@ app.post(["/webhook", "/whatsapp/webhook", "/whatsapp/webhook/"], async (req, re
           "To help our service team reach you quickly and confirm delivery, your location is essential.\n\n" +
           "Instead of typing, please use WhatsApp's *Share Location* to share your location. 🙏"
       );
-      await sendNavigation(phone);
       return;
     }
 
@@ -1563,7 +1545,6 @@ app.post(["/webhook", "/whatsapp/webhook", "/whatsapp/webhook/"], async (req, re
       const hotel = HOTEL_LIST.find(h => h.id === hotelMatch[1]);
       if (!hotel) {
         await sendText(phone, "Hotel not found.");
-        await sendNavigation(phone);
         return;
       }
 
@@ -1597,7 +1578,6 @@ app.post(["/webhook", "/whatsapp/webhook", "/whatsapp/webhook/"], async (req, re
       const item = getFoodItem(String(command).slice(5), temp.hotel_id);
       if (!item) {
         await sendText(phone, "This item was not found.");
-        await sendNavigation(phone);
         return;
       }
 
@@ -1626,11 +1606,6 @@ app.post(["/webhook", "/whatsapp/webhook", "/whatsapp/webhook/"], async (req, re
       return;
     }
 
-    if (command === "cart_back") {
-      await showFoodCategories(phone, temp.hotel_name, temp.hotel_id);
-      return;
-    }
-
     if (command === "cart_remove") {
       await showRemoveItems(phone, cart);
       return;
@@ -1640,7 +1615,6 @@ app.post(["/webhook", "/whatsapp/webhook", "/whatsapp/webhook/"], async (req, re
       const index = Number(String(command).slice(7));
       if (!Number.isInteger(index) || index < 0 || index >= cart.length) {
         await sendText(phone, "Invalid item to remove.");
-        await sendNavigation(phone);
         return;
       }
 
@@ -1649,7 +1623,7 @@ app.post(["/webhook", "/whatsapp/webhook", "/whatsapp/webhook/"], async (req, re
 
       if (!updatedCart.length) {
         await sendText(phone, "Your cart is now empty.");
-        await sendNavigation(phone);
+        await showFoodCategories(phone, temp.hotel_name, temp.hotel_id);
         return;
       }
 
@@ -1660,7 +1634,6 @@ app.post(["/webhook", "/whatsapp/webhook", "/whatsapp/webhook/"], async (req, re
     if (command === "cart_checkout") {
       if (!cart.length) {
         await sendText(phone, "Your cart is empty.");
-        await sendNavigation(phone);
         return;
       }
       await askForLocation(phone, user);
@@ -1676,7 +1649,6 @@ app.post(["/webhook", "/whatsapp/webhook", "/whatsapp/webhook/"], async (req, re
           phone,
           "Your order is not currently in review state. Please go to Main Menu and start again."
         );
-        await sendNavigation(phone);
         return;
       }
       await initiatePaymentFlow(phone, user);
@@ -1689,15 +1661,13 @@ app.post(["/webhook", "/whatsapp/webhook", "/whatsapp/webhook/"], async (req, re
     if (type === "text") {
       await sendText(
         phone,
-        "Sorry, I did not understand your selection.\n\nTap the Main Menu button below or send 'menu' to return to the main menu."
+        "Sorry, I did not understand your selection.\n\nSend 'menu' to return to the main menu."
       );
-      await sendNavigation(phone);
     } else if (type !== "interactive") {
       await sendText(
         phone,
         "📎 We cannot process this type of message. Please use text, a list option, or select from the menu."
       );
-      await sendNavigation(phone);
     }
   } catch (error) {
     console.error("Webhook error:", error.response?.data || error.message);
