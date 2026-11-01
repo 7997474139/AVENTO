@@ -310,6 +310,7 @@ function serviceImage(filename) {
   return path.join(__dirname, "assets", filename);
 }
 
+// 6:00 AM నుండి 12:00 AM (రాత్రి 12) వరకు టైమింగ్స్ సెట్ చేయబడ్డాయి
 function isServiceAvailableNow() {
   if (String(process.env.BYPASS_SERVICE_HOURS || "").toLowerCase() === "true") {
     return true;
@@ -322,7 +323,7 @@ function isServiceAvailableNow() {
       hourCycle: "h23",
     }).format(new Date())
   );
-  return currentHour >= 6 && currentHour < 21;
+  return currentHour >= 6 && currentHour < 24;
 }
 
 // ==================================================
@@ -678,7 +679,6 @@ async function showFoodCategories(to, hotelName, hotelId = null) {
   const categories = getFoodCategories(hotelId);
   await setState(to, "FOOD_CATEGORY");
 
-  // హోటల్ సెలెక్ట్ చేయగానే ఆయా హోటల్ ఇమేజ్ పంపే లాజిక్ (ఉదాహరణకు food_palace.jpg లేదా brindavanam.jpg)
   const hotelImagePath = serviceImage(`${hotelId}.jpg`);
   const hotelCaption = `🏨 *${hotelName || "Restaurant"}*\n\nPlease select the food category you would like below.`;
 
@@ -1570,7 +1570,7 @@ app.post(["/webhook", "/whatsapp/webhook", "/whatsapp/webhook/"], async (req, re
     }
 
     // ==========================================
-    // MENU BROWSING (Direct items list on category click)
+    // MENU BROWSING
     // ==========================================
     const pageMatch = String(command).match(/^foodpage_(.+)_(\d+)$/);
     if (pageMatch) {
@@ -1684,7 +1684,7 @@ app.post(["/webhook", "/whatsapp/webhook", "/whatsapp/webhook/"], async (req, re
 });
 
 // ==================================================
-// REVIEW & CONFIRM (after location is shared)
+// REVIEW & CONFIRM
 // ==================================================
 async function showReviewAndConfirm(phone, user) {
   const temp = getTemp(user);
@@ -1753,7 +1753,7 @@ app.get("/", (req, res) => {
             body { font-family: Arial, sans-serif; background-color: #f4f6f8; text-align: center; padding: 50px 20px; }
             .card { background: white; max-width: 400px; margin: 0 auto; padding: 30px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
             h2 { color: #075e54; margin-bottom: 10px; }
-            p { color: #333; font-size: 16px; line-height: 1.5; margin-bottom: 25px; }
+            p { color: #333; font-size: 16px; line-align: 1.5; margin-bottom: 25px; }
             .btn { display: inline-block; background-color: #25d366; color: white; padding: 12px 25px; font-size: 18px; font-weight: bold; text-decoration: none; border-radius: 30px; box-shadow: 0 4px 6px rgba(37, 211, 102, 0.3); }
             .btn:hover { background-color: #1ebe5d; }
         </style>
@@ -1772,7 +1772,7 @@ app.get("/", (req, res) => {
 app.listen(PORT, () => {
   console.log(`Avento WhatsApp Bot running on port ${PORT}`);
   console.log(
-    `Service hours (IST): 6:00 AM – 9:00 PM | Currently open: ${isServiceAvailableNow()}`
+    `Service hours (IST): 6:00 AM – 12:00 AM | Currently open: ${isServiceAvailableNow()}`
   );
   if (String(process.env.BYPASS_SERVICE_HOURS || "").toLowerCase() === "true") {
     console.log("⚠️  BYPASS_SERVICE_HOURS=true — service-hours check is DISABLED (testing mode).");
