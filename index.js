@@ -1772,7 +1772,7 @@ app.get("/", (req, res) => {
 app.listen(PORT, () => {
   console.log(`Avento WhatsApp Bot running on port ${PORT}`);
   console.log(
-    `Service hours (IST): 6:00 AM – 12:00 AM | Currently open: ${isServiceAvailableNow()}`
+    `Service hours (IST): 6:00 AM – 12:00 PM | Currently open: ${isServiceAvailableNow()}`
   );
   if (String(process.env.BYPASS_SERVICE_HOURS || "").toLowerCase() === "true") {
     console.log("⚠️  BYPASS_SERVICE_HOURS=true — service-hours check is DISABLED (testing mode).");
