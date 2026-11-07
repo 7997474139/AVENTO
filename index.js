@@ -12,7 +12,7 @@ const { Resend } = require("resend");
 const brindavanMenu = require("./services/brindavanMenu");
 
 // ==================================================
-// FOOD PLACE RESTAURANT MENU (+₹20 added to every item price)
+// FOOD PLACE RESTAURANT MENU (PDF Menu + ₹50 added)
 // ==================================================
 const foodPalaceMenu = {
   categories: [
@@ -86,7 +86,7 @@ const foodPalaceMenu = {
         { id: "fp_vc1", name: "🥗 Veg Kheema Curry", price: 250 },
         { id: "fp_vc2", name: "🥗 Mixed Veg Curry", price: 240 },
         { id: "fp_vc3", name: "🥗 Kadai Veg Curry", price: 240 },
-        { id: "fp_vc4", name: "🥗 Veg Kollapuri Curry", price: 240 },
+        { id: "fp_vc4", name: "🥗 Veg Kolhapuri Curry", price: 240 },
         { id: "fp_vc5", name: "🍄 Mushroom Masala", price: 250 },
         { id: "fp_vc6", name: "🧀 Paneer Butter Masala", price: 330 },
         { id: "fp_vc7", name: "🧀 Kadai Paneer Curry", price: 260 },
@@ -121,9 +121,9 @@ const foodPalaceMenu = {
         { id: "fp_c13", name: "🍗 Butter Chicken", price: 270 },
         { id: "fp_c14", name: "🍗 Chicken Curry (Bone)", price: 250 },
         { id: "fp_c15", name: "🍗 Chicken Curry (Boneless)", price: 270 },
-        { id: "fp_c16", name: "🍗 Chicken Chhatpata Curry", price: 270 },
+        { id: "fp_c16", name: "🍗 Chicken Chatpata Curry", price: 270 },
         { id: "fp_c17", name: "🍗 Kadai Chicken Curry", price: 250 },
-        { id: "fp_c18", name: "🍗 Kollapuri Chicken Curry", price: 250 },
+        { id: "fp_c18", name: "🍗 Kolhapuri Chicken Curry", price: 250 },
         { id: "fp_c19", name: "🍗 Hyderabadi Chicken Curry", price: 260 },
         { id: "fp_c20", name: "🍗 Chicken Kheema Curry", price: 270 },
         { id: "fp_c21", name: "🍗 Afghani Chicken Curry", price: 290 },
@@ -202,7 +202,7 @@ const foodPalaceMenu = {
         { id: "fp_nfr5", name: "🍗 Spl. Chicken Fried Rice", price: 220 },
         { id: "fp_nfr6", name: "🦐 Prawns Fried Rice", price: 250 },
         { id: "fp_nfr7", name: "🍗 Shagapossi Fried Rice", price: 250 },
-        { id: "fp_nfr8", name: "🍗 Saugai FriedRice", price: 250 },
+        { id: "fp_nfr8", name: "🍗 Saugai Fried Rice", price: 250 },
       ],
     },
     {
@@ -219,6 +219,22 @@ const foodPalaceMenu = {
         { id: "fp_d8", name: "🍦 Butterscotch Ice Cream (Double Scoop)", price: 140 },
       ],
     },
+    {
+      id: "fp_beverages",
+      title: "Beverages",
+      items: [
+        { id: "fp_bev1", name: "💧 Water Bottle", price: 70 },
+        { id: "fp_bev2", name: "🥤 Coke", price: 70 },
+        { id: "fp_bev3", name: "🥤 Thums Up", price: 70 },
+        { id: "fp_bev4", name: "🥤 Sprite", price: 70 },
+        { id: "fp_bev5", name: "🥛 Ice Butter Milk", price: 80 },
+        { id: "fp_bev6", name: "🥛 Lassi", price: 90 },
+        { id: "fp_bev7", name: "🍫 Chocolate Milk Shake", price: 129 },
+        { id: "fp_bev8", name: "🥛 Vennela Milk Shake", price: 129 },
+        { id: "fp_bev9", name: "🥛 Butterscotch Milk Shake", price: 129 },
+        { id: "fp_bev10", name: "🍓 Strawberry Milk Shake", price: 129 },
+      ],
+    },
   ],
 };
 
@@ -226,11 +242,6 @@ const restaurantMenus = {
   brindavanam: brindavanMenu,
   food_palace: foodPalaceMenu,
 };
-
-const HOTEL_LIST = [
-  { id: "brindavanam", name: "Brindavan", description: "Brindavan Restaurant" },
-  { id: "food_palace", name: "Food Place Restaurant", description: "Food Place Restaurant" },
-];
 
 const app = express();
 app.use(express.json({ limit: "10mb" }));
@@ -275,7 +286,9 @@ async function sendOrderEmail(subject, htmlContent) {
   }
 }
 
-// Helpers & Delivery Fee Calculation (Railway Kodur Rules)
+// ==================================================
+// DISTANCE & DELIVERY FEE RULES (Railway Kodur)
+// ==================================================
 const RESTAURANT_LAT = 13.951505;
 const RESTAURANT_LNG = 79.356579;
 
@@ -290,10 +303,6 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
 function calculateDeliveryFee(distanceInKm) {
   if (distanceInKm <= 2) return 40; 
   return Math.round(40 + (distanceInKm - 2) * 15); 
-}
-
-function formatRupees(amount) {
-  return `₹${Number(amount || 0).toLocaleString("en-IN", { maximumFractionDigits: 2 })}`;
 }
 
 function normalize(value = "") {
@@ -362,17 +371,6 @@ async function sendLocalImage(phone, filePath, caption = "") {
     if (caption) await sendText(phone, caption);
     return false;
   }
-}
-
-async function sendButtons(to, body, buttons) {
-  return sendWhatsApp({
-    to, type: "interactive",
-    interactive: {
-      type: "button",
-      body: { text: body },
-      action: { buttons: buttons.slice(0, 3).map(b => ({ type: "reply", reply: { id: b.id, title: b.title.slice(0, 20) } })) },
-    },
-  });
 }
 
 async function getOrCreateUser(phone) {
@@ -458,30 +456,32 @@ app.post(["/webhook", "/whatsapp/webhook", "/whatsapp/webhook/"], async (req, re
     const user = await getOrCreateUser(phone);
     const temp = getTemp(user);
 
-    // 1. వెబ్‌సైట్ నుండి ఆర్డర్ రాగానే లొకేషన్ అడగడం
-    if (text.includes("New Food Order") || text.includes("Food Place") || text.includes("Brindavan")) {
+    // 1. వెబ్‌సైట్ నుండి ఆర్డర్ రాగానే: ప్రైసెస్ చూపకుండా కేవలం న్యూ ఆర్డర్ అని పంపి, లొకేషన్ అడగడం
+    if (text.includes("New Food Order") || text.includes("Food Palace") || text.includes("Brindavan")) {
       await setState(phone, "AWAITING_LOCATION", {
         temp_selection: { purpose: "CHECKOUT", web_order_summary: text, service: "food" }
       });
+      
+      // కస్టమర్‌కి కేవలం ఆర్డర్ అందినట్లు చెప్పి లొకేషన్ అడగడం
       await sendText(
         phone,
-        "📍 *మీ వెబ్‌సైట్ ఆర్డర్ వివరాలు అందినవి!*\n\n" +
-        "డెలివరీ ఛార్జీలను లెక్కించి టోటల్ అమౌంట్ పంపడానికి దయచేసి వాట్సాప్‌లో మీ *Share Location* ఆప్షన్ ద్వారా లొకేషన్ పంపండి. 🙏"
+        "📍 *మీ వెబ్‌సైట్ ఆర్డర్ స్వీకరించబడింది!*\n\n" +
+        "డెలివరీ ఛార్జీలు మరియు టోటల్ అమౌంట్ లెక్కించడానికి దయచేసి వాట్సాప్‌లో మీ *Share Location* ఆప్షన్ ద్వారా లొకేషన్ పంపండి. 🙏"
       );
       return;
     }
 
-    // 2. లొకేషన్ కాకుండా టెక్స్ట్ పంపిస్తే వార్నింగ్ ఇవ్వడం
+    // 2. లొకేషన్ రాకుండా టెక్స్ట్ పంపిస్తే వార్నింగ్ ఇవ్వడం
     if (user.current_state === "AWAITING_LOCATION" && type === "text") {
       await sendText(
         phone,
         "📍 *దయచేసి మీ లొకేషన్ షేర్ చేయండి!*\n\n" +
-        "టెర్మ్స్ లేదా మెసేజ్‌లు పంపకండి. కింద వాట్సాప్ అటాచ్‌మెంట్ (📎 లేదా ➕) ఐకాన్ నొక్కి, అందులో **'Location'** సెలెక్ట్ చేసి మీ లైవ్/కరెంట్ లొకేషన్‌ను పంపితేనే డెలివరీ ఛార్జీలు ఖరారు అవుతాయి. 🙏"
+        "టెర్మ్స్ లేదా మెసేజ్‌లు పంపకండి. కింద వాట్సాప్ అటాచ్‌మెంట్ (📎 లేదా ➕) ఐకాన్ నొక్కి, అందులో **'Location'** సెలెక్ట్ చేసి మీ లైవ్/కరెంట్ లొకేషన్‌ను పంపితేనే ఆర్డర్ కన్ఫర్మ్ అవుతుంది. 🙏"
       );
       return;
     }
 
-    // 3. లొకేషన్ అందిన తర్వాత దూరం లెక్కించి, వెబ్‌సైట్ టెక్స్ట్ నుండి ఒరిజినల్ ఫుడ్ టోటల్ తీసుకుని టోటల్ అమౌంట్ కట్టడం
+    // 3. లొకేషన్ అందిన తర్వాత: డిస్టెన్స్ లెక్కించి, హోటల్ పేరు, ఐటమ్స్, టోటల్ ప్రైస్, లొకేషన్ డిస్టెన్స్‌తో ఆర్డర్ కన్ఫర్మ్ చేసి పేమెంట్ వివరాలు పంపడం
     if (type === "location" && message.location) {
       if (user.current_state !== "AWAITING_LOCATION") {
         await sendText(phone, "Please send your location when asked during checkout.");
@@ -493,14 +493,14 @@ app.post(["/webhook", "/whatsapp/webhook", "/whatsapp/webhook/"], async (req, re
       const distance = calculateDistance(RESTAURANT_LAT, RESTAURANT_LNG, location.latitude, location.longitude);
       const deliveryFee = calculateDeliveryFee(distance);
       
-      // వెబ్‌సైట్ నుండి వచ్చిన ఆర్డర్ టెక్స్ట్ (web_order_summary) నుండి "Food Total: ₹275" లాంటి అమౌంట్‌ని డైనమిక్‌గా ఎక్స్‌ట్రాక్ట్ చేయడం
+      // వెబ్‌సైట్ నుండి వచ్చిన టెక్స్ట్ (web_order_summary) నుండి ఫుడ్ టోటల్ అమౌంట్‌ను డైనమిక్‌గా ఎక్స్‌ట్రాక్ట్ చేయడం
       let foodTotal = 0;
       const summaryText = temp.web_order_summary || "";
       const match = summaryText.match(/Food Total:\s*₹?(\d+(\.\d+)?)/i);
       if (match) {
         foodTotal = parseFloat(match[1]);
       } else {
-        foodTotal = 0; // fallback
+        foodTotal = 0;
       }
 
       const totalAmount = foodTotal + deliveryFee;
@@ -522,8 +522,8 @@ app.post(["/webhook", "/whatsapp/webhook", "/whatsapp/webhook/"], async (req, re
 
       const qrPath = serviceImage("payment-qr.png");
       const caption = 
-        `💳 *PAYMENT SUMMARY* 💳\n\n` +
-        `🧾 Order Number: *#${order.id}*\n` +
+        `✅ *ORDER CONFIRMED!* (#${order.id})\n\n` +
+        `${temp.web_order_summary || ""}\n` +
         `📏 Distance: ${distance.toFixed(1)} KM\n` +
         `🚚 Delivery Charges: ₹${deliveryFee} (${distance <= 2 ? 'Flat ₹40 for 2km' : '₹40 + ₹15/km'})\n` +
         `💰 *Total Payable: ₹${totalAmount}*\n\n` +
@@ -538,7 +538,7 @@ app.post(["/webhook", "/whatsapp/webhook", "/whatsapp/webhook/"], async (req, re
       const chatLink = `https://wa.me/${cleanPhone}`;
       const mapLink = `https://maps.google.com/?q=${location.latitude},${location.longitude}`;
 
-      // అడ్మిన్ వాట్సాప్‌కి నోటిఫికేషన్ పంపడం
+      // అడ్మిన్ పర్సనల్ వాట్సాప్‌కి "ఆర్డర్ కన్ఫర్మ్" అని నోటిఫికేషన్ పంపడం (పేరు, ఫోటోలు లేకుండా జస్ట్ ఆర్డర్ వివరాలు & స్క్రీన్ షాట్ అడిగేలా)
       if (AVENTO_ADMIN_PHONE) {
         await sendWhatsApp({
           to: AVENTO_ADMIN_PHONE,
@@ -547,12 +547,13 @@ app.post(["/webhook", "/whatsapp/webhook", "/whatsapp/webhook/"], async (req, re
             type: "button",
             body: {
               text:
-                `🍽️ *New Confirmed Order! (#${order.id})*\n\n` +
-                `👤 Customer: ${phone}\n` +
+                `🔔 *New Order Confirmed! (#${order.id})*\n\n` +
+                `👤 Customer WhatsApp: ${phone}\n` +
                 `💬 Chat: ${chatLink}\n` +
                 `📏 Distance: ${distance.toFixed(1)} km | Delivery: ₹${deliveryFee}\n` +
                 `💰 Total: ₹${totalAmount}\n` +
-                `📍 Map: ${mapLink}`,
+                `📍 Map: ${mapLink}\n\n` +
+                `⏳ కస్టమర్ పేమెంట్ స్క్రీన్ షాట్ / UTR పంపడానికి వేచి ఉంది.`,
             },
             action: {
               buttons: [
@@ -580,7 +581,7 @@ app.post(["/webhook", "/whatsapp/webhook", "/whatsapp/webhook/"], async (req, re
       return;
     }
 
-    // 4. UTR / Payment Screenshot Handling
+    // 4. UTR / Payment Screenshot Handling (కస్టమర్ పంపిన స్క్రీన్ షాట్ లేదా UTR ని అడ్మిన్‌కి ఫార్వార్డ్ చేయడం)
     if (user.current_state === "AWAITING_UTR") {
       let orderId = temp.pending_order_id;
       if (!orderId) {
@@ -599,7 +600,22 @@ app.post(["/webhook", "/whatsapp/webhook", "/whatsapp/webhook/"], async (req, re
       await updateOrder(orderId, { details: JSON.stringify(details), status: "PAYMENT_REVIEW" });
       await setState(phone, "IDLE", { cart: [], temp_selection: {} });
 
+      // కస్టమర్‌కి రిప్లై
       await sendText(phone, `✅ మీ UTR / స్క్రీన్ షాట్ అందినది.\n🧾 Order #${order.id}\nమా టీమ్ పరిశీలించి త్వరలో ఆర్డర్ కన్ఫర్మ్ చేస్తుంది. 🙏`);
+
+      // అడ్మిన్ పర్సనల్ వాట్సాప్‌కి కస్టమర్ పంపిన స్క్రీన్ షాట్ / UTR ని ఫార్వార్డ్ చేయడం
+      if (AVENTO_ADMIN_PHONE) {
+        if (type === "image" && imageMediaId) {
+          await sendWhatsApp({
+            to: AVENTO_ADMIN_PHONE,
+            type: "image",
+            image: { id: imageMediaId, caption: `📸 Payment Screenshot received from Customer (${phone}) for Order #${order.id}` }
+          });
+        } else {
+          await sendText(AVENTO_ADMIN_PHONE, `📸 Payment UTR received from Customer (${phone}) for Order #${order.id}:\n*${text}*`);
+        }
+      }
+
       return;
     }
 
