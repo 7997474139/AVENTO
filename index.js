@@ -458,18 +458,30 @@ app.post(["/webhook", "/whatsapp/webhook", "/whatsapp/webhook/"], async (req, re
     const user = await getOrCreateUser(phone);
     const temp = getTemp(user);
 
-    if (text.includes("New Food Order") || text.includes("Food Palace Restaurant") || text.includes("Brindavan")) {
+    // 1. వెబ్‌సైట్ నుండి ఆర్డర్ రాగానే లొకేషన్ అడగడం (లొకేషన్ పంపిన తర్వాతే ఆర్డర్ కన్ఫర్మ్ అవ్వాలి)
+    if (text.includes("New Food Order") || text.includes("Food Place") || text.includes("Brindavan")) {
       await setState(phone, "AWAITING_LOCATION", {
         temp_selection: { purpose: "CHECKOUT", web_order_summary: text, service: "food" }
       });
       await sendText(
         phone,
-        "📍 *మీ వెబ్‌సైట్ ఆర్డర్ స్వీకరించబడింది!*\n\n" +
+        "📍 *మీ వెబ్‌సైట్ ఆర్డర్ వివరాలు అందినవి!*\n\n" +
         "డెలివరీ ఛార్జీలను లెక్కించి టోటల్ అమౌంట్ పంపడానికి దయచేసి వాట్సాప్‌లో మీ *Share Location* ఆప్షన్ ద్వారా లొకేషన్ పంపండి. 🙏"
       );
       return;
     }
 
+    // 2. లొకేషన్ రాకుండా టెక్స్ట్ పంపిస్తే వార్నింగ్ ఇవ్వడం
+    if (user.current_state === "AWAITING_LOCATION" && type === "text") {
+      await sendText(
+        phone,
+        "📍 *దయచేసి మీ లొకేషన్ షేర్ చేయండి!*\n\n" +
+        "టెర్మ్స్ లేదా మెసేజ్‌లు పంపకండి. కింద వాట్సాప్ అటాచ్‌మెంట్ (📎 లేదా ➕) ఐకాన్ నొక్కి, అందులో **'Location'** సెలెక్ట్ చేసి మీ లైవ్/కరెంట్ లొకేషన్‌ను పంపితేనే డెలివరీ ఛార్జీలు ఖరారు అవుతాయి. 🙏"
+      );
+      return;
+    }
+
+    // 3. లొకేషన్ అందిన తర్వాత దూరం లెక్కించి, ఆర్డర్ కన్ఫర్మ్ చేసి, అడ్మిన్‌కి ఈమెయిల్ & వాట్సాప్ అలర్ట్ పంపి, కస్టమర్‌కి పేమెంట్ వివరాలు ఇవ్వడం
     if (type === "location" && message.location) {
       if (user.current_state !== "AWAITING_LOCATION") {
         await sendText(phone, "Please send your location when asked during checkout.");
@@ -517,6 +529,7 @@ app.post(["/webhook", "/whatsapp/webhook", "/whatsapp/webhook/"], async (req, re
       const chatLink = `https://wa.me/${cleanPhone}`;
       const mapLink = `https://maps.google.com/?q=${location.latitude},${location.longitude}`;
 
+      // అడ్మిన్ వాట్సాప్‌కి నోటిఫికేషన్ పంపడం
       if (AVENTO_ADMIN_PHONE) {
         await sendWhatsApp({
           to: AVENTO_ADMIN_PHONE,
@@ -525,7 +538,7 @@ app.post(["/webhook", "/whatsapp/webhook", "/whatsapp/webhook/"], async (req, re
             type: "button",
             body: {
               text:
-                `🍽️ *New Web Order Received! (#${order.id})*\n\n` +
+                `🍽️ *New Confirmed Order! (#${order.id})*\n\n` +
                 `👤 Customer: ${phone}\n` +
                 `💬 Chat: ${chatLink}\n` +
                 `📏 Distance: ${distance.toFixed(1)} km | Delivery: ₹${deliveryFee}\n` +
@@ -543,9 +556,11 @@ app.post(["/webhook", "/whatsapp/webhook", "/whatsapp/webhook/"], async (req, re
         });
       }
 
+      // అడ్మిన్ ఈమెయిల్‌కి నోటిఫికేషన్ పంపడం
       await sendOrderEmail(
-        `🚀 New Web Order Received! (#${order.id})`,
-        `<h2>🍽️ New Food Order (Railway Kodur)</h2>
+        `🚀 New Confirmed Food Order! (#${order.id})`,
+        `<h2>🍽️ New Food Order Confirmed (Railway Kodur)</h2>
+         <p><b>Order ID:</b> #${order.id}</p>
          <p><b>Customer WhatsApp:</b> <a href="${chatLink}" target="_blank">${phone}</a></p>
          <p><b>Distance:</b> ${distance.toFixed(1)} km</p>
          <p><b>Delivery Fee:</b> ₹${deliveryFee}</p>
@@ -556,15 +571,7 @@ app.post(["/webhook", "/whatsapp/webhook", "/whatsapp/webhook/"], async (req, re
       return;
     }
 
-    if (user.current_state === "AWAITING_LOCATION" && type === "text") {
-      await sendText(
-        phone,
-        "📍 *దయచేసి మీ లొకేషన్ షేర్ చేయండి!*\n\n" +
-        "టెర్మ్స్ లేదా మెసేజ్‌లు పంపకండి. కింద వాట్సాప్ అటాచ్‌మెంట్ (📎 లేదా ➕) ఐకాన్ నొక్కి, అందులో **'Location'** సెలెక్ట్ చేసి మీ లైవ్/కరెంట్ లొకేషన్‌ను పంపితేనే డెలివరీ ఛార్జీలు ఖరారు అవుతాయి. 🙏"
-      );
-      return;
-    }
-
+    // 4. UTR / Payment Screenshot Handling
     if (user.current_state === "AWAITING_UTR") {
       let orderId = temp.pending_order_id;
       if (!orderId) {
@@ -587,6 +594,7 @@ app.post(["/webhook", "/whatsapp/webhook", "/whatsapp/webhook/"], async (req, re
       return;
     }
 
+    // 5. Welcome Message with Custom Domain Link
     if (["hi", "hello", "menu", "start"].includes(normalized)) {
       const welcomeText = 
         "🙏 *Namaste! Welcome to Avento Services.*\n\n" +

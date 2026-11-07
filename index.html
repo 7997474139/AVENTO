@@ -12,7 +12,7 @@
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
   </style>
 </head>
-<body class="bg-gray-100 text-gray-800 pb-28">
+<body class="bg-gray-50 text-gray-800 pb-28">
 
   <!-- Header -->
   <header class="bg-emerald-700 text-white p-4 sticky top-0 z-40 shadow-md">
@@ -30,21 +30,21 @@
   </header>
 
   <!-- Main Container -->
-  <main class="max-w-md mx-auto px-4 pt-3">
+  <main class="max-w-md mx-auto px-4 pt-4">
     
-    <!-- Restaurant Selector Tabs -->
-    <div class="grid grid-cols-2 gap-2 mb-4">
-      <button onclick="switchRestaurant('food_palace')" id="tab-food_palace" class="p-3 rounded-xl font-bold text-xs flex items-center gap-2 transition bg-emerald-700 text-white shadow-sm">
-        <img src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=100&auto=format&fit=crop&q=80" class="w-8 h-8 rounded-lg object-cover">
+    <!-- Restaurant Selector Tabs (Swiggy/Zomato Style) -->
+    <div class="grid grid-cols-2 gap-3 mb-4">
+      <button onclick="switchRestaurant('food_palace')" id="tab-food_palace" class="p-3 rounded-2xl font-bold text-xs flex items-center gap-3 transition bg-emerald-700 text-white shadow-md">
+        <img src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=100&auto=format&fit=crop&q=80" class="w-10 h-10 rounded-xl object-cover">
         <div class="text-left">
-          <p class="leading-tight">Food Place</p>
+          <p class="text-sm leading-tight">Food Place</p>
           <span class="text-[10px] opacity-85">Railway Kodur</span>
         </div>
       </button>
-      <button onclick="switchRestaurant('brindavanam')" id="tab-brindavanam" class="p-3 rounded-xl font-bold text-xs flex items-center gap-2 transition bg-white text-gray-700 border border-gray-200 shadow-sm">
-        <img src="https://images.unsplash.com/photo-1552566626-52f8b828add9?w=100&auto=format&fit=crop&q=80" class="w-8 h-8 rounded-lg object-cover">
+      <button onclick="switchRestaurant('brindavanam')" id="tab-brindavanam" class="p-3 rounded-2xl font-bold text-xs flex items-center gap-3 transition bg-white text-gray-700 border border-gray-200 shadow-sm">
+        <img src="https://images.unsplash.com/photo-1552566626-52f8b828add9?w=100&auto=format&fit=crop&q=80" class="w-10 h-10 rounded-xl object-cover">
         <div class="text-left">
-          <p class="leading-tight">Brindavan</p>
+          <p class="text-sm leading-tight">Brindavan</p>
           <span class="text-[10px] text-gray-400">Railway Kodur</span>
         </div>
       </button>
@@ -52,7 +52,7 @@
 
     <!-- Category Filter Bar -->
     <div id="category-bar" class="flex gap-2 overflow-x-auto no-scrollbar mb-4 py-1">
-      <!-- Dynamic Category Chips -->
+      <!-- Dynamic Categories -->
     </div>
 
     <!-- Food Items Grid -->
@@ -62,13 +62,13 @@
   </main>
 
   <!-- Sticky Bottom Cart Bar -->
-  <div id="cart-bar" class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-3 shadow-2xl hidden z-50">
+  <div id="cart-bar" class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 shadow-2xl hidden z-50 rounded-t-2xl">
     <div class="max-w-md mx-auto flex items-center justify-between">
       <div>
         <p class="text-xs text-gray-500 font-medium"><span id="cart-count">0</span> items added</p>
-        <p class="text-lg font-bold text-emerald-700" id="cart-total">₹0</p>
+        <p class="text-xl font-extrabold text-emerald-700" id="cart-total">₹0</p>
       </div>
-      <button onclick="sendOrderToWhatsApp()" class="bg-emerald-600 hover:bg-emerald-700 active:scale-95 transition text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg flex items-center gap-2">
+      <button onclick="sendOrderToWhatsApp()" class="bg-emerald-600 hover:bg-emerald-700 active:scale-95 transition text-white px-6 py-3 rounded-xl text-sm font-bold shadow-lg flex items-center gap-2">
         <i class="fa-brands fa-whatsapp text-lg"></i> Confirm & Order
       </button>
     </div>
@@ -77,7 +77,6 @@
   <script>
     const BOT_PHONE = "919059135163";
 
-    // Menus Data for both restaurants in Railway Kodur
     const menus = {
       food_palace: {
         name: "Food Place Restaurant",
@@ -108,21 +107,15 @@
             id: "fp_biryani", title: "Biryanis",
             items: [
               { id: "fp_b1", name: "🍗 Chicken Dum Biryani", price: 250, img: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_b2", name: "🍗 Spl. Chicken Biryani (Boneless)", price: 300, img: "https://images.unsplash.com/photo-1633945274405-b6c8069047b0?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_b7", name: "🥩 Mutton Fry Piece Biryani", price: 400, img: "https://images.unsplash.com/photo-1633945274405-b6c8069047b0?w=300&auto=format&fit=crop&q=80" }
+              { id: "fp_b2", name: "🍗 Spl. Chicken Biryani", price: 300, img: "https://images.unsplash.com/photo-1633945274405-b6c8069047b0?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_b7", name: "🥩 Mutton Fry Biryani", price: 400, img: "https://images.unsplash.com/photo-1633945274405-b6c8069047b0?w=300&auto=format&fit=crop&q=80" }
             ]
           },
           {
             id: "fp_tandoor", title: "Tandoor",
             items: [
               { id: "fp_t3", name: "🫓 Butter Naan", price: 80, img: "https://images.unsplash.com/photo-1626074353765-517a681e40be?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_t11", name: "🍗 Tandoori Chicken (Full)", price: 489, img: "https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?w=300&auto=format&fit=crop&q=80" }
-            ]
-          },
-          {
-            id: "fp_desserts", title: "Desserts",
-            items: [
-              { id: "fp_d1", name: "🍦 Vanilla Ice Cream", price: 90, img: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=300&auto=format&fit=crop&q=80" }
+              { id: "fp_t11", name: "🍗 Tandoori Chicken", price: 489, img: "https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?w=300&auto=format&fit=crop&q=80" }
             ]
           }
         ]
@@ -133,8 +126,7 @@
           {
             id: "br_starters", title: "Starters",
             items: [
-              { id: "br_s1", name: "🍗 Brindavan Special Chicken", price: 290, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_s2", name: "🥦 Veg Manchuria", price: 200, img: "https://images.unsplash.com/photo-1645177628172-a94c1f96e6db?w=300&auto=format&fit=crop&q=80" }
+              { id: "br_s1", name: "🍗 Special Chicken Starter", price: 290, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" }
             ]
           },
           {
@@ -155,14 +147,13 @@
       currentRestaurant = resId;
       currentCategory = 'all';
       
-      // Update Tab Styles
       document.getElementById('tab-food_palace').className = resId === 'food_palace' 
-        ? "p-3 rounded-xl font-bold text-xs flex items-center gap-2 transition bg-emerald-700 text-white shadow-sm"
-        : "p-3 rounded-xl font-bold text-xs flex items-center gap-2 transition bg-white text-gray-700 border border-gray-200 shadow-sm";
+        ? "p-3 rounded-2xl font-bold text-xs flex items-center gap-3 transition bg-emerald-700 text-white shadow-md"
+        : "p-3 rounded-2xl font-bold text-xs flex items-center gap-3 transition bg-white text-gray-700 border border-gray-200 shadow-sm";
       
       document.getElementById('tab-brindavanam').className = resId === 'brindavanam' 
-        ? "p-3 rounded-xl font-bold text-xs flex items-center gap-2 transition bg-emerald-700 text-white shadow-sm"
-        : "p-3 rounded-xl font-bold text-xs flex items-center gap-2 transition bg-white text-gray-700 border border-gray-200 shadow-sm";
+        ? "p-3 rounded-2xl font-bold text-xs flex items-center gap-3 transition bg-emerald-700 text-white shadow-md"
+        : "p-3 rounded-2xl font-bold text-xs flex items-center gap-3 transition bg-white text-gray-700 border border-gray-200 shadow-sm";
 
       renderCategories();
       renderItems();
@@ -172,11 +163,11 @@
       const bar = document.getElementById("category-bar");
       const menu = menus[currentRestaurant];
       
-      let html = `<button onclick="filterCategory('all')" id="cat-btn-all" class="px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap ${currentCategory === 'all' ? 'bg-emerald-700 text-white' : 'bg-white text-gray-700 border border-gray-300'} shadow-sm">All</button>`;
+      let html = `<button onclick="filterCategory('all')" class="px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap ${currentCategory === 'all' ? 'bg-emerald-700 text-white shadow-sm' : 'bg-white text-gray-600 border border-gray-200'}">All</button>`;
       
       menu.categories.forEach(cat => {
         const isActive = currentCategory === cat.id;
-        html += `<button onclick="filterCategory('${cat.id}')" id="cat-btn-${cat.id}" class="px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap ${isActive ? 'bg-emerald-700 text-white' : 'bg-white text-gray-700 border border-gray-300'} shadow-sm">${cat.title}</button>`;
+        html += `<button onclick="filterCategory('${cat.id}')" class="px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap ${isActive ? 'bg-emerald-700 text-white shadow-sm' : 'bg-white text-gray-600 border border-gray-200'}">${cat.title}</button>`;
       });
 
       bar.innerHTML = html;
@@ -205,21 +196,21 @@
       itemsList.forEach(item => {
         const qty = cart[item.id] ? cart[item.id].qty : 0;
         const card = document.createElement("div");
-        card.className = "bg-white rounded-xl p-3 shadow-sm border border-gray-100 flex items-center justify-between";
+        card.className = "bg-white rounded-2xl p-3.5 shadow-sm border border-gray-100 flex items-center justify-between gap-3";
         card.innerHTML = `
-          <div class="flex items-center gap-3">
-            <img src="${item.img}" alt="${item.name}" class="w-16 h-16 rounded-lg object-cover">
+          <div class="flex items-center gap-3.5">
+            <img src="${item.img}" alt="${item.name}" class="w-20 h-20 rounded-xl object-cover shadow-sm">
             <div>
-              <h3 class="font-bold text-gray-800 text-sm">${item.name}</h3>
-              <p class="text-xs text-gray-500 font-medium">₹${item.price}</p>
+              <h3 class="font-bold text-gray-800 text-sm leading-snug mb-1">${item.name}</h3>
+              <p class="text-sm font-extrabold text-gray-900">₹${item.price}</p>
             </div>
           </div>
-          <div class="flex items-center bg-gray-100 rounded-lg p-1 border border-gray-200">
+          <div class="flex items-center bg-gray-50 rounded-xl p-1 border border-gray-200">
             ${qty > 0 ? `
-              <button onclick="updateQty('${item.id}', -1)" class="w-7 h-7 bg-white text-emerald-700 font-bold rounded-md shadow-sm active:scale-95">-</button>
-              <span class="w-7 text-center font-bold text-sm text-gray-800">${qty}</span>
+              <button onclick="updateQty('${item.id}', -1)" class="w-8 h-8 bg-white text-emerald-700 font-bold rounded-lg shadow-sm active:scale-95">-</button>
+              <span class="w-8 text-center font-bold text-sm text-gray-800">${qty}</span>
             ` : ''}
-            <button onclick="updateQty('${item.id}', 1)" class="w-7 h-7 bg-emerald-600 text-white font-bold rounded-md shadow-sm active:scale-95">+</button>
+            <button onclick="updateQty('${item.id}', 1)" class="w-8 h-8 bg-emerald-600 text-white font-bold rounded-lg shadow-sm active:scale-95">+</button>
           </div>
         `;
         container.appendChild(card);
@@ -283,7 +274,6 @@
       window.location.href = `https://wa.me/${BOT_PHONE}?text=${encoded}`;
     }
 
-    // Initial load
     switchRestaurant('food_palace');
   </script>
 </body>
