@@ -458,7 +458,7 @@ app.post(["/webhook", "/whatsapp/webhook", "/whatsapp/webhook/"], async (req, re
     const user = await getOrCreateUser(phone);
     const temp = getTemp(user);
 
-    // 1. వెబ్‌సైట్ నుండి ఆర్డర్ రాగానే లొకేషన్ అడగడం (లొకేషన్ పంపిన తర్వాతే ఆర్డర్ కన్ఫర్మ్ అవ్వాలి)
+    // 1. వెబ్‌సైట్ నుండి ఆర్డర్ రాగానే లొకేషన్ అడగడం
     if (text.includes("New Food Order") || text.includes("Food Place") || text.includes("Brindavan")) {
       await setState(phone, "AWAITING_LOCATION", {
         temp_selection: { purpose: "CHECKOUT", web_order_summary: text, service: "food" }
@@ -471,7 +471,7 @@ app.post(["/webhook", "/whatsapp/webhook", "/whatsapp/webhook/"], async (req, re
       return;
     }
 
-    // 2. లొకేషన్ రాకుండా టెక్స్ట్ పంపిస్తే వార్నింగ్ ఇవ్వడం
+    // 2. లొకేషన్ కాకుండా టెక్స్ట్ పంపిస్తే వార్నింగ్ ఇవ్వడం
     if (user.current_state === "AWAITING_LOCATION" && type === "text") {
       await sendText(
         phone,
@@ -481,7 +481,7 @@ app.post(["/webhook", "/whatsapp/webhook", "/whatsapp/webhook/"], async (req, re
       return;
     }
 
-    // 3. లొకేషన్ అందిన తర్వాత దూరం లెక్కించి, ఆర్డర్ కన్ఫర్మ్ చేసి, అడ్మిన్‌కి ఈమెయిల్ & వాట్సాప్ అలర్ట్ పంపి, కస్టమర్‌కి పేమెంట్ వివరాలు ఇవ్వడం
+    // 3. లొకేషన్ అందిన తర్వాత దూరం లెక్కించి, వెబ్‌సైట్ టెక్స్ట్ నుండి ఒరిజినల్ ఫుడ్ టోటల్ తీసుకుని టోటల్ అమౌంట్ కట్టడం
     if (type === "location" && message.location) {
       if (user.current_state !== "AWAITING_LOCATION") {
         await sendText(phone, "Please send your location when asked during checkout.");
@@ -493,7 +493,16 @@ app.post(["/webhook", "/whatsapp/webhook", "/whatsapp/webhook/"], async (req, re
       const distance = calculateDistance(RESTAURANT_LAT, RESTAURANT_LNG, location.latitude, location.longitude);
       const deliveryFee = calculateDeliveryFee(distance);
       
-      let foodTotal = 500; 
+      // వెబ్‌సైట్ నుండి వచ్చిన ఆర్డర్ టెక్స్ట్ (web_order_summary) నుండి "Food Total: ₹275" లాంటి అమౌంట్‌ని డైనమిక్‌గా ఎక్స్‌ట్రాక్ట్ చేయడం
+      let foodTotal = 0;
+      const summaryText = temp.web_order_summary || "";
+      const match = summaryText.match(/Food Total:\s*₹?(\d+(\.\d+)?)/i);
+      if (match) {
+        foodTotal = parseFloat(match[1]);
+      } else {
+        foodTotal = 0; // fallback
+      }
+
       const totalAmount = foodTotal + deliveryFee;
 
       const details = {
