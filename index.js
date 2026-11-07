@@ -222,9 +222,6 @@ const foodPalaceMenu = {
   ],
 };
 
-// ==================================================
-// RESTAURANT REGISTRY (Brindavan & Food Place Restaurant only)
-// ==================================================
 const restaurantMenus = {
   brindavanam: brindavanMenu,
   food_palace: foodPalaceMenu,
@@ -256,29 +253,16 @@ const {
 const GRAPH_VERSION = "v23.0";
 const GRAPH_URL = `https://graph.facebook.com/${GRAPH_VERSION}`;
 
-if (
-  !VERIFY_TOKEN ||
-  !WHATSAPP_TOKEN ||
-  !PHONE_NUMBER_ID ||
-  !SUPABASE_URL ||
-  !SUPABASE_KEY
-) {
+if (!VERIFY_TOKEN || !WHATSAPP_TOKEN || !PHONE_NUMBER_ID || !SUPABASE_URL || !SUPABASE_KEY) {
   console.error("Missing required environment variables in .env");
   process.exit(1);
 }
-
-if (!RESEND_API_KEY) console.warn("⚠️  RESEND_API_KEY not set — email notifications disabled.");
-if (!ADMIN_EMAIL) console.warn("⚠️  ADMIN_EMAIL not set — email notifications disabled.");
-if (!AVENTO_ADMIN_PHONE) console.warn("⚠️  AVENTO_ADMIN_PHONE not set — admin WhatsApp notifications disabled.");
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 const resend = RESEND_API_KEY ? new Resend(RESEND_API_KEY) : null;
 
 async function sendOrderEmail(subject, htmlContent) {
-  if (!resend || !ADMIN_EMAIL) {
-    console.warn("Resend API key or Admin email not configured properly.");
-    return;
-  }
+  if (!resend || !ADMIN_EMAIL) return;
   try {
     await resend.emails.send({
       from: "Avento Bot <onboarding@resend.dev>",
@@ -286,16 +270,12 @@ async function sendOrderEmail(subject, htmlContent) {
       subject: subject,
       html: htmlContent,
     });
-    console.log("✅ Order email sent successfully via Resend API!");
   } catch (error) {
     console.error("❌ Error sending email:", error);
   }
 }
 
-// ==================================================
-// HELPERS
-// ==================================================
-
+// Helpers
 const RESTAURANT_LAT = 13.951505;
 const RESTAURANT_LNG = 79.356579;
 
@@ -303,12 +283,8 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
   const R = 6371;
   const dLat = (lat2 - lat1) * (Math.PI / 180);
   const dLon = (lon2 - lon1) * (Math.PI / 180);
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) *
-    Math.sin(dLon / 2) * Math.sin(dLon / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) * Math.sin(dLon / 2) ** 2;
+  return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
 }
 
 function calculateDeliveryFee(distanceInKm) {
@@ -317,9 +293,7 @@ function calculateDeliveryFee(distanceInKm) {
 }
 
 function formatRupees(amount) {
-  return `₹${Number(amount || 0).toLocaleString("en-IN", {
-    maximumFractionDigits: 2,
-  })}`;
+  return `₹${Number(amount || 0).toLocaleString("en-IN", { maximumFractionDigits: 2 })}`;
 }
 
 function normalize(value = "") {
@@ -350,25 +324,17 @@ function getFoodCategories(hotelId = "brindavanam") {
 }
 
 function getFoodItem(itemId, hotelId = null) {
-  return getFoodCategories(hotelId)
-    .flatMap(category => category.items || [])
-    .find(item => String(item.id) === String(itemId));
+  return getFoodCategories(hotelId).flatMap(c => c.items || []).find(i => String(i.id) === String(itemId));
 }
 
 function getCartTotal(cart) {
-  return cart.reduce((total, item) => {
-    return total + Number(item.price || 0) * Number(item.quantity || 1);
-  }, 0);
+  return cart.reduce((total, item) => total + Number(item.price || 0) * Number(item.quantity || 1), 0);
 }
 
 function parseOrderDetails(details) {
   if (!details) return {};
   if (typeof details === "object" && !Array.isArray(details)) return details;
-  try {
-    return JSON.parse(details);
-  } catch {
-    return {};
-  }
+  try { return JSON.parse(details); } catch { return {}; }
 }
 
 function isAdmin(phone) {
@@ -380,39 +346,18 @@ function serviceImage(filename) {
   return path.join(__dirname, "assets", filename);
 }
 
-// 6:00 AM నుండి 12:00 AM (రాత్రి 12) వరకు టైమింగ్స్ సెట్ చేయబడ్డాయి
 function isServiceAvailableNow() {
-  if (String(process.env.BYPASS_SERVICE_HOURS || "").toLowerCase() === "true") {
-    return true;
-  }
-
-  const currentHour = Number(
-    new Intl.DateTimeFormat("en-US", {
-      timeZone: "Asia/Kolkata",
-      hour: "2-digit",
-      hourCycle: "h23",
-    }).format(new Date())
-  );
+  if (String(process.env.BYPASS_SERVICE_HOURS || "").toLowerCase() === "true") return true;
+  const currentHour = Number(new Intl.DateTimeFormat("en-US", { timeZone: "Asia/Kolkata", hour: "2-digit", hourCycle: "h23" }).format(new Date()));
   return currentHour >= 6 && currentHour < 24;
 }
 
-// ==================================================
-// WHATSAPP API
-// ==================================================
-
 async function sendWhatsApp(payload) {
   try {
-    const response = await axios.post(
-      `${GRAPH_URL}/${PHONE_NUMBER_ID}/messages`,
-      { messaging_product: "whatsapp", ...payload },
-      {
-        headers: {
-          Authorization: `Bearer ${WHATSAPP_TOKEN}`,
-          "Content-Type": "application/json",
-        },
-        timeout: 20000,
-      }
-    );
+    const response = await axios.post(`${GRAPH_URL}/${PHONE_NUMBER_ID}/messages`, { messaging_product: "whatsapp", ...payload }, {
+      headers: { Authorization: `Bearer ${WHATSAPP_TOKEN}`, "Content-Type": "application/json" },
+      timeout: 20000,
+    });
     return response.data;
   } catch (error) {
     console.error("WhatsApp API error:", error.response?.data || error.message);
@@ -427,20 +372,11 @@ async function sendText(to, body) {
 async function uploadWhatsAppImage(filePath) {
   if (!fs.existsSync(filePath)) throw new Error(`Image file not found: ${filePath}`);
   const contentType = mime.lookup(filePath);
-  if (!contentType) throw new Error(`Unsupported image file: ${filePath}`);
   const form = new FormData();
   form.append("messaging_product", "whatsapp");
-  form.append("file", fs.createReadStream(filePath), {
-    contentType,
-    filename: path.basename(filePath),
-  });
-  form.append("type", contentType);
-
+  form.append("file", fs.createReadStream(filePath), { contentType, filename: path.basename(filePath) });
   const response = await axios.post(`${GRAPH_URL}/${PHONE_NUMBER_ID}/media`, form, {
-    headers: {
-      Authorization: `Bearer ${WHATSAPP_TOKEN}`,
-      ...form.getHeaders(),
-    },
+    headers: { Authorization: `Bearer ${WHATSAPP_TOKEN}`, ...form.getHeaders() },
     timeout: 30000,
   });
   return response.data.id;
@@ -449,136 +385,36 @@ async function uploadWhatsAppImage(filePath) {
 async function sendLocalImage(phone, filePath, caption = "") {
   try {
     if (!fs.existsSync(filePath)) {
-      console.warn("Image file missing:", filePath);
       if (caption) await sendText(phone, caption);
       return false;
     }
     const mediaId = await uploadWhatsAppImage(filePath);
-    await sendWhatsApp({
-      to: phone,
-      type: "image",
-      image: { id: mediaId, ...(caption ? { caption } : {}) },
-    });
+    await sendWhatsApp({ to: phone, type: "image", image: { id: mediaId, ...(caption ? { caption } : {}) } });
     return true;
   } catch (error) {
-    console.error("Failed to send image:", error.response?.data || error.message);
-    if (caption) {
-      try {
-        await sendText(phone, caption);
-      } catch (fallbackError) {
-        console.error(
-          "Caption fallback failed:",
-          fallbackError.response?.data || fallbackError.message
-        );
-      }
-    }
+    if (caption) await sendText(phone, caption);
     return false;
   }
 }
 
-async function sendButtons(to, body, buttons) {
-  return sendWhatsApp({
-    to,
-    type: "interactive",
-    interactive: {
-      type: "button",
-      body: { text: body },
-      action: {
-        buttons: buttons.slice(0, 3).map(button => ({
-          type: "reply",
-          reply: {
-            id: button.id,
-            title: button.title.slice(0, 20),
-          },
-        })),
-      },
-    },
-  });
-}
-
-async function sendList(to, body, buttonText, sections) {
-  const safeSections = sections
-    .map(section => ({
-      title: String(section.title || "Options").slice(0, 24),
-      rows: (section.rows || []).slice(0, 10).map(row => ({
-        id: String(row.id),
-        title: String(row.title || "Option").slice(0, 24),
-        ...(row.description
-          ? { description: String(row.description).slice(0, 72) }
-          : {}),
-      })),
-    }))
-    .filter(section => section.rows.length);
-
-  if (!safeSections.length) {
-    await sendText(
-      to,
-      "No options are available right now. Please try again in a moment."
-    );
-    return;
-  }
-
-  await sendWhatsApp({
-    to,
-    type: "interactive",
-    interactive: {
-      type: "list",
-      body: { text: body },
-      action: {
-        button: String(buttonText).slice(0, 20),
-        sections: safeSections,
-      },
-    },
-  });
-}
-
-// ==================================================
-// SUPABASE
-// ==================================================
-
 async function getOrCreateUser(phone) {
-  const { data, error } = await supabase
-    .from("users")
-    .select("*")
-    .eq("phone_number", phone)
-    .maybeSingle();
-
+  const { data, error } = await supabase.from("users").select("*").eq("phone_number", phone).maybeSingle();
   if (error) throw error;
   if (data) return data;
 
-  const { data: created, error: insertError } = await supabase
-    .from("users")
-    .insert({
-      phone_number: phone,
-      current_state: "IDLE",
-      cart: [],
-      temp_selection: {},
-    })
-    .select("*")
-    .single();
-
+  const { data: created, error: insertError } = await supabase.from("users").insert({ phone_number: phone, current_state: "IDLE", cart: [], temp_selection: {} }).select("*").single();
   if (insertError) {
     if (insertError.code === "23505") {
-      const { data: retried, error: retryError } = await supabase
-        .from("users")
-        .select("*")
-        .eq("phone_number", phone)
-        .single();
-      if (retryError) throw retryError;
+      const { data: retried } = await supabase.from("users").select("*").eq("phone_number", phone).single();
       return retried;
     }
     throw insertError;
   }
-
   return created;
 }
 
 async function updateUser(phone, updates) {
-  const { error } = await supabase
-    .from("users")
-    .update(updates)
-    .eq("phone_number", phone);
-  if (error) throw error;
+  await supabase.from("users").update(updates).eq("phone_number", phone);
 }
 
 async function setState(phone, state, extra = {}) {
@@ -586,593 +422,46 @@ async function setState(phone, state, extra = {}) {
 }
 
 async function saveOrder(phone, serviceType, details, status = "REQUESTED") {
-  const { data, error } = await supabase
-    .from("orders")
-    .insert({
-      user_phone: phone,
-      service_type: serviceType,
-      details: JSON.stringify(details),
-      status,
-    })
-    .select("*")
-    .single();
-  if (error) {
-    console.error("Supabase order save error:", error);
-    throw error;
-  }
+  const { data, error } = await supabase.from("orders").insert({ user_phone: phone, service_type: serviceType, details: JSON.stringify(details), status }).select("*").single();
+  if (error) throw error;
   return data;
 }
 
 async function getOrderById(orderId) {
-  const { data, error } = await supabase
-    .from("orders")
-    .select("*")
-    .eq("id", orderId)
-    .maybeSingle();
-  if (error) throw error;
+  const { data } = await supabase.from("orders").select("*").eq("id", orderId).maybeSingle();
   return data;
 }
 
 async function updateOrder(orderId, updates) {
-  const { data, error } = await supabase
-    .from("orders")
-    .update(updates)
-    .eq("id", orderId)
-    .select("*")
-    .maybeSingle();
-  if (error) throw error;
-  if (!data) throw new Error("Order not found");
+  const { data } = await supabase.from("orders").update(updates).eq("id", orderId).select("*").maybeSingle();
   return data;
 }
 
 async function getLatestCustomerOrder(phone) {
   const cleanPhone = normalizePhone(phone);
-  const { data, error } = await supabase
-    .from("orders")
-    .select("*")
-    .eq("user_phone", cleanPhone)
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-  if (error) {
-    console.error("Get latest order error:", error.message);
-    return null;
-  }
+  const { data } = await supabase.from("orders").select("*").eq("user_phone", cleanPhone).order("created_at", { ascending: false }).limit(1).maybeSingle();
   return data;
 }
 
 // ==================================================
-// HOTEL SELECTION (entry point)
+// WEBHOOK & EXPRESS ROUTES
 // ==================================================
 
-async function goToHotels(phone) {
-  await setState(phone, "SELECT_HOTEL", {
-    cart: [],
-    location: null,
-    temp_selection: { service: "food" },
-  });
-  await showHotels(phone);
-}
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "index.html"));
+});
 
-async function showHotels(to) {
-  await setState(to, "SELECT_HOTEL");
-
-  const available = isServiceAvailableNow();
-
-  const welcomeText =
-    "🙏 *Namaste! Welcome to Avento Food Delivery.*\n\n" +
-    "Please select the hotel you would like to order from.";
-  const welcomeImagePath = serviceImage("welcome.jpg");
-
-  try {
-    await sendLocalImage(to, welcomeImagePath, welcomeText);
-  } catch (e) {
-    console.error("[showHotels] welcome send error:", e.message);
-  }
-
-  if (!available) {
-    await sendText(
-      to,
-      "🌙 *Avento Food Delivery is currently closed.*\n\n" +
-        "Our service hours are over. Please try again tomorrow.\n\n" +
-        `⚡ *If it is urgent*, please call this number: *${AVENTO_CALL_PHONE}*\n\n` +
-        `Thank you! 🙏`
-    );
-    return;
-  }
-
-  await sendList(to, "🍽️ Please select a hotel:", "Select Hotel", [
-    {
-      title: "Available Hotels",
-      rows: HOTEL_LIST.map(h => ({
-        id: `hotel_${h.id}`,
-        title: h.name,
-        description: h.description,
-      })),
-    },
-  ]);
-}
-
-async function goBack(phone, user) {
-  const state = user.current_state || "IDLE";
-  const temp = getTemp(user);
-  const cart = getCart(user);
-
-  switch (state) {
-    case "SELECT_HOTEL":
-      await goToHotels(phone);
-      return;
-    case "FOOD_CATEGORY":
-      await goToHotels(phone);
-      return;
-    case "FOOD_ITEMS":
-      await showFoodCategories(phone, temp.hotel_name, temp.hotel_id);
-      return;
-    case "CART":
-      await showFoodCategories(phone, temp.hotel_name, temp.hotel_id);
-      return;
-    case "AWAITING_LOCATION":
-      if (cart.length) {
-        await showCart(phone, cart, temp.hotel_name);
-      } else {
-        await goToHotels(phone);
-      }
-      return;
-    case "AWAITING_UTR":
-      await sendText(
-        phone,
-        "Your payment reference is still pending. You can complete verification by sending the UTR or a payment photo."
-      );
-      return;
-    default:
-      await goToHotels(phone);
-  }
-}
-
-// ==================================================
-// MENU BROWSING
-// ==================================================
-
-async function showFoodCategories(to, hotelName, hotelId = null) {
-  const categories = getFoodCategories(hotelId);
-  await setState(to, "FOOD_CATEGORY");
-
-  const hotelImagePath = serviceImage(`${hotelId}.jpg`);
-  const hotelCaption = `🏨 *${hotelName || "Restaurant"}*\n\nPlease select the food category you would like below.`;
-
-  try {
-    await sendLocalImage(to, hotelImagePath, hotelCaption);
-  } catch (e) {
-    console.error("Hotel image send error:", e.message);
-  }
-
-  const rows = categories.slice(0, 8).map(category => ({
-    id: `cat_${category.id}`,
-    title: category.title || category.name || category.id,
-  }));
-
-  rows.push({ id: "nav_back", title: "⬅️ Back to Hotels" });
-  rows.push({ id: "nav_main", title: "🏠 Main Menu" });
-
-  await sendList(to, `🍽️ Please select a category:`, "Food Categories", [
-    {
-      title: "Restaurant Menu",
-      rows,
-    },
-  ]);
-}
-
-async function showFoodItems(to, categoryId, page = 0, hotelId = null) {
-  const category = getFoodCategories(hotelId).find(
-    item => String(item.id) === String(categoryId)
-  );
-  if (!category) {
-    await sendText(to, "This category was not found.");
-    return;
-  }
-
-  const items = category.items || [];
-  const pageSize = 6;
-  const totalPages = Math.max(1, Math.ceil(items.length / pageSize));
-  page = Math.max(0, Math.min(page, totalPages - 1));
-
-  const visibleItems = items.slice(page * pageSize, page * pageSize + pageSize);
-
-  const rows = visibleItems.map(item => ({
-    id: `item_${item.id}`,
-    title: item.name,
-    description: formatRupees(item.price),
-  }));
-
-  if (page > 0) {
-    rows.push({
-      id: `foodpage_${categoryId}_${page - 1}`,
-      title: "⬅️ Previous Page",
-    });
-  }
-  if (page < totalPages - 1) {
-    rows.push({
-      id: `foodpage_${categoryId}_${page + 1}`,
-      title: "➡️ Next Page",
-    });
-  }
-
-  rows.push({ id: "nav_back", title: "⬅️ Back to Categories" });
-  rows.push({ id: "nav_main", title: "🏠 Main Menu" });
-
-  await setState(to, "FOOD_ITEMS", {
-    temp_selection: {
-      ...getTemp(await getOrCreateUser(to)),
-      current_category_id: categoryId,
-      current_page: page,
-      ...(hotelId ? { hotel_id: hotelId } : {}),
-    },
-  });
-
-  await sendList(
-    to,
-    `${category.title || category.name || category.id}\nPage ${page + 1}/${totalPages}\n\nPlease select the item you would like.`,
-    "Food Items",
-    [{ title: "Available Items", rows }]
-  );
-}
-
-// ==================================================
-// CART
-// ==================================================
-
-function renderCart(cart) {
-  if (!cart.length) return "Your cart is empty.";
-
-  const lines = cart.map((item, index) => {
-    const quantity = Number(item.quantity || 1);
-    const price = Number(item.price || 0);
-    return (
-      `${index + 1}. ${item.name}\n` +
-      `   Qty: ${quantity}\n` +
-      `   Price: ${formatRupees(price * quantity)}`
-    );
-  });
-
-  lines.push("\n--------------------");
-  lines.push(`Food Total: ${formatRupees(getCartTotal(cart))}`);
-  return lines.join("\n");
-}
-
-async function showCart(to, cart, hotelName) {
-  await setState(to, "CART");
-  const hotelLine = hotelName ? `🏨 Hotel: ${hotelName}\n\n` : "";
-
-  await sendWhatsApp({
-    to,
-    type: "interactive",
-    interactive: {
-      type: "list",
-      body: {
-        text: `🛒 Your Cart\n\n${hotelLine}${renderCart(cart)}\n\n👇 What would you like to do?`,
-      },
-      action: {
-        button: "Cart Options",
-        sections: [
-          {
-            title: "Cart Actions",
-            rows: [
-              { id: "cart_add_more", title: "➕ Add more items" },
-              { id: "cart_remove", title: "🗑️ Remove item" },
-              { id: "cart_checkout", title: "✅ Confirm order" },
-              { id: "nav_back", title: "⬅️ Back to Menu" },
-              { id: "nav_main", title: "🏠 Main Menu" },
-            ],
-          },
-        ],
-      },
-    },
-  });
-}
-
-async function showRemoveItems(to, cart) {
-  if (!cart.length) {
-    await sendText(to, "Your cart is empty.");
-    return;
-  }
-  const rows = cart.slice(0, 8).map((item, index) => ({
-    id: `remove_${index}`,
-    title: `${index + 1}. ${item.name}`,
-  }));
-  rows.push({ id: "cart_checkout", title: "⬅️ Back to Cart" });
-
-  await sendList(to, "Please select the item to remove.", "Remove Item", [
-    {
-      title: "Cart Items",
-      rows,
-    },
-  ]);
-}
-
-// ==================================================
-// LOCATION & PAYMENT
-// ==================================================
-
-async function askForLocation(phone, user) {
-  await setState(phone, "AWAITING_LOCATION", {
-    temp_selection: { ...getTemp(user), purpose: "CHECKOUT" },
-  });
-  await sendText(
-    phone,
-    "📍 Please share your location.\n\n" +
-      "This is required to calculate delivery charges and for the delivery boy to reach you."
-  );
-}
-
-async function sendPaymentInstructions(phone, order, details) {
-  const amount = Number(details.total || 0);
-
-  if (!AVENTO_UPI_ID) {
-    await sendText(
-      phone,
-      `Your order #${order.id} has been recorded. However, the UPI ID is not set up. Please contact our team.`
-    );
-    return;
-  }
-  if (!Number.isFinite(amount) || amount <= 0) {
-    await sendText(
-      phone,
-      `The price for your order #${order.id} has not been confirmed yet. Our team will inform you of the price.`
-    );
-    return;
-  }
-
-  const qrPath = serviceImage("payment-qr.png");
-
-  const caption =
-    `💳 *PAYMENT REQUIRED* 💳\n\n` +
-    `🧾 Order Number: *#${order.id}*\n` +
-    `🏨 Hotel: ${details.hotel_name || "Food Place Restaurant"}\n\n` +
-    `🍽️ Food Total: ${formatRupees(details.food_total)}\n` +
-    `🚚 Delivery Charges: ${formatRupees(details.delivery_fee)}\n` +
-    `━━━━━━━━━━━━━━━━━━━\n` +
-    `💰 *Total: ${formatRupees(amount)}*\n\n` +
-    `📱 UPI ID: *${AVENTO_UPI_ID}*\n` +
-    `👤 Name: *${AVENTO_UPI_NAME}*\n\n` +
-    `⚡ *Note:* Scan the PhonePe QR code above or pay to the UPI ID above. After payment, send the *12-digit UTR number or payment screenshot* here.\n` +
-    `━━━━━━━━━━━━━━━━━━━`;
-
-  const sent = await sendLocalImage(phone, qrPath, caption);
-  if (!sent) await sendText(phone, caption);
-}
-
-async function initiatePaymentFlow(phone, user) {
-  const cart = getCart(user);
-  const temp = getTemp(user);
-  const location = getLocation(user);
-
-  if (!cart.length) {
-    await sendText(phone, "Your cart is empty. Please select items first.");
-    return;
-  }
-
-  const foodTotal = getCartTotal(cart);
-  let deliveryFee = 0;
-
-  if (location) {
-    const distance = calculateDistance(
-      RESTAURANT_LAT,
-      RESTAURANT_LNG,
-      location.latitude,
-      location.longitude
-    );
-    deliveryFee = calculateDeliveryFee(distance);
-  }
-
-  const totalAmount = foodTotal + deliveryFee;
-
-  if (totalAmount <= 0) {
-    await sendText(phone, "Order amount is invalid. Please check your cart again.");
-    return;
-  }
-
-  const details = {
-    service: "food",
-    items: cart,
-    food_total: foodTotal,
-    delivery_fee: deliveryFee,
-    total: totalAmount,
-    location: location,
-    hotel_name: temp.hotel_name || null,
-    hotel_id: temp.hotel_id || null,
-    payment: {
-      method: "UPI_MANUAL",
-      status: "PENDING",
-      utr_transaction_id: null,
-    },
-    created_at: new Date().toISOString(),
-  };
-
-  try {
-    const cleanPhone = normalizePhone(phone);
-    const chatLink = `https://wa.me/${cleanPhone}`;
-    const loc = details.location
-      ? `https://maps.google.com/?q=${details.location.latitude},${details.location.longitude}`
-      : "Location not provided";
-
-    const order = await saveOrder(phone, "food", details, "PENDING_PAYMENT");
-    await setState(phone, "AWAITING_UTR", {
-      temp_selection: { ...temp, pending_order_id: order.id },
-    });
-
-    await sendPaymentInstructions(phone, order, details);
-
-    const itemsList = cart
-      .map(i => `${i.name} (Qty: ${i.quantity})`)
-      .join(", ");
-
-    if (AVENTO_ADMIN_PHONE) {
-      await sendWhatsApp({
-        to: AVENTO_ADMIN_PHONE,
-        type: "interactive",
-        interactive: {
-          type: "button",
-          body: {
-            text:
-              `🍽️ *New food order received! (#${order.id})*\n\n` +
-              `🏨 Hotel: ${details.hotel_name || "Food Place Restaurant"}\n` +
-              `👤 Customer WhatsApp: ${cleanPhone}\n` +
-              `💬 Chat link: ${chatLink}\n` +
-              `🛒 Items: ${itemsList}\n` +
-              `💰 Total payable: ${formatRupees(totalAmount)}\n` +
-              `📍 Location: ${loc}`,
-          },
-          action: {
-            buttons: [
-              {
-                type: "reply",
-                reply: { id: `adm_paid_${order.id}`, title: "✅ Confirm / Paid" },
-              },
-              {
-                type: "reply",
-                reply: { id: `adm_ask_ss_${order.id}`, title: "📸 Ask Screenshot" },
-              },
-              {
-                type: "reply",
-                reply: { id: `adm_rej_${order.id}`, title: "❌ Reject" },
-              },
-            ],
-          },
-        },
-      });
-    }
-
-    await sendOrderEmail(
-      `🚀 New food order received! (#${order.id})`,
-      `<h2>🍽️ New Food Order (${details.hotel_name || "Food Place Restaurant"})</h2>
-       <p><b>Phone / WhatsApp:</b> <a href="${chatLink}" target="_blank">${phone} (Open chat)</a></p>
-       <p><b>Items:</b> ${itemsList}</p>
-       <p><b>Food Total:</b> ${formatRupees(foodTotal)}</p>
-       <p><b>Delivery Charges:</b> ${formatRupees(deliveryFee)}</p>
-       <p><b>Total Payable:</b> ${formatRupees(totalAmount)}</p>
-       <p><b>Location:</b> <a href="${loc}" target="_blank">View on Google Maps</a></p>`
-    );
-  } catch (error) {
-    console.error("Payment flow error:", error.message);
-    await sendText(
-      phone,
-      "There was an error processing your order. Please try again."
-    );
-  }
-}
-
-// ==================================================
-// ADMIN COMMANDS
-// ==================================================
-
-async function handleAdminCommand(phone, text) {
-  if (!isAdmin(phone)) return false;
-
-  const trimmed = String(text || "").trim();
-
-  const paidMatch = trimmed.match(/^paid\s+(\S+)$/i);
-  if (paidMatch) {
-    const orderId = paidMatch[1];
-    try {
-      const order = await getOrderById(orderId);
-      if (!order) {
-        await sendText(phone, `Order not found: ${orderId}`);
-        return true;
-      }
-
-      const details = parseOrderDetails(order.details);
-      details.payment = {
-        ...(details.payment || {}),
-        status: "PAID",
-        verified_manually: true,
-        verified_at: new Date().toISOString(),
-      };
-
-      await updateOrder(orderId, {
-        details: JSON.stringify(details),
-        status: "PREPARING",
-      });
-
-      await setState(order.user_phone, "IDLE", {
-        cart: [],
-        location: null,
-        temp_selection: {},
-      });
-
-      await sendButtons(
-        order.user_phone,
-        `🎉 Your order has been booked successfully. Thank you! 🙏\n\n` +
-          `✅ Your order is confirmed.\n` +
-          `🧾 Order Number: #${order.id}\n` +
-          `💰 Total: ${formatRupees(details.total)}\n\n` +
-          `📦 Status: Order sent to hotel (Preparing).`,
-        [
-          { id: "track_order", title: "📦 Track Order" },
-          { id: "nav_main", title: "🏠 Main Menu" },
-        ]
-      );
-
-      await sendButtons(
-        phone,
-        `✅ Order #${order.id} successfully confirmed!\n\nSelect a status update for the customer:`,
-        [
-          { id: `st_prep_${order.id}`, title: "👨‍🍳 Preparing" },
-          { id: `st_out_${order.id}`, title: "🚀 Out for Delivery" },
-          { id: `st_del_${order.id}`, title: "✅ Delivered" },
-        ]
-      );
-    } catch (error) {
-      console.error("Admin paid command error:", error.message);
-      await sendText(phone, "Could not confirm the order.");
-    }
-    return true;
-  }
-
-  const statusMatch = trimmed.match(/^status\s+(\S+)$/i);
-  if (statusMatch) {
-    const orderId = statusMatch[1];
-    try {
-      const order = await getOrderById(orderId);
-      if (!order) {
-        await sendText(phone, `Order not found: ${orderId}`);
-        return true;
-      }
-      await sendButtons(
-        phone,
-        `⚙️ *Order #${orderId} Status Update*\n\nPlease select one of the buttons below:`,
-        [
-          { id: `st_prep_${orderId}`, title: "👨‍🍳 Preparing" },
-          { id: `st_out_${orderId}`, title: "🚀 Out for Delivery" },
-          { id: `st_del_${orderId}`, title: "✅ Delivered" },
-        ]
-      );
-    } catch (error) {
-      console.error("Admin status command error:", error.message);
-      await sendText(phone, "Error sending order status buttons.");
-    }
-    return true;
-  }
-
-  return false;
-}
-
-// ==================================================
-// WEBHOOK VERIFICATION
-// ==================================================
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "ok", service: "avento-whatsapp-bot" });
+});
 
 app.get(["/webhook", "/whatsapp/webhook", "/whatsapp/webhook/"], (req, res) => {
   const mode = req.query["hub.mode"];
   const token = req.query["hub.verify_token"];
   const challenge = req.query["hub.challenge"];
-  if (mode === "subscribe" && token === VERIFY_TOKEN) {
-    return res.status(200).send(challenge);
-  }
+  if (mode === "subscribe" && token === VERIFY_TOKEN) return res.status(200).send(challenge);
   return res.sendStatus(403);
 });
-
-// ==================================================
-// INCOMING WHATSAPP MESSAGES
-// ==================================================
 
 app.post(["/webhook", "/whatsapp/webhook", "/whatsapp/webhook/"], async (req, res) => {
   res.sendStatus(200);
@@ -1184,708 +473,93 @@ app.post(["/webhook", "/whatsapp/webhook", "/whatsapp/webhook/"], async (req, re
 
     const phone = message.from;
     const type = message.type;
-
     const text = type === "text" ? message.text?.body?.trim() || "" : "";
-
-    const command =
-      message.interactive?.button_reply?.id ||
-      message.interactive?.list_reply?.id ||
-      text;
-
+    const command = message.interactive?.button_reply?.id || message.interactive?.list_reply?.id || text;
     const normalized = normalize(command);
 
     const user = await getOrCreateUser(phone);
-    const cart = getCart(user);
     const temp = getTemp(user);
 
-    if (type === "text" && (await handleAdminCommand(phone, text))) {
-      return;
-    }
-
-    // ==========================================
-    // ADMIN BUTTON ACTIONS
-    // ==========================================
-    if (String(command).startsWith("adm_")) {
-      if (!isAdmin(phone)) return;
-
-      const parts = String(command).split("_");
-      const action = parts[1];
-      let orderId = parts.slice(2).join("_");
-
-      let subAction = action;
-      if (action === "ask" && parts[2] === "ss") {
-        subAction = "ask_ss";
-        orderId = parts.slice(3).join("_");
-      }
-
-      const order = await getOrderById(orderId);
-      if (!order) return;
-
-      if (subAction === "paid") {
-        const details = parseOrderDetails(order.details);
-        details.payment = {
-          ...(details.payment || {}),
-          status: "PAID",
-          verified_manually: true,
-        };
-
-        await updateOrder(orderId, {
-          details: JSON.stringify(details),
-          status: "PREPARING",
-        });
-
-        await setState(order.user_phone, "IDLE", {
-          cart: [],
-          location: null,
-          temp_selection: {},
-        });
-
-        await sendButtons(
-          order.user_phone,
-          `🎉 Your order has been booked successfully. Thank you! 🙏\n\n` +
-            `✅ Your order is confirmed.\n` +
-            `🧾 Order Number: #${order.id}\n` +
-            `💰 Total: ${formatRupees(details.total)}\n\n` +
-            `📦 Status: Order sent to hotel (Preparing).`,
-          [
-            { id: "track_order", title: "📦 Track Order" },
-            { id: "nav_main", title: "🏠 Main Menu" },
-          ]
-        );
-
-        await sendButtons(
-          phone,
-          `✅ Order #${orderId} successfully confirmed!\n\nSelect status update:`,
-          [
-            { id: `st_prep_${orderId}`, title: "👨‍🍳 Preparing" },
-            { id: `st_out_${orderId}`, title: "🚀 Out for Delivery" },
-            { id: `st_del_${orderId}`, title: "✅ Delivered" },
-          ]
-        );
-      } else if (subAction === "ask_ss") {
-        await setState(order.user_phone, "AWAITING_UTR", {
-          temp_selection: { pending_order_id: order.id },
-        });
-
-        await sendText(
-          order.user_phone,
-          `📸 *Payment screenshot required! (#${order.id})*\n\n` +
-            `Please send your successful UPI payment screenshot here on WhatsApp. Our team will verify it and process your order.`
-        );
-        await sendText(
-          phone,
-          `📸 Screenshot request for Order #${orderId} has been sent to the customer.`
-        );
-      } else if (subAction === "rej") {
-        await updateOrder(orderId, { status: "REJECTED" });
-        await sendText(
-          order.user_phone,
-          `❌ Sorry, your order #${orderId} has been rejected as it is currently unavailable. Please try again.`
-        );
-        await sendText(phone, `❌ Order #${orderId} rejected successfully.`);
-      }
-      return;
-    }
-
-    // ==========================================
-    // STATUS UPDATE BUTTON ACTIONS FROM ADMIN
-    // ==========================================
-    if (String(command).startsWith("st_")) {
-      if (!isAdmin(phone)) return;
-
-      const parts = String(command).split("_");
-      const action = parts[1];
-      const orderId = parts[2];
-
-      const order = await getOrderById(orderId);
-      if (!order) return;
-
-      let newStatusText = "";
-      let statusMessageToCustomer = "";
-
-      if (action === "prep") {
-        newStatusText = "PREPARING";
-        statusMessageToCustomer = `👨‍🍳 Update: Your order is being prepared at the hotel. It will be ready for delivery soon!`;
-      } else if (action === "out") {
-        newStatusText = "OUT_FOR_DELIVERY";
-        statusMessageToCustomer = `🚀 Update: Your order has been handed to the delivery boy and is on the way to your location (Out for Delivery)!`;
-      } else if (action === "del") {
-        newStatusText = "DELIVERED";
-        statusMessageToCustomer = `✅ Your order has been delivered successfully! Thank you for choosing Avento Services. 🙏\n\nVisit the Main Menu to place more orders.`;
-      }
-
-      await updateOrder(orderId, { status: newStatusText });
-
-      if (action === "del") {
-        await sendText(
-          order.user_phone,
-          `📦 *Order Delivered* (#${order.id})\n\n${statusMessageToCustomer}`
-        );
-        await setState(order.user_phone, "IDLE", {
-          cart: [],
-          location: null,
-          temp_selection: {},
-        });
-        await sendText(
-          phone,
-          `✅ Order #${orderId} delivered successfully and the order has been closed.`
-        );
-      } else {
-        await sendButtons(
-          order.user_phone,
-          `📦 *Live Order Tracking* (#${order.id})\n\n${statusMessageToCustomer}`,
-          [
-            { id: "track_order", title: "📦 Track Order" },
-            { id: "nav_main", title: "🏠 Main Menu" },
-          ]
-        );
-        await sendButtons(
-          phone,
-          `✅ Order #${orderId} status successfully changed to '${newStatusText}'.\n\nSelect to change to another status:`,
-          [
-            { id: `st_prep_${orderId}`, title: "👨‍🍳 Preparing" },
-            { id: `st_out_${orderId}`, title: "🚀 Out for Delivery" },
-            { id: `st_del_${orderId}`, title: "✅ Delivered" },
-          ]
-        );
-      }
-      return;
-    }
-
-    // ==========================================
-    // CUSTOMER TRACK ORDER
-    // ==========================================
-    if (
-      command === "track_order" ||
-      ["track order", "where is my order", "order status"].includes(normalized)
-    ) {
-      const latestOrder = await getLatestCustomerOrder(phone);
-
-      if (!latestOrder) {
-        await sendText(phone, "No active orders were found for your number.");
-        return;
-      }
-
-      const st = latestOrder.status;
-
-      if (st === "DELIVERED" || st === "REJECTED") {
-        await sendText(
-          phone,
-          `📦 Order Number #${latestOrder.id} is already complete (Status: ${st}).\n\nTo place a new order, please send 'Hi' or 'Menu'.`
-        );
-        return;
-      }
-
-      let statusDesc = "";
-      if (st === "PENDING_PAYMENT") statusDesc = "💳 Payment is pending.";
-      else if (st === "PAYMENT_REVIEW") statusDesc = "🔍 Payment verification in progress.";
-      else if (st === "PREPARING" || st === "CONFIRMED") statusDesc = "👨‍🍳 Your order is being prepared at the hotel.";
-      else if (st === "OUT_FOR_DELIVERY") statusDesc = "🚀 The delivery boy is on the way to your location (Out for Delivery)!";
-      else statusDesc = `Status: ${st}`;
-
-      if (AVENTO_ADMIN_PHONE) {
-        await sendText(
-          AVENTO_ADMIN_PHONE,
-          `🔔 *Customer Update Request*\n\n` +
-            `Customer (${phone}) is requesting an update for Order #${latestOrder.id}.\n` +
-            `Current Status: ${statusDesc}`
-        );
-      }
-
-      await sendButtons(
+    if (text.includes("New Food Order") || text.includes("Food Palace Restaurant")) {
+      await setState(phone, "AWAITING_LOCATION", {
+        temp_selection: { purpose: "CHECKOUT", web_order_summary: text, service: "food", hotel_name: "Food Palace Restaurant" }
+      });
+      await sendText(
         phone,
-        `📦 *Order Tracking Details*\n\n` +
-          `🧾 Order Number: #${latestOrder.id}\n` +
-          `📌 Current Status: ${statusDesc}\n\n` +
-          `Select Main Menu if you need any help.`,
-        [
-          { id: "track_order", title: "🔄 Refresh Status" },
-          { id: "nav_main", title: "🏠 Main Menu" },
-        ]
+        "📍 *మీ వెబ్‌సైట్ ఆర్డర్ స్వీకరించబడింది!*\n\n" +
+        "డెలివరీ ఛార్జీలను లెక్కించి ఆర్డర్ కన్ఫర్మ్ చేయడానికి దయచేసి వాట్సాప్‌లో మీ *Share Location* ద్వారా లొకేషన్ పంపండి. 🙏"
       );
       return;
     }
 
-    // ==========================================
-    // GREETING / MAIN MENU → HOTEL LIST
-    // ==========================================
-    if (
-      command === "nav_main" ||
-      command === "srv_food" ||
-      ["hi", "hello", "menu", "start", "hi avento services", "hi avento"].includes(normalized)
-    ) {
-      await goToHotels(phone);
+    if (type === "location" && message.location) {
+      if (user.current_state !== "AWAITING_LOCATION") {
+        await sendText(phone, "Please send your location when asked during checkout.");
+        return;
+      }
+      const location = { latitude: message.location.latitude, longitude: message.location.longitude };
+      await updateUser(phone, { location, current_state: "REVIEW_ORDER" });
+      
+      const distance = calculateDistance(RESTAURANT_LAT, RESTAURANT_LNG, location.latitude, location.longitude);
+      const deliveryFee = calculateDeliveryFee(distance);
+      
+      let foodTotal = 500; 
+      const totalAmount = foodTotal + deliveryFee;
+
+      const details = {
+        service: "food",
+        delivery_fee: deliveryFee,
+        total: totalAmount,
+        location: location,
+        hotel_name: "Food Palace Restaurant",
+        payment: { method: "UPI_MANUAL", status: "PENDING", utr_transaction_id: null },
+        created_at: new Date().toISOString(),
+      };
+
+      const order = await saveOrder(phone, "food", details, "PENDING_PAYMENT");
+      await setState(phone, "AWAITING_UTR", { temp_selection: { ...temp, pending_order_id: order.id, total: totalAmount } });
+
+      const qrPath = serviceImage("payment-qr.png");
+      const caption = `💳 *PAYMENT REQUIRED* 💳\n\n🧾 Order Number: *#${order.id}*\n🚚 Delivery Charges: ₹${deliveryFee}\n💰 *Total Payable: ₹${totalAmount}*\n\n📱 UPI ID: *${AVENTO_UPI_ID}*\n\n⚡ Scan QR or pay to UPI ID, then send your *12-digit UTR number or screenshot* here.`;
+      
+      const sent = await sendLocalImage(phone, qrPath, caption);
+      if (!sent) await sendText(phone, caption);
       return;
     }
 
-    if (
-      command === "nav_back" ||
-      ["back"].includes(normalized)
-    ) {
-      await goBack(phone, user);
-      return;
-    }
-
-    // ==========================================
-    // PAYMENT PROOF / UTR / SCREENSHOT HANDLING
-    // ==========================================
     if (user.current_state === "AWAITING_UTR") {
       let orderId = temp.pending_order_id;
-
       if (!orderId) {
         const latest = await getLatestCustomerOrder(phone);
         if (latest) orderId = latest.id;
       }
-
-      if (!orderId) {
-        await sendText(
-          phone,
-          "Could not find your pending order number. Please contact our team."
-        );
-        return;
-      }
+      if (!orderId) return;
 
       const order = await getOrderById(orderId);
-
-      if (!order || normalizePhone(order.user_phone) !== normalizePhone(phone)) {
-        await sendText(phone, "Could not find the order.");
-        return;
-      }
-
       let utrNumber = text;
       let imageMediaId = message.image?.id || null;
-
-      if (type === "image" && imageMediaId) {
-        utrNumber = `IMAGE_SCREENSHOT_${imageMediaId}`;
-      }
-
-      if (!utrNumber) {
-        await sendText(
-          phone,
-          "Please send your PhonePe UTR / UPI Ref No or payment screenshot."
-        );
-        return;
-      }
+      if (type === "image" && imageMediaId) utrNumber = `IMAGE_SCREENSHOT_${imageMediaId}`;
 
       const details = parseOrderDetails(order.details);
-
-      details.payment = {
-        ...(details.payment || {}),
-        method: "UPI_MANUAL",
-        status: "PAYMENT_REVIEW",
-        utr_transaction_id: utrNumber,
-        screenshot_media_id: imageMediaId,
-        submitted_at: new Date().toISOString(),
-      };
-
-      await updateOrder(orderId, {
-        details: JSON.stringify(details),
-        status: "PAYMENT_REVIEW",
-      });
-
+      details.payment = { ...(details.payment || {}), status: "PAYMENT_REVIEW", utr_transaction_id: utrNumber };
+      await updateOrder(orderId, { details: JSON.stringify(details), status: "PAYMENT_REVIEW" });
       await setState(phone, "IDLE", { cart: [], temp_selection: {} });
 
-      await sendText(
-        phone,
-        `✅ Your UTR number / details have been received.\n\n` +
-          `🧾 Order Number: #${order.id}\n` +
-          `Our team will verify this UTR and confirm your order after verifying payment.\n\n` +
-          `Thank you! 🙏`
-      );
-
-      const cleanPhone = normalizePhone(phone);
-      const chatLink = `https://wa.me/${cleanPhone}`;
-
-      await sendOrderEmail(
-        `💳 New payment review received! (#${order.id})`,
-        `<h2>💳 Payment verification required</h2>
-         <p><b>Order ID:</b> #${order.id}</p>
-         <p><b>Customer WhatsApp:</b> <a href="${chatLink}" target="_blank" style="color: #25D366; font-weight: bold;">💬 Open chat to view (${phone})</a></p>
-         <p><b>Amount:</b> ${formatRupees(details.total)}</p>
-         <p><b>UTR / Text:</b> ${text || "Screenshot sent"}</p>`
-      );
-
-      if (AVENTO_ADMIN_PHONE) {
-        if (imageMediaId) {
-          try {
-            await sendWhatsApp({
-              to: AVENTO_ADMIN_PHONE,
-              type: "image",
-              image: { id: imageMediaId },
-            });
-          } catch (err) {
-            console.error("Failed to forward payment image to admin:", err.message);
-          }
-        }
-
-        await sendWhatsApp({
-          to: AVENTO_ADMIN_PHONE,
-          type: "interactive",
-          interactive: {
-            type: "button",
-            body: {
-              text:
-                `💳 *Payment Verification Required*\n\n` +
-                `Order ID: #${order.id}\n` +
-                `Customer: ${phone}\n` +
-                `Amount: ${formatRupees(details.total)}\n` +
-                `UTR / Info: ${text || "Screenshot received"}\n\n` +
-                `Please check PhonePe/NetBanking and select the button below:`,
-            },
-            action: {
-              buttons: [
-                {
-                  type: "reply",
-                  reply: { id: `adm_paid_${order.id}`, title: "✅ Confirm / Paid" },
-                },
-                {
-                  type: "reply",
-                  reply: { id: `adm_ask_ss_${order.id}`, title: "📸 Ask Screenshot" },
-                },
-                {
-                  type: "reply",
-                  reply: { id: `adm_rej_${order.id}`, title: "❌ Reject" },
-                },
-              ],
-            },
-          },
-        });
-      }
+      await sendText(phone, `✅ మీ UTR / స్క్రీన్ షాట్ అందినది.\n🧾 Order #${order.id}\nమా టీమ్ పరిశీలించి త్వరలో కన్ఫర్మ్ చేస్తుంది.`);
       return;
     }
 
-    if (command === "order_cancel" || ["cancel"].includes(normalized)) {
-      await setState(phone, "IDLE", {
-        cart: [],
-        location: null,
-        temp_selection: {},
-      });
-      await sendText(phone, "Your current request has been cancelled.");
-      await goToHotels(phone);
+    if (["hi", "hello", "menu", "start"].includes(normalized)) {
+      const welcomeText = "🙏 *Namaste! Welcome to Avento Services.*\n\nప్లీజ్ కింద ఉన్న లింక్ క్లిక్ చేసి మీ వెబ్‌సైట్ ద్వారా ఫుడ్ ఆర్డర్ చేయండి:\n🔗 *https://" + (req.get('host') || 'www.aventonow.live') + "*";
+      await sendText(phone, welcomeText);
       return;
     }
 
-    // ==========================================
-    // LOCATION RECEIVED
-    // ==========================================
-    if (type === "location" && message.location) {
-      if (user.current_state !== "AWAITING_LOCATION") {
-        await sendText(
-          phone,
-          "Please enter the order process first and send your location when asked."
-        );
-        return;
-      }
-
-      const location = {
-        latitude: message.location.latitude,
-        longitude: message.location.longitude,
-      };
-
-      await updateUser(phone, { location, current_state: "REVIEW_ORDER" });
-
-      const updatedUser = { ...user, location, current_state: "REVIEW_ORDER" };
-      await showReviewAndConfirm(phone, updatedUser);
-      return;
-    }
-
-    if (user.current_state === "AWAITING_LOCATION" && type === "text") {
-      await sendText(
-        phone,
-        "📍 *Your location is very important!*\n\n" +
-          "To help our service team reach you quickly and confirm delivery, your location is essential.\n\n" +
-          "Instead of typing, please use WhatsApp's *Share Location* to share your location. 🙏"
-      );
-      return;
-    }
-
-    // ==========================================
-    // HOTEL SELECTION
-    // ==========================================
-    const hotelMatch = String(command).match(/^hotel_(.+)$/);
-    if (hotelMatch) {
-      const hotel = HOTEL_LIST.find(h => h.id === hotelMatch[1]);
-      if (!hotel) {
-        await sendText(phone, "Hotel not found.");
-        return;
-      }
-
-      await setState(phone, "FOOD_CATEGORY", {
-        cart: [],
-        temp_selection: {
-          service: "food",
-          hotel_id: hotel.id,
-          hotel_name: hotel.name,
-        },
-      });
-      await showFoodCategories(phone, hotel.name, hotel.id);
-      return;
-    }
-
-    // ==========================================
-    // MENU BROWSING
-    // ==========================================
-    const pageMatch = String(command).match(/^foodpage_(.+)_(\d+)$/);
-    if (pageMatch) {
-      await showFoodItems(phone, pageMatch[1], Number(pageMatch[2]), temp.hotel_id);
-      return;
-    }
-
-    if (String(command).startsWith("cat_")) {
-      await showFoodItems(phone, String(command).slice(4), 0, temp.hotel_id);
-      return;
-    }
-
-    // ==========================================
-    // ITEM QUANTITY SELECTION FLOW
-    // ==========================================
-    if (String(command).startsWith("item_")) {
-      const itemId = String(command).slice(5);
-      const item = getFoodItem(itemId, temp.hotel_id);
-      if (!item) {
-        await sendText(phone, "This item was not found.");
-        return;
-      }
-
-      await setState(phone, "SELECT_QTY", {
-        temp_selection: {
-          ...temp,
-          selected_item_id: item.id,
-        },
-      });
-
-      await sendList(
-        phone,
-        `🍽️ *${item.name}*\n💰 Price: ${formatRupees(item.price)}\n\n` +
-          `కస్టమర్ గారూ, ఈ ఐటమ్ మీకు ఎన్ని కావాలి? (Please select quantity below):`,
-        "Select Quantity",
-        [
-          {
-            title: "Quick Quantities",
-            rows: [
-              { id: `qty_${item.id}_1`, title: "1 Quantity", description: `Total: ${formatRupees(item.price * 1)}` },
-              { id: `qty_${item.id}_2`, title: "2 Quantities", description: `Total: ${formatRupees(item.price * 2)}` },
-              { id: `qty_${item.id}_3`, title: "3 Quantities", description: `Total: ${formatRupees(item.price * 3)}` },
-              { id: `qty_${item.id}_4`, title: "4 Quantities", description: `Total: ${formatRupees(item.price * 4)}` },
-              { id: `qty_${item.id}_5`, title: "5 Quantities", description: `Total: ${formatRupees(item.price * 5)}` },
-              { id: `qty_${item.id}_10`, title: "10 Quantities", description: `Total: ${formatRupees(item.price * 10)}` },
-            ],
-          },
-        ]
-      );
-      return;
-    }
-
-    const qtyMatch = String(command).match(/^qty_(.+)_(\d+)$/);
-    if (qtyMatch) {
-      const itemId = qtyMatch[1];
-      const selectedQty = Number(qtyMatch[2]);
-      const item = getFoodItem(itemId, temp.hotel_id);
-
-      if (!item) {
-        await sendText(phone, "Item not found.");
-        return;
-      }
-
-      const existingIndex = cart.findIndex(i => String(i.id) === String(item.id));
-      let updatedCart = [...cart];
-
-      if (existingIndex >= 0) {
-        updatedCart[existingIndex].quantity += selectedQty;
-      } else {
-        updatedCart.push({
-          id: item.id,
-          name: item.name,
-          price: Number(item.price || 0),
-          quantity: selectedQty,
-          unit: "item",
-          service: "food",
-        });
-      }
-
-      await setState(phone, "CART", { cart: updatedCart });
-
-      await sendButtons(
-        phone,
-        `✅ *${selectedQty} x ${item.name}* మీ కార్ట్‌కి చేర్చబడ్డాయి!\n` +
-          `💰 Total: ${formatRupees(item.price * selectedQty)}\n\n` +
-          `👇 ఇప్పుడు మీరు ఏం చేయాలనుకుంటున్నారు?`,
-        [
-          { id: "cart_add_more", title: "➕ Add More Items" },
-          { id: "cart_checkout", title: "✅ View Cart / Checkout" },
-        ]
-      );
-      return;
-    }
-    
-    // ==========================================
-    // CART ACTIONS
-    // ==========================================
-    if (command === "cart_add_more") {
-      await showFoodCategories(phone, temp.hotel_name, temp.hotel_id);
-      return;
-    }
-
-    if (command === "cart_remove") {
-      await showRemoveItems(phone, cart);
-      return;
-    }
-
-    if (String(command).startsWith("remove_")) {
-      const index = Number(String(command).slice(7));
-      if (!Number.isInteger(index) || index < 0 || index >= cart.length) {
-        await sendText(phone, "Invalid item to remove.");
-        return;
-      }
-
-      const updatedCart = cart.filter((_, i) => i !== index);
-      await setState(phone, "CART", { cart: updatedCart });
-
-      if (!updatedCart.length) {
-        await sendText(phone, "Your cart is now empty.");
-        await showFoodCategories(phone, temp.hotel_name, temp.hotel_id);
-        return;
-      }
-
-      await showCart(phone, updatedCart, temp.hotel_name);
-      return;
-    }
-
-    if (command === "cart_checkout") {
-      if (!cart.length) {
-        await sendText(phone, "Your cart is empty.");
-        return;
-      }
-      await askForLocation(phone, user);
-      return;
-    }
-
-    // ==========================================
-    // REVIEW / SUBMIT
-    // ==========================================
-    if (command === "order_submit") {
-      if (user.current_state !== "REVIEW_ORDER") {
-        await sendText(
-          phone,
-          "Your order is not currently in review state. Please go to Main Menu and start again."
-        );
-        return;
-      }
-      await initiatePaymentFlow(phone, user);
-      return;
-    }
-
-    // ==========================================
-    // FALLBACK
-    // ==========================================
-    if (type === "text") {
-      await sendText(
-        phone,
-        "Sorry, I did not understand your selection.\n\nSend 'menu' to return to the main menu."
-      );
-    } else if (type !== "interactive") {
-      await sendText(
-        phone,
-        "📎 We cannot process this type of message. Please use text, a list option, or select from the menu."
-      );
-    }
   } catch (error) {
-    console.error("Webhook error:", error.response?.data || error.message);
+    console.error("Webhook error:", error.message);
   }
-});
-
-// ==================================================
-// REVIEW & CONFIRM
-// ==================================================
-async function showReviewAndConfirm(phone, user) {
-  const temp = getTemp(user);
-  const location = getLocation(user);
-  const cart = getCart(user);
-
-  const foodTotal = getCartTotal(cart);
-  let deliveryFee = 0;
-  let distanceKm = 0;
-
-  if (location) {
-    distanceKm = calculateDistance(
-      RESTAURANT_LAT,
-      RESTAURANT_LNG,
-      location.latitude,
-      location.longitude
-    );
-    deliveryFee = calculateDeliveryFee(distanceKm);
-  }
-
-  const grandTotal = foodTotal + deliveryFee;
-
-  const summary =
-    `🧾 *Your Order Summary*\n\n` +
-    `🏨 Hotel: ${temp.hotel_name || "Food Place Restaurant"}\n\n` +
-    `${renderCart(cart)}\n\n` +
-    `📏 Distance: ${distanceKm.toFixed(1)} KM\n` +
-    `🚚 Delivery Charges: ${formatRupees(deliveryFee)}\n` +
-    `--------------------\n` +
-    `💰 *Total: ${formatRupees(grandTotal)}*\n\n` +
-    `👉 *Please select the button below to confirm.*`;
-
-  await setState(phone, "REVIEW_ORDER");
-
-  await sendButtons(phone, summary, [
-    { id: "order_submit", title: "✅ Pay / Confirm" },
-    { id: "order_cancel", title: "❌ Cancel" },
-  ]);
-}
-
-// ==================================================
-// HEALTH CHECK & LANDING PAGE
-// ==================================================
-
-app.get("/health", (req, res) => {
-  res.status(200).json({
-    status: "ok",
-    service: "avento-whatsapp-bot",
-    service_available_now: isServiceAvailableNow(),
-    timestamp: new Date().toISOString(),
-  });
-});
-
-app.get("/", (req, res) => {
-  res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
-  res.setHeader("Pragma", "no-cache");
-  res.setHeader("Expires", "0");
-  res.send(`
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Avento Services - WhatsApp Bot</title>
-        <style>
-            body { font-family: Arial, sans-serif; background-color: #f4f6f8; text-align: center; padding: 50px 20px; }
-            .card { background: white; max-width: 400px; margin: 0 auto; padding: 30px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-            h2 { color: #075e54; margin-bottom: 10px; }
-            p { color: #333; font-size: 16px; line-height: 1.5; margin-bottom: 25px; }
-            .btn { display: inline-block; background-color: #25d366; color: white; padding: 12px 25px; font-size: 18px; font-weight: bold; text-decoration: none; border-radius: 30px; box-shadow: 0 4px 6px rgba(37, 211, 102, 0.3); }
-            .btn:hover { background-color: #1ebe5d; }
-        </style>
-    </head>
-    <body>
-        <div class="card">
-            <h2>🙏 Avento Services</h2>
-            <p>Namaste! Welcome to Avento Services. To get the services you need, click the button below and send 'Hi'.</p>
-            <a class="btn" href="https://wa.me/919059135163?text=Hi%20Avento%20Services" target="_blank">💬 Chat on WhatsApp</a>
-        </div>
-    </body>
-    </html>
-  `);
 });
 
 app.listen(PORT, () => {
   console.log(`Avento WhatsApp Bot running on port ${PORT}`);
-  console.log(
-    `Service hours (IST): 6:00 AM – 12:00 AM | Currently open: ${isServiceAvailableNow()}`
-  );
-  if (String(process.env.BYPASS_SERVICE_HOURS || "").toLowerCase() === "true") {
-    console.log("⚠️  BYPASS_SERVICE_HOURS=true — service-hours check is DISABLED (testing mode).");
-  }
 });
