@@ -640,17 +640,15 @@ app.post(["/webhook", "/whatsapp/webhook", "/whatsapp/webhook/"], async (req, re
       await updateOrder(orderId, { details: JSON.stringify(details), status: "PAYMENT_REVIEW" });
       await setState(phone, "IDLE", { cart: [], temp_selection: {} });
 
-      await sendText(phone, `✅ మీ UTR / స్క్రీన్ షాట్ అందినది.\n🧾 Order #${order.id}\nమా టీమ్ పరిశీలించి త్వరలో ఆర్డర్ కన్ఫర్మ్ చేస్తుంది. 🙏`);
+      await sendText(phone, `✅ మీ ఉట్రార్ / స్క్రీన్ షాట్ అందినది.\n🧾 Order #${order.id}\nమా టీమ్ పరిశీలించి త్వరలో ఆర్డర్ కన్ఫర్మ్ చేస్తుంది. 🙏`);
 
       if (AVENTO_ADMIN_PHONE) {
         if (type === "image" && imageMediaId) {
-          // Send screenshot image to admin
           await sendWhatsApp({
             to: AVENTO_ADMIN_PHONE,
             type: "image",
             image: { id: imageMediaId, caption: `📸 Payment Screenshot received from Customer (${phone}) for Order #${order.id}` }
           });
-          // Immediately send Action Interactive Buttons to Admin
           await sendWhatsApp({
             to: AVENTO_ADMIN_PHONE,
             type: "interactive",
