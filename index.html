@@ -12,20 +12,26 @@
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
   </style>
 </head>
-<body class="pb-32">
+<body class="pb-36">
 
-  <!-- Swiggy Style Top Header -->
+  <!-- Swiggy Style Top Header with Back Button -->
   <header class="bg-white sticky top-0 z-40 shadow-sm border-b border-gray-100">
     <div class="max-w-md mx-auto px-4 py-3 flex justify-between items-center">
-      <div class="flex items-center gap-2">
-        <div class="w-9 h-9 bg-orange-500 rounded-xl flex items-center justify-center text-white font-black shadow-md shadow-orange-100">
-          <i class="fa-solid fa-utensils"></i>
-        </div>
-        <div>
-          <h1 class="font-extrabold text-gray-900 text-base leading-tight">Avento Services</h1>
-          <p class="text-[11px] text-gray-500 flex items-center gap-1">
-            <i class="fa-solid fa-location-dot text-orange-500"></i> Railway Kodur, Tirupati Dist
-          </p>
+      <div class="flex items-center gap-3">
+        <!-- Back Button -->
+        <button onclick="goBack()" class="w-9 h-9 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl flex items-center justify-center transition active:scale-95">
+          <i class="fa-solid fa-arrow-left text-sm"></i>
+        </button>
+        <div class="flex items-center gap-2">
+          <div class="w-9 h-9 bg-orange-500 rounded-xl flex items-center justify-center text-white font-black shadow-md shadow-orange-100">
+            <i class="fa-solid fa-utensils"></i>
+          </div>
+          <div>
+            <h1 class="font-extrabold text-gray-900 text-base leading-tight">Avento Services</h1>
+            <p class="text-[11px] text-gray-500 flex items-center gap-1">
+              <i class="fa-solid fa-location-dot text-orange-500"></i> Railway Kodur, Tirupati Dist
+            </p>
+          </div>
         </div>
       </div>
       <div class="bg-emerald-50 text-emerald-700 text-xs px-2.5 py-1 rounded-full font-bold flex items-center gap-1 border border-emerald-100">
@@ -37,6 +43,26 @@
   <!-- Main App Container -->
   <main class="max-w-md mx-auto px-4 pt-3">
     
+    <!-- Offers / Promo Banner Slider -->
+    <div class="mb-4 overflow-x-auto no-scrollbar flex gap-3">
+      <div class="min-w-[85%] bg-gradient-to-r from-orange-500 to-amber-500 rounded-2xl p-4 text-white shadow-md flex justify-between items-center">
+        <div>
+          <span class="bg-white/20 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">Avento Special</span>
+          <h3 class="text-lg font-black mt-1">Get Fast Delivery</h3>
+          <p class="text-xs text-orange-100">Order from top restaurants in Railway Kodur</p>
+        </div>
+        <i class="fa-solid fa-motorcycle text-4xl text-white/30"></i>
+      </div>
+      <div class="min-w-[85%] bg-gradient-to-r from-red-500 to-pink-500 rounded-2xl p-4 text-white shadow-md flex justify-between items-center">
+        <div>
+          <span class="bg-white/20 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">Fresh Food</span>
+          <h3 class="text-lg font-black mt-1">Delicious Biryanis</h3>
+          <p class="text-xs text-red-100">Hot & Authentic taste at your doorstep</p>
+        </div>
+        <i class="fa-solid fa-bowl-rice text-4xl text-white/30"></i>
+      </div>
+    </div>
+
     <!-- Swiggy Style Search Bar -->
     <div class="relative mb-4">
       <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3.5 text-gray-400 text-sm"></i>
@@ -71,18 +97,71 @@
     <div id="food-items-container" class="space-y-3"></div>
   </main>
 
-  <!-- Sticky Bottom Cart Bar -->
-  <div id="cart-bar" class="fixed bottom-0 left-0 right-0 bg-gray-900 text-white p-4 shadow-2xl hidden z-50 rounded-t-3xl border-t border-gray-800">
-    <div class="max-w-md mx-auto flex items-center justify-between">
-      <div>
-        <p class="text-xs text-gray-400 font-medium"><span id="cart-count">0</span> items added</p>
-        <p class="text-xl font-extrabold text-orange-400" id="cart-total">₹0</p>
+  <!-- Sticky Floating Cart Bar -->
+  <div id="cart-bar" class="fixed bottom-16 left-0 right-0 p-3 z-40 hidden">
+    <div class="max-w-md mx-auto bg-gray-900 text-white p-3.5 rounded-2xl shadow-2xl flex items-center justify-between border border-gray-800">
+      <div onclick="toggleCartModal()" class="cursor-pointer flex items-center gap-3">
+        <div class="w-9 h-9 bg-orange-500 rounded-xl flex items-center justify-center font-bold text-sm">
+          <span id="cart-count">0</span>
+        </div>
+        <div>
+          <p class="text-[11px] text-gray-400 font-medium">View Cart Details <i class="fa-solid fa-chevron-up text-[9px]"></i></p>
+          <p class="text-base font-extrabold text-orange-400 leading-tight" id="cart-total">₹0</p>
+        </div>
       </div>
-      <button onclick="sendOrderToWhatsApp()" class="bg-orange-500 hover:bg-orange-600 active:scale-95 transition text-white px-6 py-3 rounded-2xl text-sm font-bold shadow-lg shadow-orange-500/30 flex items-center gap-2">
-        <i class="fa-brands fa-whatsapp text-lg"></i> Place Order
+      <button onclick="sendOrderToWhatsApp()" class="bg-orange-500 hover:bg-orange-600 active:scale-95 transition text-white px-5 py-2.5 rounded-xl text-xs font-bold shadow-lg shadow-orange-500/30 flex items-center gap-2">
+        <i class="fa-brands fa-whatsapp text-base"></i> Place Order
       </button>
     </div>
   </div>
+
+  <!-- Cart Items Drawer Modal -->
+  <div id="cart-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex flex-col justify-end backdrop-blur-sm">
+    <div class="bg-white rounded-t-3xl max-w-md w-full mx-auto p-5 max-h-[75vh] flex flex-col shadow-2xl">
+      <div class="flex justify-between items-center pb-3 border-b border-gray-100">
+        <h3 class="font-extrabold text-gray-900 text-base">Your Selected Items</h3>
+        <button onclick="toggleCartModal()" class="w-8 h-8 bg-gray-100 text-gray-500 rounded-full flex items-center justify-center">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div id="cart-modal-items" class="overflow-y-auto py-3 space-y-3 flex-1 no-scrollbar"></div>
+      <div class="pt-3 border-t border-gray-100 flex justify-between items-center">
+        <div>
+          <p class="text-xs text-gray-400">Total Amount</p>
+          <p class="text-lg font-black text-gray-900" id="cart-modal-total">₹0</p>
+        </div>
+        <button onclick="sendOrderToWhatsApp()" class="bg-orange-500 text-white px-6 py-3 rounded-2xl text-sm font-bold flex items-center gap-2 shadow-lg shadow-orange-100">
+          <i class="fa-brands fa-whatsapp text-lg"></i> Confirm Order
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Swiggy Style Bottom Navigation Bar -->
+  <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-40 py-2 shadow-lg">
+    <div class="max-w-md mx-auto grid grid-cols-5 text-center">
+      <button onclick="navClick('home')" id="nav-home" class="flex flex-col items-center text-orange-500">
+        <i class="fa-solid fa-house text-lg"></i>
+        <span class="text-[10px] font-bold mt-1">Avento</span>
+      </button>
+      <button onclick="navClick('restaurants')" id="nav-restaurants" class="flex flex-col items-center text-gray-400">
+        <i class="fa-solid fa-utensils text-lg"></i>
+        <span class="text-[10px] font-bold mt-1">Dineout</span>
+      </button>
+      <button onclick="navClick('instamart')" id="nav-instamart" class="flex flex-col items-center text-gray-400">
+        <i class="fa-solid fa-basket-shopping text-lg"></i>
+        <span class="text-[10px] font-bold mt-1">Instamart</span>
+      </button>
+      <button onclick="navClick('offers')" id="nav-offers" class="flex flex-col items-center text-gray-400">
+        <i class="fa-solid fa-percent text-lg"></i>
+        <span class="text-[10px] font-bold mt-1">Offers</span>
+      </button>
+      <button onclick="focusSearch()" id="nav-search" class="flex flex-col items-center text-gray-400">
+        <i class="fa-solid fa-magnifying-glass text-lg"></i>
+        <span class="text-[10px] font-bold mt-1">Search</span>
+      </button>
+    </div>
+  </nav>
 
   <script>
     const BOT_PHONE = "919059135163";
@@ -103,7 +182,7 @@
           {
             id: "fp_nvs", title: "Non-Veg Starters",
             items: [
-              { id: "fp_nvs1", name: "🍗 Chilli Chicken", price: 265, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_nvs1", name: "🍗 Chilli Chicken", price: 265, bestseller: true, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
               { id: "fp_nvs2", name: "🍗 Chicken 65", price: 265, img: "https://images.unsplash.com/photo-1610057099443-fde8c4d50f91?w=300&auto=format&fit=crop&q=80" },
               { id: "fp_nvs3", name: "🍗 Chicken Lollipop (Sauce)", price: 285, img: "https://images.unsplash.com/photo-1527477396000-e27163b481c2?w=300&auto=format&fit=crop&q=80" },
               { id: "fp_nvs4", name: "🍗 Chicken Drumstick (Oil Roast)", price: 275, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
@@ -159,7 +238,7 @@
               { id: "fp_mv3", name: "🥦 Kadai Veg Curry", price: 230, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
               { id: "fp_mv4", name: "🥦 Veg Kollapuri curry", price: 230, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
               { id: "fp_mv5", name: "🍄 Mushroom Masala", price: 240, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_mv6", name: "🧀 Paneer Butter Masala", price: 320, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_mv6", name: "🧀 Paneer Butter Masala", price: 320, bestseller: true, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
               { id: "fp_mv7", name: "🧀 Kadai Paneer Curry", price: 250, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
               { id: "fp_mv8", name: "🥜 Kaju Curry", price: 280, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
               { id: "fp_mv9", name: "🥜 Kaju Paneer Curry", price: 280, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
@@ -188,7 +267,7 @@
               { id: "fp_mnv10", name: "🍗 Chicken Dhopyaza", price: 270, img: "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=300&auto=format&fit=crop&q=80" },
               { id: "fp_mnv11", name: "🍗 Chicken Tikka Masala", price: 270, img: "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=300&auto=format&fit=crop&q=80" },
               { id: "fp_mnv12", name: "🍗 Tawde Masala (Leg piece)", price: 290, img: "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_mnv13", name: "🍗 Butter Chicken", price: 260, img: "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_mnv13", name: "🍗 Butter Chicken", price: 260, bestseller: true, img: "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=300&auto=format&fit=crop&q=80" },
               { id: "fp_mnv14", name: "🍗 Chicken Curry (Bone)", price: 240, img: "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=300&auto=format&fit=crop&q=80" },
               { id: "fp_mnv15", name: "🍗 Chicken Curry (Boneless)", price: 260, img: "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=300&auto=format&fit=crop&q=80" },
               { id: "fp_mnv16", name: "🍗 Chicken Chatpata Curry", price: 260, img: "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=300&auto=format&fit=crop&q=80" },
@@ -226,7 +305,7 @@
           {
             id: "fp_biryani", title: "Biryanis",
             items: [
-              { id: "fp_b1", name: "🍗 Chicken Dum Biryani", price: 240, img: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_b1", name: "🍗 Chicken Dum Biryani", price: 240, bestseller: true, img: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=300&auto=format&fit=crop&q=80" },
               { id: "fp_b2", name: "🍗 Spl. Chicken Biryani (Boneless)", price: 290, img: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=300&auto=format&fit=crop&q=80" },
               { id: "fp_b3", name: "🦐 Prawns Biryani", price: 320, img: "https://images.unsplash.com/photo-1633945274405-b6c8069047b0?w=300&auto=format&fit=crop&q=80" },
               { id: "fp_b4", name: "🐟 Fish Biryani (Boneless)", price: 280, img: "https://images.unsplash.com/photo-1633945274405-b6c8069047b0?w=300&auto=format&fit=crop&q=80" },
@@ -258,7 +337,7 @@
               { id: "fp_c7", name: "🥜 Kaju Fried Rice", price: 260, img: "https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=300&auto=format&fit=crop&q=80" },
               { id: "fp_c8", name: "🥚 Egg Fried Rice", price: 180, img: "https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=300&auto=format&fit=crop&q=80" },
               { id: "fp_c9", name: "🥚 Egg Schewan Fried Rice", price: 190, img: "https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_c10", name: "🍗 Chicken Fried Rice", price: 210, img: "https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_c10", name: "🍗 Chicken Fried Rice", price: 210, bestseller: true, img: "https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=300&auto=format&fit=crop&q=80" },
               { id: "fp_c11", name: "🍗 Chicken Schewan Fried Rice", price: 220, img: "https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=300&auto=format&fit=crop&q=80" },
               { id: "fp_c12", name: "🍗 Spl. Chicken Fried Rice", price: 210, img: "https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=300&auto=format&fit=crop&q=80" },
               { id: "fp_c13", name: "🦐 Prawns Fried Rice", price: 240, img: "https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=300&auto=format&fit=crop&q=80" },
@@ -308,7 +387,7 @@
             items: [
               { id: "br_nvs1", name: "🍗 Kaju Fry", price: 220, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
               { id: "br_nvs2", name: "🍗 Kaju Roast", price: 210, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_nvs3", name: "🍗 Chilli Chicken", price: 240, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_nvs3", name: "🍗 Chilli Chicken", price: 240, bestseller: true, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
               { id: "br_nvs4", name: "🍗 Chicken 65", price: 240, img: "https://images.unsplash.com/photo-1610057099443-fde8c4d50f91?w=300&auto=format&fit=crop&q=80" },
               { id: "br_nvs5", name: "🍗 Chicken Majestic", price: 250, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
               { id: "br_nvs6", name: "🍗 Chicken Spring Roll", price: 260, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
@@ -452,7 +531,7 @@
             id: "br_biriyani", title: "Biriyani's",
             items: [
               { id: "br_b1", name: "🍗 Chicken Biriyani Single Piece", price: 170, img: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_b2", name: "🍗 Chicken Dum Biriyani", price: 220, img: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_b2", name: "🍗 Chicken Dum Biriyani", price: 220, bestseller: true, img: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=300&auto=format&fit=crop&q=80" },
               { id: "br_b3", name: "🍗 Chicken Fry Piece Biriyani", price: 260, img: "https://images.unsplash.com/photo-1633945274405-b6c8069047b0?w=300&auto=format&fit=crop&q=80" },
               { id: "br_b4", name: "🍗 Spl Chicken Biriyani", price: 270, img: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=300&auto=format&fit=crop&q=80" },
               { id: "br_b5", name: "🦐 Prawns Biriyani", price: 300, img: "https://images.unsplash.com/photo-1633945274405-b6c8069047b0?w=300&auto=format&fit=crop&q=80" },
@@ -514,7 +593,7 @@
           {
             id: "br_main_veg", title: "Main Course - Veg",
             items: [
-              { id: "br_mv1", name: "🧀 Panner Butter Masala", price: 250, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_mv1", name: "🧀 Panner Butter Masala", price: 250, bestseller: true, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
               { id: "br_mv2", name: "🧀 Kedai Panner", price: 250, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
               { id: "br_mv3", name: "🍄 Mashroom Curry", price: 230, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
               { id: "br_mv4", name: "🥜 Kaju Masala", price: 280, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
@@ -608,6 +687,19 @@
     let currentCategory = 'all';
     let searchQuery = '';
     let cart = {};
+    let favorites = new Set();
+
+    function goBack() {
+      if (searchQuery !== '') {
+        searchQuery = '';
+        document.getElementById('search-input').value = '';
+        renderItems();
+      } else if (currentCategory !== 'all') {
+        filterCategory('all');
+      } else {
+        window.history.back();
+      }
+    }
 
     function switchRestaurant(resId) {
       currentRestaurant = resId;
@@ -629,6 +721,36 @@
 
     function handleSearch(query) {
       searchQuery = query.trim().toLowerCase();
+      renderItems();
+    }
+
+    function focusSearch() {
+      const input = document.getElementById('search-input');
+      input.focus();
+      navClick('search');
+    }
+
+    function navClick(target) {
+      ['home', 'restaurants', 'instamart', 'offers', 'search'].forEach(id => {
+        const btn = document.getElementById(`nav-${id}`);
+        if (id === target) {
+          btn.className = "flex flex-col items-center text-orange-500";
+        } else {
+          btn.className = "flex flex-col items-center text-gray-400";
+        }
+      });
+
+      if (target === 'restaurants' || target === 'home') {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
+
+    function toggleFavorite(id) {
+      if (favorites.has(id)) {
+        favorites.delete(id);
+      } else {
+        favorites.add(id);
+      }
       renderItems();
     }
 
@@ -683,13 +805,20 @@
 
       itemsList.forEach(item => {
         const qty = cart[item.id] ? cart[item.id].qty : 0;
+        const isFav = favorites.has(item.id);
         const card = document.createElement("div");
-        card.className = "bg-white rounded-3xl p-4 shadow-sm border border-gray-100 flex items-center justify-between gap-4 transition hover:shadow-md";
+        card.className = "bg-white rounded-3xl p-4 shadow-sm border border-gray-100 flex items-center justify-between gap-4 transition hover:shadow-md relative overflow-hidden";
         card.innerHTML = `
           <div class="flex items-center gap-4 flex-1">
-            <img src="${item.img}" alt="${item.name}" class="w-20 h-20 rounded-2xl object-cover shadow-sm">
+            <div class="relative">
+              <img src="${item.img}" alt="${item.name}" class="w-20 h-20 rounded-2xl object-cover shadow-sm">
+              <button onclick="toggleFavorite('${item.id}')" class="absolute -top-1.5 -left-1.5 w-7 h-7 bg-white/90 rounded-full flex items-center justify-center shadow-md">
+                <i class="fa-${isFav ? 'solid' : 'regular'} fa-heart text-xs ${isFav ? 'text-red-500' : 'text-gray-400'}"></i>
+              </button>
+            </div>
             <div class="flex-1">
-              <h3 class="font-bold text-gray-900 text-sm leading-snug mb-1">${item.name}</h3>
+              ${item.bestseller ? `<span class="bg-amber-100 text-amber-800 text-[9px] font-extrabold px-2 py-0.5 rounded-full uppercase">Bestseller</span>` : ''}
+              <h3 class="font-bold text-gray-900 text-sm leading-snug mb-1 mt-0.5">${item.name}</h3>
               <p class="text-sm font-extrabold text-gray-800">₹${item.price}</p>
             </div>
           </div>
@@ -722,6 +851,7 @@
 
       updateCartBar();
       renderItems();
+      renderCartModalItems();
     }
 
     function updateCartBar() {
@@ -738,9 +868,43 @@
         bar.classList.remove("hidden");
         document.getElementById("cart-count").innerText = count;
         document.getElementById("cart-total").innerText = `₹${total}`;
+        document.getElementById("cart-modal-total").innerText = `₹${total}`;
       } else {
         bar.classList.add("hidden");
+        document.getElementById("cart-modal").classList.add("hidden");
       }
+    }
+
+    function toggleCartModal() {
+      const modal = document.getElementById("cart-modal");
+      if (modal.classList.contains("hidden")) {
+        renderCartModalItems();
+        modal.classList.remove("hidden");
+      } else {
+        modal.classList.add("hidden");
+      }
+    }
+
+    function renderCartModalItems() {
+      const container = document.getElementById("cart-modal-items");
+      container.innerHTML = "";
+      
+      Object.entries(cart).forEach(([id, item]) => {
+        const row = document.createElement("div");
+        row.className = "flex items-center justify-between p-3 bg-gray-50 rounded-2xl border border-gray-100";
+        row.innerHTML = `
+          <div>
+            <p class="font-bold text-xs text-gray-900">${item.name}</p>
+            <p class="text-xs text-gray-500 font-semibold mt-0.5">₹${item.price} x ${item.qty} = ₹${item.price * item.qty}</p>
+          </div>
+          <div class="flex items-center bg-white rounded-xl p-1 border border-gray-200">
+            <button onclick="updateQty('${id}', -1)" class="w-6 h-6 text-orange-500 font-bold flex items-center justify-center">-</button>
+            <span class="w-6 text-center font-bold text-xs">${item.qty}</span>
+            <button onclick="updateQty('${id}', 1)" class="w-6 h-6 text-orange-500 font-bold flex items-center justify-center">+</button>
+          </div>
+        `;
+        container.appendChild(row);
+      });
     }
 
     function sendOrderToWhatsApp() {
