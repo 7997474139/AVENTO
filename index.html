@@ -137,7 +137,76 @@
     </div>
   </div>
 
-  <!-- Swiggy Style Bottom Navigation Bar -->
+  <!-- Live Tracking Modal / Drawer -->
+  <div id="tracking-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex flex-col justify-end backdrop-blur-sm">
+    <div class="bg-white rounded-t-3xl max-w-md w-full mx-auto p-5 max-h-[85vh] flex flex-col shadow-2xl">
+      <div class="flex justify-between items-center pb-3 border-b border-gray-100">
+        <h3 class="font-extrabold text-gray-900 text-base flex items-center gap-2">
+          <i class="fa-solid fa-motorcycle text-orange-500"></i> Live Order Tracking
+        </h3>
+        <button onclick="toggleTrackingModal()" class="w-8 h-8 bg-gray-100 text-gray-500 rounded-full flex items-center justify-center">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="py-4 space-y-4 overflow-y-auto no-scrollbar flex-1">
+        <!-- Order ID Input Form -->
+        <div class="bg-orange-50 p-4 rounded-2xl border border-orange-100">
+          <label class="block text-xs font-bold text-gray-700 mb-1.5">Enter Your Order ID (e.g. 119)</label>
+          <div class="flex gap-2">
+            <input type="number" id="track-order-id-input" placeholder="Enter Order ID" class="flex-1 bg-white px-3 py-2.5 rounded-xl text-sm border border-orange-200 focus:outline-none focus:border-orange-500">
+            <button onclick="fetchOrderStatus()" class="bg-orange-500 text-white px-4 py-2.5 rounded-xl text-xs font-bold shadow-sm active:scale-95">Track</button>
+          </div>
+        </div>
+
+        <!-- Tracking Details Box -->
+        <div id="tracking-result" class="hidden space-y-4">
+          <div class="bg-gray-50 p-4 rounded-2xl border border-gray-200">
+            <div class="flex justify-between items-center mb-2">
+              <span class="text-xs font-bold text-gray-500" id="tr-order-id">Order #--</span>
+              <span class="text-xs font-extrabold px-2.5 py-1 rounded-full bg-amber-100 text-amber-800" id="tr-status">Pending</span>
+            </div>
+            <p class="text-sm font-bold text-gray-900 mb-1" id="tr-items">Items summary...</p>
+            <p class="text-sm font-black text-orange-600" id="tr-total">₹0</p>
+          </div>
+
+          <!-- Swiggy / Zomato Style Status Steps -->
+          <div class="space-y-3 pl-2">
+            <div class="flex items-center gap-3" id="step-confirmed">
+              <div class="w-8 h-8 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center font-bold text-xs" id="icon-confirmed">1</div>
+              <div>
+                <p class="text-xs font-bold text-gray-900">Order Confirmed</p>
+                <p class="text-[10px] text-gray-500">Your order has been received & verified</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-3" id="step-preparing">
+              <div class="w-8 h-8 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center font-bold text-xs" id="icon-preparing">2</div>
+              <div>
+                <p class="text-xs font-bold text-gray-900">Food Preparing</p>
+                <p class="text-[10px] text-gray-500">Restaurant is preparing your delicious food</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-3" id="step-out">
+              <div class="w-8 h-8 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center font-bold text-xs" id="icon-out">3</div>
+              <div>
+                <p class="text-xs font-bold text-gray-900">Out for Delivery</p>
+                <p class="text-[10px] text-gray-500">Delivery partner is on the way to your location</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-3" id="step-delivered">
+              <div class="w-8 h-8 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center font-bold text-xs" id="icon-delivered">4</div>
+              <div>
+                <p class="text-xs font-bold text-gray-900">Delivered</p>
+                <p class="text-[10px] text-gray-500">Enjoy your meal!</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Swiggy Style Bottom Navigation Bar with Track Option -->
   <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-40 py-2 shadow-lg">
     <div class="max-w-md mx-auto grid grid-cols-5 text-center">
       <button onclick="navClick('home')" id="nav-home" class="flex flex-col items-center text-orange-500">
@@ -148,9 +217,9 @@
         <i class="fa-solid fa-utensils text-lg"></i>
         <span class="text-[10px] font-bold mt-1">Dineout</span>
       </button>
-      <button onclick="navClick('instamart')" id="nav-instamart" class="flex flex-col items-center text-gray-400">
-        <i class="fa-solid fa-basket-shopping text-lg"></i>
-        <span class="text-[10px] font-bold mt-1">Instamart</span>
+      <button onclick="toggleTrackingModal()" id="nav-track" class="flex flex-col items-center text-gray-400">
+        <i class="fa-solid fa-motorcycle text-lg"></i>
+        <span class="text-[10px] font-bold mt-1">Track</span>
       </button>
       <button onclick="navClick('offers')" id="nav-offers" class="flex flex-col items-center text-gray-400">
         <i class="fa-solid fa-percent text-lg"></i>
@@ -731,17 +800,77 @@
     }
 
     function navClick(target) {
-      ['home', 'restaurants', 'instamart', 'offers', 'search'].forEach(id => {
+      ['home', 'restaurants', 'track', 'offers', 'search'].forEach(id => {
         const btn = document.getElementById(`nav-${id}`);
-        if (id === target) {
-          btn.className = "flex flex-col items-center text-orange-500";
-        } else {
-          btn.className = "flex flex-col items-center text-gray-400";
+        if (btn) {
+          if (id === target) {
+            btn.className = "flex flex-col items-center text-orange-500";
+          } else {
+            btn.className = "flex flex-col items-center text-gray-400";
+          }
         }
       });
 
       if (target === 'restaurants' || target === 'home') {
         window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
+
+    function toggleTrackingModal() {
+      const modal = document.getElementById("tracking-modal");
+      modal.classList.toggle("hidden");
+    }
+
+    async function fetchOrderStatus() {
+      const orderId = document.getElementById("track-order-id-input").value.trim();
+      if (!orderId) {
+        alert("Please enter Order ID");
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/order-status/${orderId}`);
+        const data = await res.json();
+        
+        if (res.ok) {
+          document.getElementById("tracking-result").classList.remove("hidden");
+          document.getElementById("tr-order-id").innerText = `Order #${data.order_id}`;
+          document.getElementById("tr-status").innerText = data.status;
+          document.getElementById("tr-items").innerText = data.items_summary;
+          document.getElementById("tr-total").innerText = `₹${data.total}`;
+
+          updateTrackingSteps(data.status);
+        } else {
+          alert(data.error || "Order not found");
+        }
+      } catch (err) {
+        alert("Error fetching order status");
+      }
+    }
+
+    function updateTrackingSteps(status) {
+      ['confirmed', 'preparing', 'out', 'delivered'].forEach(s => {
+        const el = document.getElementById(`step-${s}`);
+        const icon = document.getElementById(`icon-${s}`);
+        icon.className = "w-8 h-8 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center font-bold text-xs";
+        el.style.opacity = "0.5";
+      });
+
+      if (['CONFIRMED', 'PREPARING', 'OUT_FOR_DELIVERY', 'DELIVERED', 'PAYMENT_REVIEW'].includes(status)) {
+        document.getElementById('step-confirmed').style.opacity = "1";
+        document.getElementById('icon-confirmed').className = "w-8 h-8 rounded-full bg-emerald-500 text-white flex items-center justify-center font-bold text-xs";
+      }
+      if (['PREPARING', 'OUT_FOR_DELIVERY', 'DELIVERED'].includes(status)) {
+        document.getElementById('step-preparing').style.opacity = "1";
+        document.getElementById('icon-preparing').className = "w-8 h-8 rounded-full bg-emerald-500 text-white flex items-center justify-center font-bold text-xs";
+      }
+      if (['OUT_FOR_DELIVERY', 'DELIVERED'].includes(status)) {
+        document.getElementById('step-out').style.opacity = "1";
+        document.getElementById('icon-out').className = "w-8 h-8 rounded-full bg-emerald-500 text-white flex items-center justify-center font-bold text-xs";
+      }
+      if (status === 'DELIVERED') {
+        document.getElementById('step-delivered').style.opacity = "1";
+        document.getElementById('icon-delivered').className = "w-8 h-8 rounded-full bg-emerald-500 text-white flex items-center justify-center font-bold text-xs";
       }
     }
 
