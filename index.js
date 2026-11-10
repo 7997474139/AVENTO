@@ -172,6 +172,13 @@ const app = express();
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
 
+// 👇 Fixed: Static files & track.html explicit routing added here
+app.use(express.static(path.join(__dirname)));
+
+app.get("/track.html", (req, res) => {
+  res.sendFile(path.join(__dirname, "track.html"));
+});
+
 const {
   PORT = 3000,
   VERIFY_TOKEN,
