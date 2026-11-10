@@ -72,20 +72,18 @@
     <!-- Restaurant Selector Cards -->
     <div class="mb-4">
       <h2 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2.5">Select Restaurant</h2>
-      <div class="grid grid-cols-2 gap-3">
-        <button onclick="switchRestaurant('food_palace')" id="tab-food_palace" class="p-3 rounded-2xl font-bold text-xs flex items-center gap-3 transition bg-orange-500 text-white shadow-md shadow-orange-100">
-          <img src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=100&auto=format&fit=crop&q=80" class="w-10 h-10 rounded-xl object-cover shadow-sm">
-          <div class="text-left">
-            <p class="text-sm leading-tight font-bold">Food Palace</p>
-            <span class="text-[10px] text-orange-100">North Indian, Chinese</span>
-          </div>
+      <div class="grid grid-cols-3 gap-2">
+        <button onclick="switchRestaurant('food_palace')" id="tab-food_palace" class="p-2.5 rounded-2xl font-bold text-xs flex flex-col items-center gap-1.5 transition bg-orange-500 text-white shadow-md shadow-orange-100">
+          <img src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=100&auto=format&fit=crop&q=80" class="w-8 h-8 rounded-xl object-cover shadow-sm">
+          <span class="text-[11px] leading-tight font-bold text-center">Food Palace</span>
         </button>
-        <button onclick="switchRestaurant('brindavanam')" id="tab-brindavanam" class="p-3 rounded-2xl font-bold text-xs flex items-center gap-3 transition bg-white text-gray-700 border border-gray-200 shadow-sm">
-          <img src="https://images.unsplash.com/photo-1552566626-52f8b828add9?w=100&auto=format&fit=crop&q=80" class="w-10 h-10 rounded-xl object-cover shadow-sm">
-          <div class="text-left">
-            <p class="text-sm leading-tight font-bold">Brindavan</p>
-            <span class="text-[10px] text-gray-400">Special Biryani</span>
-          </div>
+        <button onclick="switchRestaurant('brindavanam')" id="tab-brindavanam" class="p-2.5 rounded-2xl font-bold text-xs flex flex-col items-center gap-1.5 transition bg-white text-gray-700 border border-gray-200 shadow-sm">
+          <img src="https://images.unsplash.com/photo-1552566626-52f8b828add9?w=100&auto=format&fit=crop&q=80" class="w-8 h-8 rounded-xl object-cover shadow-sm">
+          <span class="text-[11px] leading-tight font-bold text-center">Brindavan</span>
+        </button>
+        <button onclick="switchRestaurant('tea_time')" id="tab-tea_time" class="p-2.5 rounded-2xl font-bold text-xs flex flex-col items-center gap-1.5 transition bg-white text-gray-700 border border-gray-200 shadow-sm">
+          <img src="https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=100&auto=format&fit=crop&q=80" class="w-8 h-8 rounded-xl object-cover shadow-sm">
+          <span class="text-[11px] leading-tight font-bold text-center">Tea Time</span>
         </button>
       </div>
     </div>
@@ -237,7 +235,7 @@
 
     const menus = {
       food_palace: {
-        name: "Food Palace Restaurant",
+        name: "Food Place Restaurant",
         categories: [
           {
             id: "fp_soups", title: "Soups",
@@ -749,6 +747,41 @@
             ]
           }
         ]
+      },
+      tea_time: {
+        name: "Tea Time",
+        categories: [
+          {
+            id: "tt_rice_noodles", title: "Rice & Noodles",
+            items: [
+              { id: "tt_rn1", name: "🍚 Gobi Rice", price: 80, img: "https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=300&auto=format&fit=crop&q=80" },
+              { id: "tt_rn2", name: "🍜 Gobi Noodles", price: 80, img: "https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=300&auto=format&fit=crop&q=80" },
+              { id: "tt_rn3", name: "🍳 Egg Rice", price: 70, img: "https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=300&auto=format&fit=crop&q=80" },
+              { id: "tt_rn4", name: "🍜 Egg Noodles", price: 70, img: "https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=300&auto=format&fit=crop&q=80" },
+              { id: "tt_rn5", name: "🍗 Chicken Rice", price: 100, bestseller: true, img: "https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=300&auto=format&fit=crop&q=80" },
+              { id: "tt_rn6", name: "🍜 Chicken Noodles", price: 100, bestseller: true, img: "https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=300&auto=format&fit=crop&q=80" }
+            ]
+          },
+          {
+            id: "tt_starters", title: "Starters & Manchuria",
+            items: [
+              { id: "tt_st1", name: "🥦 Gobi Manchuria", price: 150, img: "https://images.unsplash.com/photo-1645177628172-a94c1f96e6db?w=300&auto=format&fit=crop&q=80" },
+              { id: "tt_st2", name: "🍗 Chicken Manchuria", price: 170, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "tt_st3", name: "🍗 Chicken 65", price: 180, bestseller: true, img: "https://images.unsplash.com/photo-1610057099443-fde8c4d50f91?w=300&auto=format&fit=crop&q=80" },
+              { id: "tt_st4", name: "🍗 Chilli Chicken", price: 170, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "tt_st5", name: "🍗 Chicken Pakoda (1 kg)", price: 450, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" }
+            ]
+          },
+          {
+            id: "tt_rolls", title: "Rolls",
+            items: [
+              { id: "tt_rl1", name: "🌯 Veg Roll", price: 150, img: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?w=300&auto=format&fit=crop&q=80" },
+              { id: "tt_rl2", name: "🌯 Egg Roll", price: 160, img: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?w=300&auto=format&fit=crop&q=80" },
+              { id: "tt_rl3", name: "🌯 Chicken Roll", price: 190, bestseller: true, img: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?w=300&auto=format&fit=crop&q=80" },
+              { id: "tt_rl4", name: "🌯 Gobi Roll", price: 70, img: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?w=300&auto=format&fit=crop&q=80" }
+            ]
+          }
+        ]
       }
     };
 
@@ -777,12 +810,16 @@
       document.getElementById('search-input').value = '';
       
       document.getElementById('tab-food_palace').className = resId === 'food_palace' 
-        ? "p-3 rounded-2xl font-bold text-xs flex items-center gap-3 transition bg-orange-500 text-white shadow-md shadow-orange-100"
-        : "p-3 rounded-2xl font-bold text-xs flex items-center gap-3 transition bg-white text-gray-700 border border-gray-200 shadow-sm";
+        ? "p-2.5 rounded-2xl font-bold text-xs flex flex-col items-center gap-1.5 transition bg-orange-500 text-white shadow-md shadow-orange-100"
+        : "p-2.5 rounded-2xl font-bold text-xs flex flex-col items-center gap-1.5 transition bg-white text-gray-700 border border-gray-200 shadow-sm";
       
       document.getElementById('tab-brindavanam').className = resId === 'brindavanam' 
-        ? "p-3 rounded-2xl font-bold text-xs flex items-center gap-3 transition bg-orange-500 text-white shadow-md shadow-orange-100"
-        : "p-3 rounded-2xl font-bold text-xs flex items-center gap-3 transition bg-white text-gray-700 border border-gray-200 shadow-sm";
+        ? "p-2.5 rounded-2xl font-bold text-xs flex flex-col items-center gap-1.5 transition bg-orange-500 text-white shadow-md shadow-orange-100"
+        : "p-2.5 rounded-2xl font-bold text-xs flex flex-col items-center gap-1.5 transition bg-white text-gray-700 border border-gray-200 shadow-sm";
+
+      document.getElementById('tab-tea_time').className = resId === 'tea_time' 
+        ? "p-2.5 rounded-2xl font-bold text-xs flex flex-col items-center gap-1.5 transition bg-orange-500 text-white shadow-md shadow-orange-100"
+        : "p-2.5 rounded-2xl font-bold text-xs flex flex-col items-center gap-1.5 transition bg-white text-gray-700 border border-gray-200 shadow-sm";
 
       renderCategories();
       renderItems();

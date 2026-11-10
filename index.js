@@ -22,6 +22,11 @@ const restaurantsData = {
     name: "Brindavan Restaurant",
     lat: 13.950000,
     lng: 79.355000,
+  },
+  tea_time: {
+    name: "Tea Time",
+    lat: 13.952000,
+    lng: 79.357000,
   }
 };
 
@@ -163,9 +168,51 @@ const brindavanMenu = {
   ],
 };
 
+// ==================================================
+// TEA TIME MENU (Newly Added from PDF)
+// ==================================================
+const teaTimeMenu = {
+  categories: [
+    {
+      id: "tt_fast_food",
+      title: "Rice & Noodles",
+      items: [
+        { id: "tt_1", name: "🍚 Gobi Rice", price: 80 },
+        { id: "tt_2", name: "🍜 Gobi Noodles", price: 80 },
+        { id: "tt_3", name: "🍳 Egg Rice", price: 70 },
+        { id: "tt_4", name: "🍜 Egg Noodles", price: 70 },
+        { id: "tt_5", name: "🍗 Chicken Rice", price: 100 },
+        { id: "tt_6", name: "🍜 Chicken Noodles", price: 100 },
+      ],
+    },
+    {
+      id: "tt_starters",
+      title: "Starters & Pakoda",
+      items: [
+        { id: "tt_7", name: "🥦 Gobi Manchuria", price: 150 },
+        { id: "tt_8", name: "🍗 Chicken Manchuria", price: 170 },
+        { id: "tt_9", name: "🍗 Chicken 65", price: 180 },
+        { id: "tt_10", name: "🍗 Chilli Chicken", price: 170 },
+        { id: "tt_11", name: "🍗 Chicken Pakoda (1 kg)", price: 450 },
+      ],
+    },
+    {
+      id: "tt_rolls",
+      title: "Rolls",
+      items: [
+        { id: "tt_12", name: "🌯 Veg Roll", price: 150 },
+        { id: "tt_13", name: "🌯 Egg Roll", price: 160 },
+        { id: "tt_14", name: "🌯 Chicken Roll", price: 190 },
+        { id: "tt_15", name: "🌯 Gobi Roll", price: 70 },
+      ],
+    }
+  ],
+};
+
 const restaurantMenus = {
   food_palace: foodPalaceMenu,
   brindavanam: brindavanMenu,
+  tea_time: teaTimeMenu,
 };
 
 const app = express();
@@ -448,10 +495,8 @@ app.post(["/webhook", "/whatsapp/webhook", "/whatsapp/webhook/"], async (req, re
           await updateOrder(orderId, { status: "CONFIRMED" });
           const trackingUrl = `https://www.aventonow.live/track.html?id=${order.id}`;
           
-          // Send notification to customer
           await sendText(order.user_phone, `🎉 *అభినందనలు!* మీ పేమెంట్ వెరిఫై అయింది మరియు ఆర్డర్ కన్ఫర్మ్ చేయబడింది! (#${order.id})\n\n🛵 మీ ఫుడ్ లైవ్ ట్రాకింగ్ కోసం కింద ఉన్న లింక్ క్లిక్ చేయండి:\n🔗 ${trackingUrl}`);
           
-          // Send interactive buttons to admin to progress the order next (Preparing / Reject)
           await sendWhatsApp({
             to: message.from,
             type: "interactive",
@@ -474,7 +519,6 @@ app.post(["/webhook", "/whatsapp/webhook", "/whatsapp/webhook/"], async (req, re
           await updateOrder(orderId, { status: "PREPARING" });
           await sendText(order.user_phone, `👨‍🍳 *మీ ఫుడ్ ప్రిపేర్ అవుతోంది!* ఆర్డర్ #${order.id} కిచెన్‌లో తయారవుతోంది (10-20 mins).`);
           
-          // Send next action buttons to admin
           await sendWhatsApp({
             to: message.from,
             type: "interactive",
@@ -496,7 +540,6 @@ app.post(["/webhook", "/whatsapp/webhook", "/whatsapp/webhook/"], async (req, re
           await updateOrder(orderId, { status: "OUT_FOR_DELIVERY" });
           await sendText(order.user_phone, `🛵 *డెలివరీ భాగస్వామి బయలుదేరారు!* ఆర్డర్ #${order.id} మీ లొకేషన్‌కి వస్తోంది.`);
           
-          // Send final action button to admin
           await sendWhatsApp({
             to: message.from,
             type: "interactive",
@@ -558,11 +601,13 @@ app.post(["/webhook", "/whatsapp/webhook", "/whatsapp/webhook/"], async (req, re
       return;
     }
 
-    // 1. Web Order Received
-    if (text.includes("New Food Order") || text.includes("Food Place") || text.includes("Brindavan")) {
+    // 1. Web Order Received (Handles Food Place, Brindavan, and Tea Time)
+    if (text.includes("New Food Order") || text.includes("Food Place") || text.includes("Brindavan") || text.includes("Tea Time")) {
       let selectedRestKey = "food_palace";
       if (text.toLowerCase().includes("brindavan")) {
         selectedRestKey = "brindavanam";
+      } else if (text.toLowerCase().includes("tea time")) {
+        selectedRestKey = "tea_time";
       }
 
       await setState(phone, "AWAITING_LOCATION", {
@@ -679,7 +724,7 @@ app.post(["/webhook", "/whatsapp/webhook", "/whatsapp/webhook/"], async (req, re
          <p><b>Order ID:</b> #${order.id}</p>
          <p><b>Customer WhatsApp:</b> <a href="${chatLink}" target="_blank">${phone}</a></p>
          <p><b>Distance:</b> ${distance.toFixed(1)} km</p>
-         <p><b>Delivery Fee:</b> ₹${deliveryFee}</p>
+         <p><b>Delivery Fee:</b> ${deliveryFee}</p>
          <p><b>Total Payable:</b> ₹${totalAmount}</p>
          <p><b>Location:</b> <a href="${mapLink}" target="_blank">View on Google Maps</a></p>`
       );
