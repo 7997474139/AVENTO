@@ -12,6 +12,23 @@ const { Resend } = require("resend");
 const brindavanMenu = require("./services/brindavanMenu");
 
 // ==================================================
+// RESTAURANTS & THEIR EXACT GPS LOCATIONS (Railway Kodur)
+// భవిష్యత్తులో కొత్త హోటల్స్ లేదా వేర్వేరు లొకేషన్స్ ఇక్కడ యాడ్ చేసుకోవచ్చు
+// ==================================================
+const restaurantsData = {
+  food_palace: {
+    name: "Food Place Restaurant",
+    lat: 13.951505,
+    lng: 79.356579,
+  },
+  brindavanam: {
+    name: "Brindavan",
+    lat: 13.950000, // అవసరమైతే మార్చుకోవచ్చు
+    lng: 79.355000, // అవసరమైతే మార్చుకోవచ్చు
+  }
+};
+
+// ==================================================
 // FOOD PLACE RESTAURANT MENU (PDF Menu + ₹50 added)
 // ==================================================
 const foodPalaceMenu = {
@@ -238,11 +255,6 @@ const foodPalaceMenu = {
   ],
 };
 
-const restaurantMenus = {
-  brindavanam: brindavanMenu,
-  food_palace: foodPalaceMenu,
-};
-
 const app = express();
 app.use(express.json({ limit: "10mb" }));
 
@@ -287,11 +299,10 @@ async function sendOrderEmail(subject, htmlContent) {
 }
 
 // ==================================================
-// DISTANCE & DELIVERY FEE RULES (Railway Kodur)
+// DISTANCE & NEW DELIVERY FEE RULES (₹40 per KM)
+// 1 కిమీ లేదా అంతకంటే తక్కువ ఉంటే: ₹40
+// 1 కిమీ దాటితే: ప్రతి కిమీకి ₹40 (ఉదా: 2.6 కిమీ అంటే 3 కిమీగా రౌండప్ చేసి 3 * 40 = ₹120 లేదా డిస్టెన్స్ ప్రకారం)
 // ==================================================
-const RESTAURANT_LAT = 13.951505;
-const RESTAURANT_LNG = 79.356579;
-
 function calculateDistance(lat1, lon1, lat2, lon2) {
   const R = 6371;
   const dLat = (lat2 - lat1) * (Math.PI / 180);
@@ -301,8 +312,13 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
 }
 
 function calculateDeliveryFee(distanceInKm) {
-  if (distanceInKm <= 2) return 40; 
-  return Math.round(40 + (distanceInKm - 2) * 15); 
+  if (distanceInKm <= 1) {
+    return 40; // 1 కిలోమీటర్ లోపు లేదా సరిగ్గా 1 కిమీ ఉంటే ₹40
+  }
+  // కిలోమీటర్ దాటితే ప్రతి కిమీకి ₹40 చొప్పున (ఉదా: 2.6 km -> ceil(2.6) = 3 km -> 3 * 40 = 120)
+  // లేదా మీరు ఇచ్చిన ఉదాహరణ ప్రకారం రౌండ్ అప్ చేయవచ్చు:
+  const roundedKm = Math.ceil(distanceInKm);
+  return roundedKm * 40;
 }
 
 function normalize(value = "") {
@@ -457,12 +473,17 @@ app.post(["/webhook", "/whatsapp/webhook", "/whatsapp/webhook/"], async (req, re
     const temp = getTemp(user);
 
     // 1. వెబ్‌సైట్ నుండి ఆర్డర్ రాగానే: ప్రైసెస్ చూపకుండా కేవలం న్యూ ఆర్డర్ అని పంపి, లొకేషన్ అడగడం
-    if (text.includes("New Food Order") || text.includes("Food Palace") || text.includes("Brindavan")) {
+    if (text.includes("New Food Order") || text.includes("Food Place") || text.includes("Brindavan")) {
+      // ఏ హోటల్ నుండి ఆర్డర్ వచ్చిందో గుర్తించి దాని లొకేషన్ కీ ని టెంప్ లో సేవ్ చేయడం
+      let selectedRestKey = "food_palace";
+      if (text.toLowerCase().includes("brindavan")) {
+        selectedRestKey = "brindavanam";
+      }
+
       await setState(phone, "AWAITING_LOCATION", {
-        temp_selection: { purpose: "CHECKOUT", web_order_summary: text, service: "food" }
+        temp_selection: { purpose: "CHECKOUT", web_order_summary: text, service: "food", restaurant_key: selectedRestKey }
       });
       
-      // కస్టమర్‌కి కేవలం ఆర్డర్ అందినట్లు చెప్పి లొకేషన్ అడగడం
       await sendText(
         phone,
         "📍 *మీ వెబ్‌సైట్ ఆర్డర్ స్వీకరించబడింది!*\n\n" +
@@ -481,7 +502,7 @@ app.post(["/webhook", "/whatsapp/webhook", "/whatsapp/webhook/"], async (req, re
       return;
     }
 
-    // 3. లొకేషన్ అందిన తర్వాత: డిస్టెన్స్ లెక్కించి, హోటల్ పేరు, ఐటమ్స్, టోటల్ ప్రైస్, లొకేషన్ డిస్టెన్స్‌తో ఆర్డర్ కన్ఫర్మ్ చేసి పేమెంట్ వివరాలు పంపడం
+    // 3. లొకేషన్ అందిన తర్వాత: సరైన హోటల్ లొకేషన్ నుండి డిస్టెన్స్ లెక్కించి, కొత్త రేట్ల ప్రకారం డెలివరీ ఛార్జ్ కట్టడం
     if (type === "location" && message.location) {
       if (user.current_state !== "AWAITING_LOCATION") {
         await sendText(phone, "Please send your location when asked during checkout.");
@@ -490,10 +511,13 @@ app.post(["/webhook", "/whatsapp/webhook", "/whatsapp/webhook/"], async (req, re
       const location = { latitude: message.location.latitude, longitude: message.location.longitude };
       await updateUser(phone, { location, current_state: "REVIEW_ORDER" });
       
-      const distance = calculateDistance(RESTAURANT_LAT, RESTAURANT_LNG, location.latitude, location.longitude);
+      // హోటల్ లొకేషన్‌ని డైనమిక్‌గా తీసుకోవడం (డిఫాల్ట్ Food Palace)
+      const restKey = temp.restaurant_key || "food_palace";
+      const restInfo = restaurantsData[restKey] || restaurantsData.food_palace;
+
+      const distance = calculateDistance(restInfo.lat, restInfo.lng, location.latitude, location.longitude);
       const deliveryFee = calculateDeliveryFee(distance);
       
-      // వెబ్‌సైట్ నుండి వచ్చిన టెక్స్ట్ (web_order_summary) నుండి ఫుడ్ టోటల్ అమౌంట్‌ను డైనమిక్‌గా ఎక్స్‌ట్రాక్ట్ చేయడం
       let foodTotal = 0;
       const summaryText = temp.web_order_summary || "";
       const match = summaryText.match(/Food Total:\s*₹?(\d+(\.\d+)?)/i);
@@ -525,7 +549,7 @@ app.post(["/webhook", "/whatsapp/webhook", "/whatsapp/webhook/"], async (req, re
         `✅ *ORDER CONFIRMED!* (#${order.id})\n\n` +
         `${temp.web_order_summary || ""}\n` +
         `📏 Distance: ${distance.toFixed(1)} KM\n` +
-        `🚚 Delivery Charges: ₹${deliveryFee} (${distance <= 2 ? 'Flat ₹40 for 2km' : '₹40 + ₹15/km'})\n` +
+        `🚚 Delivery Charges: ₹${deliveryFee} (${distance <= 1 ? 'Flat ₹40 for 1km' : `₹40 per km (Total ${Math.ceil(distance)} km)`})\n` +
         `💰 *Total Payable: ₹${totalAmount}*\n\n` +
         `📱 UPI ID: *${AVENTO_UPI_ID}*\n` +
         `👤 Name: *${AVENTO_UPI_NAME}*\n\n` +
@@ -538,7 +562,7 @@ app.post(["/webhook", "/whatsapp/webhook", "/whatsapp/webhook/"], async (req, re
       const chatLink = `https://wa.me/${cleanPhone}`;
       const mapLink = `https://maps.google.com/?q=${location.latitude},${location.longitude}`;
 
-      // అడ్మిన్ పర్సనల్ వాట్సాప్‌కి "ఆర్డర్ కన్ఫర్మ్" అని నోటిఫికేషన్ పంపడం (పేరు, ఫోటోలు లేకుండా జస్ట్ ఆర్డర్ వివరాలు & స్క్రీన్ షాట్ అడిగేలా)
+      // అడ్మిన్ వాట్సాప్‌కి నోటిఫికేషన్
       if (AVENTO_ADMIN_PHONE) {
         await sendWhatsApp({
           to: AVENTO_ADMIN_PHONE,
@@ -566,7 +590,6 @@ app.post(["/webhook", "/whatsapp/webhook", "/whatsapp/webhook/"], async (req, re
         });
       }
 
-      // అడ్మిన్ ఈమెయిల్‌కి నోటిఫికేషన్ పంపడం
       await sendOrderEmail(
         `🚀 New Confirmed Food Order! (#${order.id})`,
         `<h2>🍽️ New Food Order Confirmed (Railway Kodur)</h2>
@@ -581,7 +604,7 @@ app.post(["/webhook", "/whatsapp/webhook", "/whatsapp/webhook/"], async (req, re
       return;
     }
 
-    // 4. UTR / Payment Screenshot Handling (కస్టమర్ పంపిన స్క్రీన్ షాట్ లేదా UTR ని అడ్మిన్‌కి ఫార్వార్డ్ చేయడం)
+    // 4. UTR / Payment Screenshot Handling
     if (user.current_state === "AWAITING_UTR") {
       let orderId = temp.pending_order_id;
       if (!orderId) {
@@ -600,10 +623,8 @@ app.post(["/webhook", "/whatsapp/webhook", "/whatsapp/webhook/"], async (req, re
       await updateOrder(orderId, { details: JSON.stringify(details), status: "PAYMENT_REVIEW" });
       await setState(phone, "IDLE", { cart: [], temp_selection: {} });
 
-      // కస్టమర్‌కి రిప్లై
       await sendText(phone, `✅ మీ UTR / స్క్రీన్ షాట్ అందినది.\n🧾 Order #${order.id}\nమా టీమ్ పరిశీలించి త్వరలో ఆర్డర్ కన్ఫర్మ్ చేస్తుంది. 🙏`);
 
-      // అడ్మిన్ పర్సనల్ వాట్సాప్‌కి కస్టమర్ పంపిన స్క్రీన్ షాట్ / UTR ని ఫార్వార్డ్ చేయడం
       if (AVENTO_ADMIN_PHONE) {
         if (type === "image" && imageMediaId) {
           await sendWhatsApp({
@@ -619,7 +640,7 @@ app.post(["/webhook", "/whatsapp/webhook", "/whatsapp/webhook/"], async (req, re
       return;
     }
 
-    // 5. Welcome Message with Custom Domain Link
+    // 5. Welcome Message
     if (["hi", "hello", "menu", "start"].includes(normalized)) {
       const welcomeText = 
         "🙏 *Namaste! Welcome to Avento Services.*\n\n" +
