@@ -172,7 +172,7 @@ const app = express();
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
 
-// 👇 Fixed: Static files & track.html explicit routing added here
+// 👇 Static files & track.html explicit routing
 app.use(express.static(path.join(__dirname)));
 
 app.get("/track.html", (req, res) => {
@@ -447,8 +447,76 @@ app.post(["/webhook", "/whatsapp/webhook", "/whatsapp/webhook/"], async (req, re
         if (order) {
           await updateOrder(orderId, { status: "CONFIRMED" });
           const trackingUrl = `https://www.aventonow.live/track.html?id=${order.id}`;
+          
+          // Send notification to customer
           await sendText(order.user_phone, `🎉 *అభినందనలు!* మీ పేమెంట్ వెరిఫై అయింది మరియు ఆర్డర్ కన్ఫర్మ్ చేయబడింది! (#${order.id})\n\n🛵 మీ ఫుడ్ లైవ్ ట్రాకింగ్ కోసం కింద ఉన్న లింక్ క్లిక్ చేయండి:\n🔗 ${trackingUrl}`);
-          await sendText(message.from, `✅ Order #${orderId} marked as CONFIRMED and tracking link sent to customer.`);
+          
+          // Send interactive buttons to admin to progress the order next (Preparing / Reject)
+          await sendWhatsApp({
+            to: message.from,
+            type: "interactive",
+            interactive: {
+              type: "button",
+              body: { text: `✅ Order #${orderId} CONFIRMED.\n\nప్రస్తుత తదుపరి దశను ఎంచుకోండి:` },
+              action: {
+                buttons: [
+                  { type: "reply", reply: { id: `adm_prep_${order.id}`, title: "👨‍🍳 Preparing" } },
+                  { type: "reply", reply: { id: `adm_out_${order.id}`, title: "🛵 Out for Delivery" } },
+                  { type: "reply", reply: { id: `adm_del_${order.id}`, title: "✅ Delivered" } }
+                ]
+              }
+            }
+          });
+        }
+      } else if (action === "prep") {
+        const order = await getOrderById(orderId);
+        if (order) {
+          await updateOrder(orderId, { status: "PREPARING" });
+          await sendText(order.user_phone, `👨‍🍳 *మీ ఫుడ్ ప్రిపేర్ అవుతోంది!* ఆర్డర్ #${order.id} కిచెన్‌లో తయారవుతోంది (10-20 mins).`);
+          
+          // Send next action buttons to admin
+          await sendWhatsApp({
+            to: message.from,
+            type: "interactive",
+            interactive: {
+              type: "button",
+              body: { text: `👨‍🍳 Order #${orderId} is now PREPARING.\n\nతదుపరి దశను ఎంచుకోండి:` },
+              action: {
+                buttons: [
+                  { type: "reply", reply: { id: `adm_out_${order.id}`, title: "🛵 Out for Delivery" } },
+                  { type: "reply", reply: { id: `adm_del_${order.id}`, title: "✅ Delivered" } }
+                ]
+              }
+            }
+          });
+        }
+      } else if (action === "out") {
+        const order = await getOrderById(orderId);
+        if (order) {
+          await updateOrder(orderId, { status: "OUT_FOR_DELIVERY" });
+          await sendText(order.user_phone, `🛵 *డెలివరీ భాగస్వామి బయలుదేరారు!* ఆర్డర్ #${order.id} మీ లొకేషన్‌కి వస్తోంది.`);
+          
+          // Send final action button to admin
+          await sendWhatsApp({
+            to: message.from,
+            type: "interactive",
+            interactive: {
+              type: "button",
+              body: { text: `🛵 Order #${orderId} is OUT FOR DELIVERY.\n\nమార్క్ చేయండి:` },
+              action: {
+                buttons: [
+                  { type: "reply", reply: { id: `adm_del_${order.id}`, title: "✅ Delivered" } }
+                ]
+              }
+            }
+          });
+        }
+      } else if (action === "del") {
+        const order = await getOrderById(orderId);
+        if (order) {
+          await updateOrder(orderId, { status: "DELIVERED" });
+          await sendText(order.user_phone, `✅ *డెలివరీ విజయవంతమైంది!* మీ ఆర్డర్ #${order.id} డెలివరీ చేయబడింది. ధన్యవాదాలు! 🙏`);
+          await sendText(message.from, `✅ Order #${orderId} marked as DELIVERED successfully! 🎉`);
         }
       } else if (action === "ask") {
         const order = await getOrderById(orderId);
