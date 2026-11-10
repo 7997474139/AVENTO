@@ -75,7 +75,7 @@ const foodPalaceMenu = {
 };
 
 // ==================================================
-// BRINDAVAN MENU (PDF నుండి తీసుకున్నది - ప్రతి ఐటమ్ పై ₹40 పెంచబడింది)
+// BRINDAVAN MENU
 // ==================================================
 const brindavanMenu = {
   categories: [
@@ -213,7 +213,7 @@ async function sendOrderEmail(subject, htmlContent) {
 }
 
 // ==================================================
-// DISTANCE & DELIVERY FEE RULES (2km min ₹50, above ₹15/km)
+// DISTANCE & DELIVERY FEE RULES
 // ==================================================
 function calculateDistance(lat1, lon1, lat2, lon2) {
   const R = 6371;
@@ -357,10 +357,6 @@ app.get("/health", (req, res) => {
   res.status(200).json({ status: "ok", service: "avento-whatsapp-bot" });
 });
 
-// ==================================================
-// SWIGGY / ZOMATO STYLE LIVE TRACKING ENDPOINTS
-// ==================================================
-
 // 1. Get Order Status API for Tracking Page
 app.get("/api/order-status/:id", async (req, res) => {
   try {
@@ -372,7 +368,7 @@ app.get("/api/order-status/:id", async (req, res) => {
     const details = parseOrderDetails(order.details);
     res.json({
       order_id: order.id,
-      status: order.status, // PENDING_PAYMENT, PAYMENT_REVIEW, CONFIRMED, PREPARING, OUT_FOR_DELIVERY, DELIVERED
+      status: order.status,
       service_type: order.service_type,
       items_summary: details.items_summary || "",
       total: details.total || 0,
@@ -383,7 +379,7 @@ app.get("/api/order-status/:id", async (req, res) => {
   }
 });
 
-// 2. Admin API to Update Order Status (Preparing, Out for Delivery, etc.)
+// 2. Admin API to Update Order Status
 app.post("/api/update-status", async (req, res) => {
   try {
     const { order_id, status } = req.body;
@@ -395,16 +391,16 @@ app.post("/api/update-status", async (req, res) => {
 
     await updateOrder(order_id, { status });
 
-    // Send WhatsApp notification to customer based on status update
     let customerMsg = "";
     if (status === "CONFIRMED") {
-      customerMsg = `🎉 *మంచి వార్త!* మీ ఆర్డర్ కన్ఫర్మ్ అయింది (#${order.id}). రెస్టారెంట్ త్వరలో ప్రిపేర్ చేయడం ప్రారంభಿಸುತ್ತದೆ! 🍲`;
+      const trackingUrl = `https://www.aventonow.live/track.html?id=${order.id}`;
+      customerMsg = `🎉 *మంచి వార్త!* మీ ఆర్డర్ కన్ఫర్మ్ అయింది (#${order.id}).\n\n🛵 మీ ఫుడ్ లైవ్ ట్రాకింగ్ కోసం కింద ఉన్న లింక్ క్లిక్ చేయండి:\n🔗 ${trackingUrl}`;
     } else if (status === "PREPARING") {
       customerMsg = `👨‍🍳 *మీ ఫుడ్ ప్రిపేర్ అవుతోంది!* ఆర్డర్ #${order.id} కిచెన్‌లో తయారవుతోంది. వేడివేడిగా మీ ముందుకు వస్తుంది! 🛵`;
     } else if (status === "OUT_FOR_DELIVERY") {
       customerMsg = `🛵 *డెలివరీ భాగస్వామి బయలుదేరారు!* మీ ఆర్డర్ #${order.id} మీ లొకేషన్‌కి వస్తోంది. కొద్దిసేపట్లో చేరుకుంటుంది! 📦`;
     } else if (status === "DELIVERED") {
-      customerMsg = `✅ *డెలివరీ విజయవంతమైంది!* మీ ఆర్డర్ #${order.id} డెలివరీ చేయబడింది. అవెంటో సర్వీసెస్ వాడినందుకు ధన్యవాదాలు! 🙏 ఆస్వాదించండి! 🍽️`;
+      customerMsg = `✅ *డెలివరీ విజయవంతమైంది!* మీ ఆర్డర్ #${order.id} డెలివరీ చేయబడింది. అవెంటో సర్వీసెస్ వాడినందుకు ధన్యవాదాలు! 🙏`;
     }
 
     if (customerMsg && order.user_phone) {
@@ -432,11 +428,11 @@ app.post(["/webhook", "/whatsapp/webhook", "/whatsapp/webhook/"], async (req, re
     const value = req.body?.entry?.[0]?.changes?.[0]?.value;
     const message = value?.messages?.[0];
     
-    // Check if this is an interactive button click from admin panel in WhatsApp
+    // Check interactive buttons click from admin panel in WhatsApp
     const callbackButtonId = message?.interactive?.button_reply?.id;
     if (callbackButtonId && callbackButtonId.startsWith("adm_")) {
       const parts = callbackButtonId.split("_");
-      const action = parts[1]; // paid, ask, rej, or status updates
+      const action = parts[1]; 
       const orderId = parts.slice(2).join("_");
 
       if (action === "paid") {
@@ -496,7 +492,7 @@ app.post(["/webhook", "/whatsapp/webhook", "/whatsapp/webhook/"], async (req, re
     const user = await getOrCreateUser(phone);
     const temp = getTemp(user);
 
-    // 1. వెబ్‌సైట్ నుండి ఆర్డర్ రాగానే
+    // 1. Web Order Received
     if (text.includes("New Food Order") || text.includes("Food Place") || text.includes("Brindavan")) {
       let selectedRestKey = "food_palace";
       if (text.toLowerCase().includes("brindavan")) {
@@ -515,7 +511,7 @@ app.post(["/webhook", "/whatsapp/webhook", "/whatsapp/webhook/"], async (req, re
       return;
     }
 
-    // 2. లొకేషన్ రాకుండా టెక్స్ట్ పంపిస్తే
+    // 2. Text without location
     if (user.current_state === "AWAITING_LOCATION" && type === "text") {
       await sendText(
         phone,
@@ -525,7 +521,7 @@ app.post(["/webhook", "/whatsapp/webhook", "/whatsapp/webhook/"], async (req, re
       return;
     }
 
-    // 3. లొకేషన్ అందిన తర్వాత
+    // 3. Location received
     if (type === "location" && message.location) {
       if (user.current_state !== "AWAITING_LOCATION") {
         await sendText(phone, "Please send your location when asked during checkout.");
@@ -648,12 +644,13 @@ app.post(["/webhook", "/whatsapp/webhook", "/whatsapp/webhook/"], async (req, re
 
       if (AVENTO_ADMIN_PHONE) {
         if (type === "image" && imageMediaId) {
+          // Send screenshot image to admin
           await sendWhatsApp({
             to: AVENTO_ADMIN_PHONE,
             type: "image",
             image: { id: imageMediaId, caption: `📸 Payment Screenshot received from Customer (${phone}) for Order #${order.id}` }
           });
-          // Also send inline interactive buttons to admin to quickly manage this order
+          // Immediately send Action Interactive Buttons to Admin
           await sendWhatsApp({
             to: AVENTO_ADMIN_PHONE,
             type: "interactive",
@@ -664,7 +661,7 @@ app.post(["/webhook", "/whatsapp/webhook", "/whatsapp/webhook/"], async (req, re
                 buttons: [
                   { type: "reply", reply: { id: `adm_paid_${order.id}`, title: "✅ Confirm & Send Track" } },
                   { type: "reply", reply: { id: `adm_prep_${order.id}`, title: "👨‍🍳 Preparing" } },
-                  { type: "reply", reply: { id: `adm_out_${order.id}`, title: "🛵 Out for Delivery" } }
+                  { type: "reply", reply: { id: `adm_rej_${order.id}`, title: "❌ Reject" } }
                 ]
               }
             }
@@ -681,7 +678,7 @@ app.post(["/webhook", "/whatsapp/webhook", "/whatsapp/webhook/"], async (req, re
                 buttons: [
                   { type: "reply", reply: { id: `adm_paid_${order.id}`, title: "✅ Confirm & Send Track" } },
                   { type: "reply", reply: { id: `adm_prep_${order.id}`, title: "👨‍🍳 Preparing" } },
-                  { type: "reply", reply: { id: `adm_out_${order.id}`, title: "🛵 Out for Delivery" } }
+                  { type: "reply", reply: { id: `adm_rej_${order.id}`, title: "❌ Reject" } }
                 ]
               }
             }
