@@ -43,7 +43,7 @@
       <input type="text" id="search-input" oninput="handleSearch(this.value)" placeholder="Search for dishes, restaurants..." class="w-full bg-white pl-10 pr-4 py-3 rounded-2xl text-sm border border-gray-200 focus:outline-none focus:border-orange-500 shadow-sm">
     </div>
 
-    <!-- Restaurant Selector Cards (Swiggy horizontal banner style) -->
+    <!-- Restaurant Selector Cards -->
     <div class="mb-4">
       <h2 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2.5">Select Restaurant</h2>
       <div class="grid grid-cols-2 gap-3">
@@ -64,18 +64,14 @@
       </div>
     </div>
 
-    <!-- Category Filter Bar (Swiggy Horizontal Pills) -->
-    <div id="category-bar" class="flex gap-2 overflow-x-auto no-scrollbar mb-4 py-1">
-      <!-- Dynamic Categories -->
-    </div>
+    <!-- Category Filter Bar -->
+    <div id="category-bar" class="flex gap-2 overflow-x-auto no-scrollbar mb-4 py-1"></div>
 
     <!-- Food Items List -->
-    <div id="food-items-container" class="space-y-3">
-      <!-- Dynamic Items -->
-    </div>
+    <div id="food-items-container" class="space-y-3"></div>
   </main>
 
-  <!-- Swiggy Style Sticky Bottom Cart Bar -->
+  <!-- Sticky Bottom Cart Bar -->
   <div id="cart-bar" class="fixed bottom-0 left-0 right-0 bg-gray-900 text-white p-4 shadow-2xl hidden z-50 rounded-t-3xl border-t border-gray-800">
     <div class="max-w-md mx-auto flex items-center justify-between">
       <div>
@@ -93,7 +89,7 @@
 
     const menus = {
       food_palace: {
-        name: "Food Palace Restaurant",
+        name: "Food Place Restaurant",
         categories: [
           {
             id: "fp_soups", title: "Soups",
@@ -109,38 +105,7 @@
             items: [
               { id: "fp_nvs1", name: "🍗 Chilli Chicken", price: 275, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
               { id: "fp_nvs2", name: "🍗 Chicken 65", price: 275, img: "https://images.unsplash.com/photo-1610057099443-fde8c4d50f91?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_nvs3", name: "🍗 Chicken Lollipop (Sauce)", price: 295, img: "https://images.unsplash.com/photo-1527477396000-e27163b481c2?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_nvs4", name: "🍗 Chicken Drumstick (Oil Roast)", price: 285, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_nvs5", name: "🦐 Chilli Prawns", price: 295, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_nvs6", name: "🦐 Loose Prawns", price: 295, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_nvs7", name: "🍗 Chicken Manchuria", price: 275, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_nvs8", name: "🍗 Schezwan Chicken", price: 285, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_nvs9", name: "🍗 Chicken Majestic", price: 295, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_nvs10", name: "🍗 Chicken 555", price: 295, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_nvs11", name: "🍗 Dragon Chicken", price: 295, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_nvs12", name: "🍗 Sizzler Chicken", price: 315, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_nvs13", name: "🍗 Pepper Chicken (Oil Roast)", price: 305, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_nvs14", name: "🐟 Apollo Fish", price: 285, img: "https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_nvs15", name: "🐟 Chilli Fish", price: 285, img: "https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?w=300&auto=format&fit=crop&q=80" }
-            ]
-          },
-          {
-            id: "fp_veg_starters", title: "Veg Starters",
-            items: [
-              { id: "fp_vs1", name: "🥦 Gobi Manchurian", price: 209, img: "https://images.unsplash.com/photo-1645177628172-a94c1f96e6db?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_vs2", name: "🥦 Chilli Gobi", price: 219, img: "https://images.unsplash.com/photo-1645177628172-a94c1f96e6db?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_vs3", name: "🥦 Gobi 65", price: 209, img: "https://images.unsplash.com/photo-1645177628172-a94c1f96e6db?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_vs4", name: "🧀 Paneer Manchurian", price: 249, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_vs5", name: "🧀 Paneer Majestic", price: 259, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" }
-            ]
-          },
-          {
-            id: "fp_biryani", title: "Biryanis",
-            items: [
-              { id: "fp_b1", name: "🍗 Chicken Dum Biryani", price: 250, img: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_b2", name: "🍗 Spl. Chicken Biryani (Boneless)", price: 300, img: "https://images.unsplash.com/photo-1633945274405-b6c8069047b0?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_b3", name: "🦐 Prawns Biryani", price: 330, img: "https://images.unsplash.com/photo-1633945274405-b6c8069047b0?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_b4", name: "🥩 Mutton Dum Biryani", price: 400, img: "https://images.unsplash.com/photo-1633945274405-b6c8069047b0?w=300&auto=format&fit=crop&q=80" }
+              { id: "fp_nvs3", name: "🍗 Chicken Lollipop (Sauce)", price: 295, img: "https://images.unsplash.com/photo-1527477396000-e27163b481c2?w=300&auto=format&fit=crop&q=80" }
             ]
           }
         ]
@@ -149,15 +114,52 @@
         name: "Brindavan Restaurant",
         categories: [
           {
-            id: "br_starters", title: "Starters",
+            id: "br_nvs", title: "Non-Veg Starters",
             items: [
-              { id: "br_s1", name: "🍗 Special Chicken Starter", price: 290, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" }
+              { id: "br_nvs1", name: "🍗 Chilli Chicken", price: 240, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_nvs2", name: "🍗 Chicken 65", price: 240, img: "https://images.unsplash.com/photo-1610057099443-fde8c4d50f91?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_nvs3", name: "🍗 Chicken Majestic", price: 250, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_nvs4", name: "🍗 Chicken Lollipop", price: 250, img: "https://images.unsplash.com/photo-1527477396000-e27163b481c2?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_nvs5", name: "🍗 Chicken Manchurian", price: 240, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_nvs6", name: "🍗 Pepper Chicken", price: 240, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_nvs7", name: "🦐 Prawns Fry", price: 320, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_nvs8", name: "🐟 Chilli Fish", price: 260, img: "https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?w=300&auto=format&fit=crop&q=80" }
             ]
           },
           {
-            id: "br_biryani", title: "Biryanis",
+            id: "br_tandoor", title: "Tandoori & Kabab's",
             items: [
-              { id: "br_b1", name: "🍗 Brindavan Chicken Biryani", price: 260, img: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=300&auto=format&fit=crop&q=80" }
+              { id: "br_t1", name: "🍗 Tandoori Chicken Half", price: 280, img: "https://images.unsplash.com/photo-1610057099443-fde8c4d50f91?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_t2", name: "🍗 Tandoori Chicken Full", price: 480, img: "https://images.unsplash.com/photo-1610057099443-fde8c4d50f91?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_t3", name: "🍗 Tangadi Kabab Full", price: 290, img: "https://images.unsplash.com/photo-1610057099443-fde8c4d50f91?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_t4", name: "🍗 Chicken Tikka", price: 280, img: "https://images.unsplash.com/photo-1610057099443-fde8c4d50f91?w=300&auto=format&fit=crop&q=80" }
+            ]
+          },
+          {
+            id: "br_biriyani", title: "Biriyani's",
+            items: [
+              { id: "br_b1", name: "🍗 Chicken Dum Biriyani", price: 220, img: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_b2", name: "🍗 Chicken Fry Piece Biriyani", price: 260, img: "https://images.unsplash.com/photo-1633945274405-b6c8069047b0?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_b3", name: "🍗 Spl Chicken Biriyani", price: 270, img: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_b4", name: "🦐 Prawns Biriyani", price: 300, img: "https://images.unsplash.com/photo-1633945274405-b6c8069047b0?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_b5", name: "🥩 Mutton Fry Piece Biriyani", price: 370, img: "https://images.unsplash.com/photo-1633945274405-b6c8069047b0?w=300&auto=format&fit=crop&q=80" }
+            ]
+          },
+          {
+            id: "br_curries", title: "Non-Veg Curries",
+            items: [
+              { id: "br_c1", name: "🍗 Butter Chicken", price: 250, img: "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_c2", name: "🍗 Kaju Chicken Curry", price: 260, img: "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_c3", name: "🍗 Kadai Chicken", price: 250, img: "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_c4", name: "🥩 Mutton Curry", price: 390, img: "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=300&auto=format&fit=crop&q=80" }
+            ]
+          },
+          {
+            id: "br_veg", title: "Veg Starters & Curries",
+            items: [
+              { id: "br_v1", name: "🥦 Gobi Manchurian", price: 190, img: "https://images.unsplash.com/photo-1645177628172-a94c1f96e6db?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_v2", name: "🧀 Paneer Butter Masala", price: 250, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_v3", name: "🥜 Kaju Curry", price: 280, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" }
             ]
           }
         ]
