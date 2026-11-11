@@ -14,7 +14,7 @@
 </head>
 <body class="pb-36">
 
-  <!-- Swiggy Style Top Header with Back Button -->
+  <!-- Header -->
   <header class="bg-white sticky top-0 z-40 shadow-sm border-b border-gray-100">
     <div class="max-w-md mx-auto px-4 py-3 flex justify-between items-center">
       <div class="flex items-center gap-3">
@@ -39,10 +39,8 @@
     </div>
   </header>
 
-  <!-- Main App Container -->
   <main class="max-w-md mx-auto px-4 pt-3">
-    
-    <!-- Offers / Promo Banner Slider -->
+    <!-- Promo banners -->
     <div class="mb-4 overflow-x-auto no-scrollbar flex gap-3">
       <div class="min-w-[85%] bg-gradient-to-r from-orange-500 to-amber-500 rounded-2xl p-4 text-white shadow-md flex justify-between items-center">
         <div>
@@ -62,13 +60,13 @@
       </div>
     </div>
 
-    <!-- Swiggy Style Search Bar -->
+    <!-- Search -->
     <div class="relative mb-4">
       <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3.5 text-gray-400 text-sm"></i>
       <input type="text" id="search-input" oninput="handleSearch(this.value)" placeholder="Search for dishes, restaurants..." class="w-full bg-white pl-10 pr-4 py-3 rounded-2xl text-sm border border-gray-200 focus:outline-none focus:border-orange-500 shadow-sm">
     </div>
 
-    <!-- Restaurant Selector Cards -->
+    <!-- Restaurant tabs -->
     <div class="mb-4">
       <h2 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2.5">Select Restaurant</h2>
       <div class="grid grid-cols-3 gap-2">
@@ -87,14 +85,11 @@
       </div>
     </div>
 
-    <!-- Category Filter Bar -->
     <div id="category-bar" class="flex gap-2 overflow-x-auto no-scrollbar mb-4 py-1"></div>
-
-    <!-- Food Items List -->
     <div id="food-items-container" class="space-y-3"></div>
   </main>
 
-  <!-- Sticky Floating Cart Bar -->
+  <!-- Floating Cart Bar -->
   <div id="cart-bar" class="fixed bottom-16 left-0 right-0 p-3 z-40 hidden">
     <div class="max-w-md mx-auto bg-gray-900 text-white p-3.5 rounded-2xl shadow-2xl flex items-center justify-between border border-gray-800">
       <div onclick="toggleCartModal()" class="cursor-pointer flex items-center gap-3">
@@ -112,7 +107,7 @@
     </div>
   </div>
 
-  <!-- Cart Items Drawer Modal -->
+  <!-- Cart Modal -->
   <div id="cart-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex flex-col justify-end backdrop-blur-sm">
     <div class="bg-white rounded-t-3xl max-w-md w-full mx-auto p-5 max-h-[75vh] flex flex-col shadow-2xl">
       <div class="flex justify-between items-center pb-3 border-b border-gray-100">
@@ -134,7 +129,7 @@
     </div>
   </div>
 
-  <!-- Live Tracking Modal / Drawer -->
+  <!-- Tracking Modal -->
   <div id="tracking-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex flex-col justify-end backdrop-blur-sm">
     <div class="bg-white rounded-t-3xl max-w-md w-full mx-auto p-5 max-h-[85vh] flex flex-col shadow-2xl">
       <div class="flex justify-between items-center pb-3 border-b border-gray-100">
@@ -145,16 +140,14 @@
           <i class="fa-solid fa-xmark"></i>
         </button>
       </div>
-
       <div class="py-4 space-y-4 overflow-y-auto no-scrollbar flex-1">
         <div class="bg-orange-50 p-4 rounded-2xl border border-orange-100">
-          <label class="block text-xs font-bold text-gray-700 mb-1.5">Enter Your Order ID (e.g. 119)</label>
+          <label class="block text-xs font-bold text-gray-700 mb-1.5">Enter Your Order ID</label>
           <div class="flex gap-2">
             <input type="number" id="track-order-id-input" placeholder="Enter Order ID" class="flex-1 bg-white px-3 py-2.5 rounded-xl text-sm border border-orange-200 focus:outline-none focus:border-orange-500">
             <button onclick="fetchOrderStatus()" class="bg-orange-500 text-white px-4 py-2.5 rounded-xl text-xs font-bold shadow-sm active:scale-95">Track</button>
           </div>
         </div>
-
         <div id="tracking-result" class="hidden space-y-4">
           <div class="bg-gray-50 p-4 rounded-2xl border border-gray-200">
             <div class="flex justify-between items-center mb-2">
@@ -164,7 +157,6 @@
             <p class="text-sm font-bold text-gray-900 mb-1" id="tr-items">Items summary...</p>
             <p class="text-sm font-black text-orange-600" id="tr-total">₹0</p>
           </div>
-
           <div class="space-y-3 pl-2">
             <div class="flex items-center gap-3" id="step-confirmed">
               <div class="w-8 h-8 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center font-bold text-xs" id="icon-confirmed">1</div>
@@ -184,7 +176,7 @@
               <div class="w-8 h-8 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center font-bold text-xs" id="icon-out">3</div>
               <div>
                 <p class="text-xs font-bold text-gray-900">Out for Delivery</p>
-                <p class="text-[10px] text-gray-500">Delivery partner is on the way to your location</p>
+                <p class="text-[10px] text-gray-500">Delivery partner is on the way</p>
               </div>
             </div>
             <div class="flex items-center gap-3" id="step-delivered">
@@ -200,7 +192,7 @@
     </div>
   </div>
 
-  <!-- Swiggy Style Bottom Navigation Bar with Track Option -->
+  <!-- Bottom Nav -->
   <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-40 py-2 shadow-lg">
     <div class="max-w-md mx-auto grid grid-cols-5 text-center">
       <button onclick="navClick('home')" id="nav-home" class="flex flex-col items-center text-orange-500">
@@ -229,6 +221,7 @@
   <script>
     const BOT_PHONE = "919059135163";
 
+    // ====================== FULL MENUS (+₹50) ======================
     const menus = {
       food_palace: {
         name: "Food Palace Restaurant",
@@ -450,8 +443,8 @@
           {
             id: "br_nvs", title: "Non-Veg Starters",
             items: [
-              { id: "br_nvs1", name: "🥜 Kamju Fry", price: 230, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_nvs2", name: "🥜 Kamju Roast", price: 220, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_nvs1", name: "🥜 Kaju Fry", price: 230, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_nvs2", name: "🥜 Kaju Roast", price: 220, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
               { id: "br_nvs3", name: "🍗 Chilli Chicken", price: 250, bestseller: true, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
               { id: "br_nvs4", name: "🍗 Chicken 65", price: 250, img: "https://images.unsplash.com/photo-1610057099443-fde8c4d50f91?w=300&auto=format&fit=crop&q=80" },
               { id: "br_nvs5", name: "🍗 Chicken Majestic", price: 260, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
@@ -736,12 +729,14 @@
       }
     };
 
+    // ====================== STATE ======================
     let currentRestaurant = 'food_palace';
     let currentCategory = 'all';
     let searchQuery = '';
-    let cart = {};
+    let cart = {};          // { itemId: { name, price, qty, restaurant } }
     let favorites = new Set();
 
+    // ====================== UI HELPERS ======================
     function goBack() {
       if (searchQuery !== '') {
         searchQuery = '';
@@ -759,18 +754,15 @@
       currentCategory = 'all';
       searchQuery = '';
       document.getElementById('search-input').value = '';
-      
-      document.getElementById('tab-food_palace').className = resId === 'food_palace' 
-        ? "p-2.5 rounded-2xl font-bold text-xs flex flex-col items-center gap-1.5 transition bg-orange-500 text-white shadow-md shadow-orange-100"
-        : "p-2.5 rounded-2xl font-bold text-xs flex flex-col items-center gap-1.5 transition bg-white text-gray-700 border border-gray-200 shadow-sm";
-      
-      document.getElementById('tab-brindavanam').className = resId === 'brindavanam' 
-        ? "p-2.5 rounded-2xl font-bold text-xs flex flex-col items-center gap-1.5 transition bg-orange-500 text-white shadow-md shadow-orange-100"
-        : "p-2.5 rounded-2xl font-bold text-xs flex flex-col items-center gap-1.5 transition bg-white text-gray-700 border border-gray-200 shadow-sm";
 
-      document.getElementById('tab-tea_time').className = resId === 'tea_time' 
-        ? "p-2.5 rounded-2xl font-bold text-xs flex flex-col items-center gap-1.5 transition bg-orange-500 text-white shadow-md shadow-orange-100"
-        : "p-2.5 rounded-2xl font-bold text-xs flex flex-col items-center gap-1.5 transition bg-white text-gray-700 border border-gray-200 shadow-sm";
+      ['food_palace', 'brindavanam', 'tea_time'].forEach(id => {
+        const btn = document.getElementById(`tab-${id}`);
+        if (btn) {
+          btn.className = id === resId
+            ? "p-2.5 rounded-2xl font-bold text-xs flex flex-col items-center gap-1.5 transition bg-orange-500 text-white shadow-md shadow-orange-100"
+            : "p-2.5 rounded-2xl font-bold text-xs flex flex-col items-center gap-1.5 transition bg-white text-gray-700 border border-gray-200 shadow-sm";
+        }
+      });
 
       renderCategories();
       renderItems();
@@ -782,8 +774,7 @@
     }
 
     function focusSearch() {
-      const input = document.getElementById('search-input');
-      input.focus();
+      document.getElementById('search-input').focus();
       navClick('search');
     }
 
@@ -791,22 +782,18 @@
       ['home', 'restaurants', 'track', 'offers', 'search'].forEach(id => {
         const btn = document.getElementById(`nav-${id}`);
         if (btn) {
-          if (id === target) {
-            btn.className = "flex flex-col items-center text-orange-500";
-          } else {
-            btn.className = "flex flex-col items-center text-gray-400";
-          }
+          btn.className = id === target
+            ? "flex flex-col items-center text-orange-500"
+            : "flex flex-col items-center text-gray-400";
         }
       });
-
       if (target === 'restaurants' || target === 'home') {
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     }
 
     function toggleTrackingModal() {
-      const modal = document.getElementById("tracking-modal");
-      modal.classList.toggle("hidden");
+      document.getElementById("tracking-modal").classList.toggle("hidden");
     }
 
     async function fetchOrderStatus() {
@@ -815,18 +802,15 @@
         alert("Please enter Order ID");
         return;
       }
-
       try {
         const res = await fetch(`/api/order-status/${orderId}`);
         const data = await res.json();
-        
         if (res.ok) {
           document.getElementById("tracking-result").classList.remove("hidden");
           document.getElementById("tr-order-id").innerText = `Order #${data.order_id}`;
           document.getElementById("tr-status").innerText = data.status;
           document.getElementById("tr-items").innerText = data.items_summary;
           document.getElementById("tr-total").innerText = `₹${data.total}`;
-
           updateTrackingSteps(data.status);
         } else {
           alert(data.error || "Order not found");
@@ -838,12 +822,9 @@
 
     function updateTrackingSteps(status) {
       ['confirmed', 'preparing', 'out', 'delivered'].forEach(s => {
-        const el = document.getElementById(`step-${s}`);
-        const icon = document.getElementById(`icon-${s}`);
-        icon.className = "w-8 h-8 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center font-bold text-xs";
-        el.style.opacity = "0.5";
+        document.getElementById(`step-${s}`).style.opacity = "0.5";
+        document.getElementById(`icon-${s}`).className = "w-8 h-8 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center font-bold text-xs";
       });
-
       if (['CONFIRMED', 'PREPARING', 'OUT_FOR_DELIVERY', 'DELIVERED', 'PAYMENT_REVIEW'].includes(status)) {
         document.getElementById('step-confirmed').style.opacity = "1";
         document.getElementById('icon-confirmed').className = "w-8 h-8 rounded-full bg-emerald-500 text-white flex items-center justify-center font-bold text-xs";
@@ -863,25 +844,19 @@
     }
 
     function toggleFavorite(id) {
-      if (favorites.has(id)) {
-        favorites.delete(id);
-      } else {
-        favorites.add(id);
-      }
+      if (favorites.has(id)) favorites.delete(id);
+      else favorites.add(id);
       renderItems();
     }
 
     function renderCategories() {
       const bar = document.getElementById("category-bar");
       const menu = menus[currentRestaurant];
-      
       let html = `<button onclick="filterCategory('all')" class="px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition ${currentCategory === 'all' && !searchQuery ? 'bg-orange-500 text-white shadow-sm' : 'bg-white text-gray-600 border border-gray-200'}">All</button>`;
-      
       menu.categories.forEach(cat => {
         const isActive = currentCategory === cat.id && !searchQuery;
         html += `<button onclick="filterCategory('${cat.id}')" class="px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition ${isActive ? 'bg-orange-500 text-white shadow-sm' : 'bg-white text-gray-600 border border-gray-200'}">${cat.title}</button>`;
       });
-
       bar.innerHTML = html;
     }
 
@@ -896,16 +871,13 @@
     function renderItems() {
       const container = document.getElementById("food-items-container");
       container.innerHTML = "";
-
       const menu = menus[currentRestaurant];
       let itemsList = [];
 
       if (searchQuery) {
         menu.categories.forEach(cat => {
           cat.items.forEach(item => {
-            if (item.name.toLowerCase().includes(searchQuery)) {
-              itemsList.push(item);
-            }
+            if (item.name.toLowerCase().includes(searchQuery)) itemsList.push(item);
           });
         });
       } else if (currentCategory === 'all') {
@@ -941,7 +913,7 @@
           </div>
           <div class="flex items-center bg-gray-50 rounded-2xl p-1 border border-gray-200 shadow-inner">
             ${qty > 0 ? `
-              <button onclick="updateQty('${item.id}', -1)" class="w-8 h-8 bg-white text-orange-500 font-bold rounded-xl shadow-sm active:scale-95 flex items-center justify-center">-</button>
+              <button onclick="updateQty('${item.id}', -1)" class="w-8 h-8 bg-white text-orange-500 font-bold rounded-xl shadow-sm active:scale-95 flex items-center justify-center">−</button>
               <span class="w-7 text-center font-bold text-sm text-gray-800">${qty}</span>
             ` : ''}
             <button onclick="updateQty('${item.id}', 1)" class="w-8 h-8 bg-orange-500 text-white font-bold rounded-xl shadow-sm shadow-orange-200 active:scale-95 flex items-center justify-center">+</button>
@@ -951,6 +923,7 @@
       });
     }
 
+    // ====================== CART (MULTI-RESTAURANT) ======================
     function updateQty(id, change) {
       const menu = menus[currentRestaurant];
       let foundItem = null;
@@ -958,12 +931,17 @@
         const found = cat.items.find(i => i.id === id);
         if (found) foundItem = found;
       });
-
       if (!foundItem) return;
 
-      if (!cart[id]) cart[id] = { name: foundItem.name, price: foundItem.price, qty: 0 };
+      if (!cart[id]) {
+        cart[id] = {
+          name: foundItem.name,
+          price: foundItem.price,
+          qty: 0,
+          restaurant: currentRestaurant
+        };
+      }
       cart[id].qty += change;
-
       if (cart[id].qty <= 0) delete cart[id];
 
       updateCartBar();
@@ -974,7 +952,6 @@
     function updateCartBar() {
       let count = 0;
       let total = 0;
-
       Object.values(cart).forEach(item => {
         count += item.qty;
         total += item.price * item.qty;
@@ -1005,44 +982,154 @@
     function renderCartModalItems() {
       const container = document.getElementById("cart-modal-items");
       container.innerHTML = "";
-      
+
+      const byRestaurant = {};
       Object.entries(cart).forEach(([id, item]) => {
-        const row = document.createElement("div");
-        row.className = "flex items-center justify-between p-3 bg-gray-50 rounded-2xl border border-gray-100";
-        row.innerHTML = `
-          <div>
-            <p class="font-bold text-xs text-gray-900">${item.name}</p>
-            <p class="text-xs text-gray-500 font-semibold mt-0.5">₹${item.price} x ${item.qty} = ₹${item.price * item.qty}</p>
-          </div>
-          <div class="flex items-center bg-white rounded-xl p-1 border border-gray-200">
-            <button onclick="updateQty('${id}', -1)" class="w-6 h-6 text-orange-500 font-bold flex items-center justify-center">-</button>
-            <span class="w-6 text-center font-bold text-xs">${item.qty}</span>
-            <button onclick="updateQty('${id}', 1)" class="w-6 h-6 text-orange-500 font-bold flex items-center justify-center">+</button>
-          </div>
-        `;
-        container.appendChild(row);
+        if (!byRestaurant[item.restaurant]) byRestaurant[item.restaurant] = [];
+        byRestaurant[item.restaurant].push({ id, ...item });
+      });
+
+      Object.keys(byRestaurant).forEach(restKey => {
+        const restName = menus[restKey]?.name || restKey;
+        const header = document.createElement("div");
+        header.className = "text-xs font-bold text-orange-600 mt-2 mb-1 uppercase tracking-wide";
+        header.innerText = restName;
+        container.appendChild(header);
+
+        byRestaurant[restKey].forEach(item => {
+          const row = document.createElement("div");
+          row.className = "flex items-center justify-between p-3 bg-gray-50 rounded-2xl border border-gray-100 mb-2";
+          row.innerHTML = `
+            <div>
+              <p class="font-bold text-xs text-gray-900">${item.name}</p>
+              <p class="text-xs text-gray-500 font-semibold mt-0.5">₹${item.price} × ${item.qty} = ₹${item.price * item.qty}</p>
+            </div>
+            <div class="flex items-center bg-white rounded-xl p-1 border border-gray-200">
+              <button onclick="updateQty('${item.id}', -1)" class="w-6 h-6 text-orange-500 font-bold flex items-center justify-center">−</button>
+              <span class="w-6 text-center font-bold text-xs">${item.qty}</span>
+              <button onclick="updateQty('${item.id}', 1)" class="w-6 h-6 text-orange-500 font-bold flex items-center justify-center">+</button>
+            </div>
+          `;
+          container.appendChild(row);
+        });
       });
     }
 
+    // ====================== REVIEW + SEND ======================
     function sendOrderToWhatsApp() {
-      const hotelName = menus[currentRestaurant].name;
-      let text = `New Food Order\nHotel: ${hotelName} (Railway Kodur)\n\n`;
-      let total = 0;
-      let index = 1;
+      if (Object.keys(cart).length === 0) {
+        alert("Your cart is empty");
+        return;
+      }
+      showReviewModal();
+    }
+
+    function showReviewModal() {
+      let modal = document.getElementById("review-modal");
+      if (!modal) {
+        modal = document.createElement("div");
+        modal.id = "review-modal";
+        modal.className = "fixed inset-0 bg-black/60 z-50 flex flex-col justify-end backdrop-blur-sm";
+        modal.innerHTML = `
+          <div class="bg-white rounded-t-3xl max-w-md w-full mx-auto p-5 max-h-[85vh] flex flex-col shadow-2xl">
+            <div class="flex justify-between items-center pb-3 border-b border-gray-100">
+              <h3 class="font-extrabold text-gray-900 text-base">Review Your Order</h3>
+              <button onclick="closeReviewModal()" class="w-8 h-8 bg-gray-100 text-gray-500 rounded-full flex items-center justify-center">
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+            <div id="review-items" class="overflow-y-auto py-3 space-y-2 flex-1 no-scrollbar"></div>
+            <div class="pt-3 border-t border-gray-100">
+              <div class="flex justify-between items-center mb-4">
+                <p class="text-sm text-gray-500">Total</p>
+                <p class="text-xl font-black text-gray-900" id="review-total">₹0</p>
+              </div>
+              <div class="grid grid-cols-2 gap-3">
+                <button onclick="closeReviewModal()" class="bg-gray-100 text-gray-700 py-3 rounded-2xl text-sm font-bold">
+                  ← Edit Cart
+                </button>
+                <button onclick="confirmAndSendToWhatsApp()" class="bg-orange-500 text-white py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2">
+                  <i class="fa-brands fa-whatsapp"></i> Confirm & Send
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(modal);
+      }
+
+      const container = document.getElementById("review-items");
+      container.innerHTML = "";
+
+      const byRestaurant = {};
+      let grandTotal = 0;
 
       Object.values(cart).forEach(item => {
-        const itemTotal = item.price * item.qty;
-        text += `${index}. ${item.name} x ${item.qty} = ₹${itemTotal}\n`;
-        total += itemTotal;
-        index++;
+        if (!byRestaurant[item.restaurant]) byRestaurant[item.restaurant] = [];
+        byRestaurant[item.restaurant].push(item);
+        grandTotal += item.price * item.qty;
       });
 
-      text += `\n--------------------\nFood Total: ₹${total}`;
+      Object.keys(byRestaurant).forEach(restKey => {
+        const restName = menus[restKey]?.name || restKey;
+        const header = document.createElement("div");
+        header.className = "text-xs font-bold text-orange-600 mt-3 mb-1 uppercase";
+        header.innerText = "🏨 " + restName;
+        container.appendChild(header);
+
+        byRestaurant[restKey].forEach(item => {
+          const row = document.createElement("div");
+          row.className = "flex justify-between items-center bg-gray-50 p-3 rounded-xl text-sm";
+          row.innerHTML = `
+            <div>
+              <p class="font-semibold text-gray-900">${item.name}</p>
+              <p class="text-xs text-gray-500">₹${item.price} × ${item.qty}</p>
+            </div>
+            <p class="font-bold text-gray-800">₹${item.price * item.qty}</p>
+          `;
+          container.appendChild(row);
+        });
+      });
+
+      document.getElementById("review-total").innerText = `₹${grandTotal}`;
+      modal.classList.remove("hidden");
+    }
+
+    function closeReviewModal() {
+      const modal = document.getElementById("review-modal");
+      if (modal) modal.classList.add("hidden");
+    }
+
+    function confirmAndSendToWhatsApp() {
+      let text = "New Food Order\n\n";
+      let grandTotal = 0;
+
+      const byRestaurant = {};
+      Object.values(cart).forEach(item => {
+        if (!byRestaurant[item.restaurant]) byRestaurant[item.restaurant] = [];
+        byRestaurant[item.restaurant].push(item);
+      });
+
+      Object.keys(byRestaurant).forEach(restKey => {
+        const restName = menus[restKey]?.name || restKey;
+        text += `🏨 Hotel: ${restName} (Railway Kodur)\n`;
+        let restTotal = 0;
+        byRestaurant[restKey].forEach((item, idx) => {
+          const itemTotal = item.price * item.qty;
+          text += `${idx + 1}. ${item.name} × ${item.qty} = ₹${itemTotal}\n`;
+          restTotal += itemTotal;
+        });
+        text += `Subtotal: ₹${restTotal}\n\n`;
+        grandTotal += restTotal;
+      });
+
+      text += `--------------------\nFood Total: ₹${grandTotal}`;
 
       const encoded = encodeURIComponent(text);
       window.location.href = `https://wa.me/${BOT_PHONE}?text=${encoded}`;
     }
 
+    // Init
     switchRestaurant('food_palace');
   </script>
 </body>

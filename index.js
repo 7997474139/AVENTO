@@ -266,8 +266,8 @@ const brindavanMenu = {
       id: "br_nvs",
       title: "Non-Veg Starters",
       items: [
-        { id: "br_nvs1", name: "🥜 Kamju Fry", price: 230 },
-        { id: "br_nvs2", name: "🥜 Kamju Roast", price: 220 },
+        { id: "br_nvs1", name: "🥜 Ka Fry", price: 230 },
+        { id: "br_nvs2", name: "🥜 Kaju Roast", price: 220 },
         { id: "br_nvs3", name: "🍗 Chilli Chicken", price: 250 },
         { id: "br_nvs4", name: "🍗 Chicken 65", price: 250 },
         { id: "br_nvs5", name: "🍗 Chicken Majestic", price: 260 },
