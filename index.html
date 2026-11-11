@@ -18,7 +18,6 @@
   <header class="bg-white sticky top-0 z-40 shadow-sm border-b border-gray-100">
     <div class="max-w-md mx-auto px-4 py-3 flex justify-between items-center">
       <div class="flex items-center gap-3">
-        <!-- Back Button -->
         <button onclick="goBack()" class="w-9 h-9 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl flex items-center justify-center transition active:scale-95">
           <i class="fa-solid fa-arrow-left text-sm"></i>
         </button>
@@ -148,7 +147,6 @@
       </div>
 
       <div class="py-4 space-y-4 overflow-y-auto no-scrollbar flex-1">
-        <!-- Order ID Input Form -->
         <div class="bg-orange-50 p-4 rounded-2xl border border-orange-100">
           <label class="block text-xs font-bold text-gray-700 mb-1.5">Enter Your Order ID (e.g. 119)</label>
           <div class="flex gap-2">
@@ -157,7 +155,6 @@
           </div>
         </div>
 
-        <!-- Tracking Details Box -->
         <div id="tracking-result" class="hidden space-y-4">
           <div class="bg-gray-50 p-4 rounded-2xl border border-gray-200">
             <div class="flex justify-between items-center mb-2">
@@ -168,7 +165,6 @@
             <p class="text-sm font-black text-orange-600" id="tr-total">₹0</p>
           </div>
 
-          <!-- Swiggy / Zomato Style Status Steps -->
           <div class="space-y-3 pl-2">
             <div class="flex items-center gap-3" id="step-confirmed">
               <div class="w-8 h-8 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center font-bold text-xs" id="icon-confirmed">1</div>
@@ -235,550 +231,505 @@
 
     const menus = {
       food_palace: {
-        name: "Food Place Restaurant",
+        name: "Food Palace Restaurant",
         categories: [
           {
             id: "fp_soups", title: "Soups",
             items: [
-              { id: "fp_s1", name: "🥣 Veg Hot & Sour Soup", price: 160, img: "https://images.unsplash.com/photo-1547592166-23ac45744acd?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_s2", name: "🥣 Veg Machow Soup", price: 160, img: "https://images.unsplash.com/photo-1547592166-23ac45744acd?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_s3", name: "🥣 Chicken Hot & Sour Soup", price: 180, img: "https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_s4", name: "🥣 Chicken Machow Soup", price: 180, img: "https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=300&auto=format&fit=crop&q=80" }
+              { id: "fp_s1", name: "🥣 Veg Hot & Sour Soup", price: 170, img: "https://images.unsplash.com/photo-1547592166-23ac45744acd?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_s2", name: "🥣 Veg Manchow Soup", price: 170, img: "https://images.unsplash.com/photo-1547592166-23ac45744acd?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_s3", name: "🥣 Chicken Hot & Sour Soup", price: 190, img: "https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_s4", name: "🥣 Chicken Manchow Soup", price: 190, img: "https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=300&auto=format&fit=crop&q=80" }
             ]
           },
           {
             id: "fp_nvs", title: "Non-Veg Starters",
             items: [
-              { id: "fp_nvs1", name: "🍗 Chilli Chicken", price: 265, bestseller: true, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_nvs2", name: "🍗 Chicken 65", price: 265, img: "https://images.unsplash.com/photo-1610057099443-fde8c4d50f91?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_nvs3", name: "🍗 Chicken Lollipop (Sauce)", price: 285, img: "https://images.unsplash.com/photo-1527477396000-e27163b481c2?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_nvs4", name: "🍗 Chicken Drumstick (Oil Roast)", price: 275, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_nvs5", name: "🦐 Chilli Prawns", price: 285, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_nvs6", name: "🦐 Loose Prawns", price: 285, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_nvs7", name: "🍗 Chicken Manchuria", price: 265, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_nvs8", name: "🍗 Schezwan Chicken", price: 275, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_nvs9", name: "🍗 Chicken Majestic", price: 285, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_nvs10", name: "🍗 Chicken 555", price: 285, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_nvs11", name: "🍗 Dragon Chicken", price: 285, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_nvs12", name: "🍗 Sizzler Chicken", price: 305, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_nvs13", name: "🍗 Pepper Chicken (Oil Roast)", price: 295, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_nvs14", name: "🐟 Apollo Fish", price: 275, img: "https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_nvs15", name: "🐟 Chilli Fish", price: 275, img: "https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_nvs16", name: "🍗 Arabian Chicken Drumstick", price: 315, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_nvs17", name: "🍗 Korean Wings (Spicy)", price: 285, img: "https://images.unsplash.com/photo-1527477396000-e27163b481c2?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_nvs18", name: "🍗 Lemon Chicken", price: 265, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_nvs19", name: "🍗 Butter Garlic Chicken", price: 295, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_nvs20", name: "🍗 Guntur Chicken", price: 285, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_nvs21", name: "🐟 Crispy Fish", price: 275, img: "https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?w=300&auto=format&fit=crop&q=80" }
+              { id: "fp_nvs1", name: "🍗 Chilli Chicken", price: 275, bestseller: true, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_nvs2", name: "🍗 Chicken 65", price: 275, img: "https://images.unsplash.com/photo-1610057099443-fde8c4d50f91?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_nvs3", name: "🍗 Chicken Lollipop (Sauce)", price: 295, img: "https://images.unsplash.com/photo-1527477396000-e27163b481c2?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_nvs4", name: "🍗 Chicken Drumstick (Oil Roast)", price: 285, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_nvs5", name: "🦐 Chilli Prawns", price: 295, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_nvs6", name: "🦐 Loose Prawns", price: 295, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_nvs7", name: "🍗 Chicken Manchuria", price: 275, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_nvs8", name: "🍗 Schezwan Chicken", price: 285, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_nvs9", name: "🍗 Chicken Majestic", price: 295, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_nvs10", name: "🍗 Chicken 555", price: 295, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_nvs11", name: "🍗 Dragon Chicken", price: 295, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_nvs12", name: "🍗 Sizzler Chicken", price: 315, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_nvs13", name: "🍗 Pepper Chicken (Oil Roast)", price: 305, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_nvs14", name: "🐟 Apollo Fish", price: 285, img: "https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_nvs15", name: "🐟 Chilli Fish", price: 285, img: "https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_nvs16", name: "🍗 Arabian Chicken Drumstick", price: 325, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_nvs17", name: "🍗 Korean Wings (Spicy)", price: 295, img: "https://images.unsplash.com/photo-1527477396000-e27163b481c2?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_nvs18", name: "🍗 Lemon Chicken", price: 275, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_nvs19", name: "🍗 Butter Garlic Chicken", price: 305, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_nvs20", name: "🍗 Guntur Chicken", price: 295, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_nvs21", name: "🐟 Crispy Fish", price: 285, img: "https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?w=300&auto=format&fit=crop&q=80" }
             ]
           },
           {
             id: "fp_vs", title: "Veg Starters",
             items: [
-              { id: "fp_vs1", name: "🥦 Gobi Manchurian", price: 199, img: "https://images.unsplash.com/photo-1645177628172-a94c1f96e6db?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_vs2", name: "🥦 Chilli Gobi", price: 209, img: "https://images.unsplash.com/photo-1645177628172-a94c1f96e6db?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_vs3", name: "🥦 Gobi 65", price: 199, img: "https://images.unsplash.com/photo-1645177628172-a94c1f96e6db?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_vs4", name: "🧀 Paneer Manchurian", price: 239, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_vs5", name: "🧀 Paneer Majestic", price: 249, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_vs6", name: "🥦 RR Gobi", price: 209, img: "https://images.unsplash.com/photo-1645177628172-a94c1f96e6db?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_vs7", name: "🌽 Crispy Babycorn", price: 249, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_vs8", name: "🌽 Babycorn Chilli", price: 239, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_vs9", name: "🌽 Babycorn 65", price: 239, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_vs10", name: "🌽 Babycorn Manchuria", price: 239, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_vs11", name: "🧀 Chilli Paneer", price: 239, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_vs12", name: "🧀 Paneer 65", price: 239, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_vs13", name: "🥜 Kaju Fry (Oil Roast)", price: 289, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_vs14", name: "🌽 American Sweetcorn (Crispy)", price: 219, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_vs15", name: "🍄 Mushroom 65", price: 249, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_vs16", name: "🍄 Chilli Mushroom", price: 249, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_vs17", name: "🍄 Mushroom Manchuria", price: 249, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_vs18", name: "🍄 Pepper Mushroom", price: 249, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_vs19", name: "🍄 Mushroom Black Pepper", price: 239, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_vs20", name: "🧀 Dragon Paneer", price: 279, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" }
+              { id: "fp_vs1", name: "🥦 Gobi Manchurian", price: 209, img: "https://images.unsplash.com/photo-1645177628172-a94c1f96e6db?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_vs2", name: "🥦 Chilli Gobi", price: 219, img: "https://images.unsplash.com/photo-1645177628172-a94c1f96e6db?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_vs3", name: "🥦 Gobi 65", price: 209, img: "https://images.unsplash.com/photo-1645177628172-a94c1f96e6db?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_vs4", name: "🧀 Paneer Manchurian", price: 249, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_vs5", name: "🧀 Paneer Majestic", price: 259, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_vs6", name: "🥦 RR Gobi", price: 219, img: "https://images.unsplash.com/photo-1645177628172-a94c1f96e6db?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_vs7", name: "🌽 Crispy Babycorn", price: 259, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_vs8", name: "🌽 Babycorn Chilli", price: 249, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_vs9", name: "🌽 Babycorn 65", price: 249, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_vs10", name: "🌽 Babycorn Manchuria", price: 249, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_vs11", name: "🧀 Chilli Paneer", price: 249, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_vs12", name: "🧀 Paneer 65", price: 249, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_vs13", name: "🥜 Kaju Fry (Oil Roast)", price: 299, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_vs14", name: "🌽 American Sweetcorn (Crispy)", price: 229, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_vs15", name: "🍄 Mushroom 65", price: 259, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_vs16", name: "🍄 Chilli Mushroom", price: 259, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_vs17", name: "🍄 Mushroom Manchuria", price: 259, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_vs18", name: "🍄 Pepper Mushroom", price: 259, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_vs19", name: "🍄 Mushroom Black Pepper", price: 249, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_vs20", name: "🧀 Dragon Paneer", price: 289, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" }
             ]
           },
           {
             id: "fp_main_veg", title: "Veg Curries",
             items: [
-              { id: "fp_mv1", name: "🍲 Veg Kheema Curry", price: 240, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_mv2", name: "🥗 Mixed Veg Curry", price: 230, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_mv3", name: "🥦 Kadai Veg Curry", price: 230, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_mv4", name: "🥦 Veg Kollapuri curry", price: 230, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_mv5", name: "🍄 Mushroom Masala", price: 240, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_mv6", name: "🧀 Paneer Butter Masala", price: 320, bestseller: true, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_mv7", name: "🧀 Kadai Paneer Curry", price: 250, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_mv8", name: "🥜 Kaju Curry", price: 280, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_mv9", name: "🥜 Kaju Paneer Curry", price: 280, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_mv10", name: "🍅 Tomato Curry", price: 200, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_mv11", name: "🌿 Methi Chaman", price: 320, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_mv12", name: "🧀 Paneer Chatpata Curry", price: 320, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_mv13", name: "🥬 Palak Paneer", price: 250, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_mv14", name: "🥬 Plain Palak", price: 210, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_mv15", name: "🥗 Veg Chatpata Curry", price: 230, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_mv16", name: "🧀 Paneer Labadar Curry", price: 260, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_mv17", name: "🍄 Kadai Mushroom", price: 240, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" }
+              { id: "fp_mv1", name: "🍲 Veg Kheema Curry", price: 250, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_mv2", name: "🥗 Mixed Veg Curry", price: 240, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_mv3", name: "🥦 Kadai Veg Curry", price: 240, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_mv4", name: "🥦 Veg Kollapuri Curry", price: 240, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_mv5", name: "🍄 Mushroom Masala", price: 250, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_mv6", name: "🧀 Paneer Butter Masala", price: 330, bestseller: true, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_mv7", name: "🧀 Kadai Paneer Curry", price: 260, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_mv8", name: "🥜 Kaju Curry", price: 290, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_mv9", name: "🥜 Kaju Paneer Curry", price: 290, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_mv10", name: "🍅 Tomato Curry", price: 210, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_mv11", name: "🌿 Methi Chaman", price: 330, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_mv12", name: "🧀 Paneer Chatpata Curry", price: 330, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_mv13", name: "🥬 Palak Paneer", price: 260, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_mv14", name: "🥬 Plain Palak", price: 220, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_mv15", name: "🥗 Veg Chatpata Curry", price: 240, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_mv16", name: "🧀 Paneer Labadar Curry", price: 270, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_mv17", name: "🍄 Kadai Mushroom", price: 250, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" }
             ]
           },
           {
             id: "fp_main_nv", title: "Non-Veg Curries",
             items: [
-              { id: "fp_mnv1", name: "🥩 Mutton Roghan Josh", price: 390, img: "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_mnv2", name: "🥩 Mutton Curry", price: 390, img: "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_mnv3", name: "🥩 Kadai Mutton", price: 390, img: "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_mnv4", name: "🦐 Prawns Curry", price: 280, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_mnv5", name: "🥚 Egg Masala", price: 190, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_mnv6", name: "🍗 Miryali Chicken Curry (Bone)", price: 320, img: "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_mnv7", name: "🍗 Spl. Chicken Curry (Chef special)", price: 290, img: "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_mnv8", name: "🍗 Kaju Chicken Curry (Boneless)", price: 290, img: "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_mnv9", name: "🍗 Methi Chicken Curry", price: 270, img: "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_mnv10", name: "🍗 Chicken Dhopyaza", price: 270, img: "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_mnv11", name: "🍗 Chicken Tikka Masala", price: 270, img: "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_mnv12", name: "🍗 Tawde Masala (Leg piece)", price: 290, img: "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_mnv13", name: "🍗 Butter Chicken", price: 260, bestseller: true, img: "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_mnv14", name: "🍗 Chicken Curry (Bone)", price: 240, img: "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_mnv15", name: "🍗 Chicken Curry (Boneless)", price: 260, img: "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_mnv16", name: "🍗 Chicken Chatpata Curry", price: 260, img: "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_mnv17", name: "🍗 Kadai Chicken Curry", price: 240, img: "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_mnv18", name: "🍗 Kollapuri Chicken Curry", price: 240, img: "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_mnv19", name: "🍗 Hyderabadi Chicken Curry", price: 250, img: "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_mnv20", name: "🍗 Chicken Kheema Curry", price: 260, img: "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_mnv21", name: "🍗 Afghani Chicken Curry", price: 280, img: "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_mnv22", name: "🍗 Moghlai Chicken Curry", price: 260, img: "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_mnv23", name: "🍗 Punjabi Chicken Curry", price: 260, img: "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=300&auto=format&fit=crop&q=80" }
+              { id: "fp_mnv1", name: "🥩 Mutton Roghan Josh", price: 400, img: "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_mnv2", name: "🥩 Mutton Curry", price: 400, img: "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_mnv3", name: "🥩 Kadai Mutton", price: 400, img: "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_mnv4", name: "🦐 Prawns Curry", price: 290, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_mnv5", name: "🥚 Egg Masala", price: 200, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_mnv6", name: "🍗 Miryali Chicken Curry (Bone)", price: 330, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_mnv7", name: "🍗 Spl. Chicken Curry (Chef Special)", price: 300, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_mnv8", name: "🍗 Kaju Chicken Curry (Boneless)", price: 300, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_mnv9", name: "🍗 Methi Chicken Curry", price: 280, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_mnv10", name: "🍗 Chicken Dhopyaza", price: 280, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_mnv11", name: "🍗 Chicken Tikka Masala", price: 280, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_mnv12", name: "🍗 Tawde Masala (Leg Piece)", price: 300, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_mnv13", name: "🍗 Butter Chicken", price: 270, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_mnv14", name: "🍗 Chicken Curry (Bone)", price: 250, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_mnv15", name: "🍗 Chicken Curry (Boneless)", price: 270, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_mnv16", name: "🍗 Chicken Chatpata Curry", price: 270, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_mnv17", name: "🍗 Kadai Chicken Curry", price: 250, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_mnv18", name: "🍗 Kollapuri Chicken Curry", price: 250, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_mnv19", name: "🍗 Hyderabadi Chicken Curry", price: 260, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_mnv20", name: "🍗 Chicken Kheema Curry", price: 270, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_mnv21", name: "🍗 Afghani Chicken Curry", price: 290, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_mnv22", name: "🍗 Moghlai Chicken Curry", price: 270, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_mnv23", name: "🍗 Punjabi Chicken Curry", price: 270, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" }
             ]
           },
           {
             id: "fp_tandoor", title: "Tandoor Items",
             items: [
-              { id: "fp_t1", name: "🫓 Tandoori Roti", price: 65, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_t2", name: "🫓 Butter Roti", price: 70, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_t3", name: "🫓 Butter Naan", price: 70, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_t4", name: "🫓 Plain Naan", price: 65, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_t5", name: "🫓 Garlic Naan", price: 90, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_t6", name: "🫓 Plain Kulcha", price: 70, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_t7", name: "🫓 Butter Kulcha", price: 75, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_t8", name: "🫓 Methi Roti", price: 75, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_t9", name: "🫓 Kothimeera Roti", price: 70, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_t10", name: "🫓 Pulka", price: 60, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_t11", name: "🍗 Tandoori Chicken (Half)", price: 279, img: "https://images.unsplash.com/photo-1610057099443-fde8c4d50f91?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_t12", name: "🍗 Tandoori Chicken (Full)", price: 479, img: "https://images.unsplash.com/photo-1610057099443-fde8c4d50f91?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_t13", name: "🍗 Chicken Tikka", price: 279, img: "https://images.unsplash.com/photo-1610057099443-fde8c4d50f91?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_t14", name: "🍗 Haryali Tikka", price: 289, img: "https://images.unsplash.com/photo-1610057099443-fde8c4d50f91?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_t15", name: "🍗 Tangdi Kabab Full (leg piece)", price: 289, img: "https://images.unsplash.com/photo-1610057099443-fde8c4d50f91?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_t16", name: "🍗 Malai Tikka", price: 289, img: "https://images.unsplash.com/photo-1610057099443-fde8c4d50f91?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_t17", name: "🍗 Tangdi Kabab Half (leg piece)", price: 179, img: "https://images.unsplash.com/photo-1610057099443-fde8c4d50f91?w=300&auto=format&fit=crop&q=80" }
+              { id: "fp_t1", name: "🫓 Tandoori Roti", price: 75, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_t2", name: "🫓 Butter Roti", price: 80, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_t3", name: "🫓 Butter Naan", price: 80, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_t4", name: "🫓 Plain Naan", price: 75, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_t5", name: "🫓 Garlic Naan", price: 100, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_t6", name: "🫓 Plain Kulcha", price: 80, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_t7", name: "🫓 Butter Kulcha", price: 85, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_t8", name: "🫓 Methi Roti", price: 85, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_t9", name: "🫓 Kothimeera Roti", price: 80, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_t10", name: "🫓 Pulka", price: 70, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_t11", name: "🍗 Tandoori Chicken (Full)", price: 489, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_t12", name: "🍗 Tandoori Chicken (Half)", price: 289, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_t13", name: "🍗 Chicken Tikka", price: 289, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_t14", name: "🍗 Haryali Tikka", price: 299, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_t15", name: "🍗 Tangdi Kabab Full (Leg Piece)", price: 299, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_t16", name: "🍗 Malai Tikka", price: 299, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_t17", name: "🍗 Tangdi Kabab Half (Leg Piece)", price: 189, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" }
             ]
           },
           {
             id: "fp_biryani", title: "Biryanis",
             items: [
-              { id: "fp_b1", name: "🍗 Chicken Dum Biryani", price: 240, bestseller: true, img: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_b2", name: "🍗 Spl. Chicken Biryani (Boneless)", price: 290, img: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_b3", name: "🦐 Prawns Biryani", price: 320, img: "https://images.unsplash.com/photo-1633945274405-b6c8069047b0?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_b4", name: "🐟 Fish Biryani (Boneless)", price: 280, img: "https://images.unsplash.com/photo-1633945274405-b6c8069047b0?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_b5", name: "🍗 Chicken Fry piece Biryani (Bone)", price: 280, img: "https://images.unsplash.com/photo-1633945274405-b6c8069047b0?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_b6", name: "🍗 Chicken Lollipop Biryani", price: 290, img: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_b7", name: "🥩 Mutton Fry piece Biryani (Bone)", price: 390, img: "https://images.unsplash.com/photo-1633945274405-b6c8069047b0?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_b8", name: "🥩 Mutton Dum Biryani", price: 390, img: "https://images.unsplash.com/photo-1633945274405-b6c8069047b0?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_b9", name: "🍗 Hongkong Biryani (Boneless)", price: 300, img: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_b10", name: "🍗 Rambo Biryani (leg piece Biryani)", price: 310, img: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_b11", name: "🥚 Egg Biryani", price: 190, img: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_b12", name: "🍗 Chicken 65 Biryani", price: 290, img: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_b13", name: "🥩 Gongura Mutton Biryani", price: 410, img: "https://images.unsplash.com/photo-1633945274405-b6c8069047b0?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_b14", name: "🍗 Tandoor Biryani", price: 310, img: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_b15", name: "🧀 Paneer Biryani", price: 250, img: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_b16", name: "🍄 Mushroom Biryani", price: 250, img: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_b17", name: "🥜 Kaju Biryani", price: 280, img: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_b18", name: "🥗 Veg Biryani", price: 210, img: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=300&auto=format&fit=crop&q=80" }
+              { id: "fp_b1", name: "🍗 Chicken Dum Biryani", price: 250, bestseller: true, img: "https://images.unsplash.com/photo-1589302168068-964664d93dc0?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_b2", name: "🍗 Spl. Chicken Biryani (Boneless)", price: 300, img: "https://images.unsplash.com/photo-1589302168068-964664d93dc0?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_b3", name: "🦐 Prawns Biryani", price: 330, img: "https://images.unsplash.com/photo-1589302168068-964664d93dc0?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_b4", name: "🐟 Fish Biryani (Boneless)", price: 290, img: "https://images.unsplash.com/photo-1589302168068-964664d93dc0?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_b5", name: "🍗 Chicken Fry Piece Biryani (Bone)", price: 290, img: "https://images.unsplash.com/photo-1589302168068-964664d93dc0?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_b6", name: "🍗 Chicken Lollipop Biryani", price: 300, img: "https://images.unsplash.com/photo-1589302168068-964664d93dc0?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_b7", name: "🥩 Mutton Fry Piece Biryani (Bone)", price: 400, img: "https://images.unsplash.com/photo-1589302168068-964664d93dc0?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_b8", name: "🥩 Mutton Dum Biryani", price: 400, img: "https://images.unsplash.com/photo-1589302168068-964664d93dc0?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_b9", name: "🍗 Hongkong Biryani (Boneless)", price: 310, img: "https://images.unsplash.com/photo-1589302168068-964664d93dc0?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_b10", name: "🍗 Rambo Biryani (Leg Piece)", price: 320, img: "https://images.unsplash.com/photo-1589302168068-964664d93dc0?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_b11", name: "🥚 Egg Biryani", price: 200, img: "https://images.unsplash.com/photo-1589302168068-964664d93dc0?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_b12", name: "🍗 Chicken 65 Biryani", price: 300, img: "https://images.unsplash.com/photo-1589302168068-964664d93dc0?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_b13", name: "🥩 Gongura Mutton Biryani", price: 420, img: "https://images.unsplash.com/photo-1589302168068-964664d93dc0?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_b14", name: "🍗 Tandoor Biryani", price: 320, img: "https://images.unsplash.com/photo-1589302168068-964664d93dc0?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_b15", name: "🧀 Paneer Biryani", price: 260, img: "https://images.unsplash.com/photo-1589302168068-964664d93dc0?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_b16", name: "🍄 Mushroom Biryani", price: 260, img: "https://images.unsplash.com/photo-1589302168068-964664d93dc0?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_b17", name: "🥜 Kaju Biryani", price: 290, img: "https://images.unsplash.com/photo-1589302168068-964664d93dc0?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_b18", name: "🥗 Veg Biryani", price: 220, img: "https://images.unsplash.com/photo-1589302168068-964664d93dc0?w=300&auto=format&fit=crop&q=80" }
             ]
           },
           {
-            id: "fp_chinese", title: "Chinese & Fried Rice",
+            id: "fp_vfr", title: "Veg Fried Rice",
             items: [
-              { id: "fp_c1", name: "🍚 Veg Fried Rice", price: 180, img: "https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_c2", name: "🍚 Veg Schewan Fried Rice", price: 190, img: "https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_c3", name: "🍄 Mushroom Fried Rice", price: 210, img: "https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_c4", name: "🧀 Paneer Fried Rice", price: 210, img: "https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_c5", name: "🥦 Gobi Fried Rice", price: 190, img: "https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_c6", name: "🍚 Mixed Veg Fried Rice", price: 210, img: "https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_c7", name: "🥜 Kaju Fried Rice", price: 260, img: "https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_c8", name: "🥚 Egg Fried Rice", price: 180, img: "https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_c9", name: "🥚 Egg Schewan Fried Rice", price: 190, img: "https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_c10", name: "🍗 Chicken Fried Rice", price: 210, bestseller: true, img: "https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_c11", name: "🍗 Chicken Schewan Fried Rice", price: 220, img: "https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_c12", name: "🍗 Spl. Chicken Fried Rice", price: 210, img: "https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_c13", name: "🦐 Prawns Fried Rice", price: 240, img: "https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_c14", name: "🍚 Shagapossi Fried Rice", price: 240, img: "https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_c15", name: "🍚 Saugai Fried Rice", price: 240, img: "https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=300&auto=format&fit=crop&q=80" }
+              { id: "fp_vfr1", name: "🥗 Veg Fried Rice", price: 190, img: "https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_vfr2", name: "🥗 Veg Schezwan Fried Rice", price: 200, img: "https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_vfr3", name: "🍄 Mushroom Fried Rice", price: 220, img: "https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_vfr4", name: "🧀 Paneer Fried Rice", price: 220, img: "https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_vfr5", name: "🥦 Gobi Fried Rice", price: 200, img: "https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_vfr6", name: "🥗 Mixed Veg Fried Rice", price: 220, img: "https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_vfr7", name: "🥜 Kaju Fried Rice", price: 270, img: "https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=300&auto=format&fit=crop&q=80" }
             ]
           },
           {
-            id: "fp_dessert", title: "Desserts & Beverages",
+            id: "fp_nfr", title: "Non-Veg Fried Rice",
             items: [
-              { id: "fp_d1", name: "🍦 Vennela Ice Cream (Single Scoop)", price: 80, img: "https://images.unsplash.com/photo-1545014917-3184f370f1a5?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_d2", name: "🍦 Vennela Ice Cream (Double Scoop)", price: 110, img: "https://images.unsplash.com/photo-1545014917-3184f370f1a5?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_d3", name: "🍫 Chocolate Ice Cream (Single Scoop)", price: 90, img: "https://images.unsplash.com/photo-1545014917-3184f370f1a5?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_d4", name: "🍫 Chocolate Ice Cream (Double Scoop)", price: 130, img: "https://images.unsplash.com/photo-1545014917-3184f370f1a5?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_d5", name: "🍓 Strawberry Ice Cream (Single Scoop)", price: 80, img: "https://images.unsplash.com/photo-1545014917-3184f370f1a5?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_d6", name: "🍓 Strawberry Ice Cream (Double Scoop)", price: 110, img: "https://images.unsplash.com/photo-1545014917-3184f370f1a5?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_d7", name: "🍨 Butterscotch Ice Cream (Single Scoop)", price: 90, img: "https://images.unsplash.com/photo-1545014917-3184f370f1a5?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_d8", name: "🍨 Butterscotch Ice Cream (Double Scoop)", price: 130, img: "https://images.unsplash.com/photo-1545014917-3184f370f1a5?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_d9", name: "💧 Water Bottle", price: 60, img: "https://images.unsplash.com/photo-1548839140-29a749e1cf4d?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_d10", name: "🥤 Coke", price: 60, img: "https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_d11", name: "🥤 Thums Up", price: 60, img: "https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_d12", name: "🥤 Sprite", price: 60, img: "https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_d13", name: "🥛 Ice Butter Milk", price: 70, img: "https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_d14", name: "🥛 Lassi", price: 80, img: "https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_d15", name: "🍫 Chocolate Milk Shake", price: 119, img: "https://images.unsplash.com/photo-1572490122747-3968b75cc699?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_d16", name: "🥛 Vennela Milk Shake", price: 119, img: "https://images.unsplash.com/photo-1572490122747-3968b75cc699?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_d17", name: "🍨 Butterscotch Milk Shake", price: 119, img: "https://images.unsplash.com/photo-1572490122747-3968b75cc699?w=300&auto=format&fit=crop&q=80" },
-              { id: "fp_d18", name: "🍓 Strawberry Milk Shake", price: 119, img: "https://images.unsplash.com/photo-1572490122747-3968b75cc699?w=300&auto=format&fit=crop&q=80" }
+              { id: "fp_nfr1", name: "🥚 Egg Fried Rice", price: 190, img: "https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_nfr2", name: "🥚 Egg Schezwan Fried Rice", price: 200, img: "https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_nfr3", name: "🍗 Chicken Fried Rice", price: 220, img: "https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_nfr4", name: "🍗 Chicken Schezwan Fried Rice", price: 230, img: "https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_nfr5", name: "🍗 Spl. Chicken Fried Rice", price: 220, img: "https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_nfr6", name: "🦐 Prawns Fried Rice", price: 250, img: "https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_nfr7", name: "🍗 Shagapossi Fried Rice", price: 250, img: "https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_nfr8", name: "🍗 Saugai Fried Rice", price: 250, img: "https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=300&auto=format&fit=crop&q=80" }
+            ]
+          },
+          {
+            id: "fp_desserts", title: "Desserts",
+            items: [
+              { id: "fp_d1", name: "🍦 Vennela Ice Cream (Single Scoop)", price: 90, img: "https://images.unsplash.com/photo-1545014917-3184f370f1a5?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_d2", name: "🍦 Vennela Ice Cream (Double Scoop)", price: 120, img: "https://images.unsplash.com/photo-1545014917-3184f370f1a5?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_d3", name: "🍫 Chocolate Ice Cream (Single Scoop)", price: 100, img: "https://images.unsplash.com/photo-1545014917-3184f370f1a5?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_d4", name: "🍫 Chocolate Ice Cream (Double Scoop)", price: 140, img: "https://images.unsplash.com/photo-1545014917-3184f370f1a5?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_d5", name: "🍓 Strawberry Ice Cream (Single Scoop)", price: 90, img: "https://images.unsplash.com/photo-1545014917-3184f370f1a5?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_d6", name: "🍓 Strawberry Ice Cream (Double Scoop)", price: 120, img: "https://images.unsplash.com/photo-1545014917-3184f370f1a5?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_d7", name: "🍦 Butterscotch Ice Cream (Single Scoop)", price: 100, img: "https://images.unsplash.com/photo-1545014917-3184f370f1a5?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_d8", name: "🍦 Butterscotch Ice Cream (Double Scoop)", price: 140, img: "https://images.unsplash.com/photo-1545014917-3184f370f1a5?w=300&auto=format&fit=crop&q=80" }
+            ]
+          },
+          {
+            id: "fp_beverages", title: "Beverages",
+            items: [
+              { id: "fp_bev1", name: "💧 Water Bottle", price: 70, img: "https://images.unsplash.com/photo-1523362628745-0c100150b504?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_bev2", name: "🥤 Coke", price: 70, img: "https://images.unsplash.com/photo-1629203851122-3726ecdf080e?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_bev3", name: "🥤 Thumpsup", price: 70, img: "https://images.unsplash.com/photo-1629203851122-3726ecdf080e?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_bev4", name: "🥤 Sprite", price: 70, img: "https://images.unsplash.com/photo-1629203851122-3726ecdf080e?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_bev5", name: "🥛 Ice Butter Milk", price: 80, img: "https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_bev6", name: "🥛 Lassi", price: 90, img: "https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_bev7", name: "🍫 Chocolate Milk Shake", price: 129, img: "https://images.unsplash.com/photo-1572490122747-3968b75cc699?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_bev8", name: "🍦 Vennela Milk Shake", price: 129, img: "https://images.unsplash.com/photo-1572490122747-3968b75cc699?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_bev9", name: "🍦 Butterscotch Milk Shake", price: 129, img: "https://images.unsplash.com/photo-1572490122747-3968b75cc699?w=300&auto=format&fit=crop&q=80" },
+              { id: "fp_bev10", name: "🍓 Strawberry Milk Shake", price: 129, img: "https://images.unsplash.com/photo-1572490122747-3968b75cc699?w=300&auto=format&fit=crop&q=80" }
             ]
           }
         ]
       },
+
       brindavanam: {
         name: "Brindavan Restaurant",
         categories: [
           {
-            id: "br_soups", title: "Soups",
-            items: [
-              { id: "br_s1", name: "🥣 Veg Hot & Sour Soup", price: 149, img: "https://images.unsplash.com/photo-1547592166-23ac45744acd?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_s2", name: "🥣 Veg Manchow Soup", price: 149, img: "https://images.unsplash.com/photo-1547592166-23ac45744acd?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_s3", name: "🥣 Chicken Hot & Sour", price: 160, img: "https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_s4", name: "🥣 Chicken Manchow", price: 160, img: "https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=300&auto=format&fit=crop&q=80" }
-            ]
-          },
-          {
             id: "br_nvs", title: "Non-Veg Starters",
             items: [
-              { id: "br_nvs1", name: "🍗 Kaju Fry", price: 220, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_nvs2", name: "🍗 Kaju Roast", price: 210, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_nvs3", name: "🍗 Chilli Chicken", price: 240, bestseller: true, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_nvs4", name: "🍗 Chicken 65", price: 240, img: "https://images.unsplash.com/photo-1610057099443-fde8c4d50f91?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_nvs5", name: "🍗 Chicken Majestic", price: 250, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_nvs6", name: "🍗 Chicken Spring Roll", price: 260, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_nvs7", name: "🍗 Chicken 555", price: 250, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_nvs8", name: "🍗 Dragon Chicken", price: 260, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_nvs9", name: "🍗 Chicken Lollipop", price: 250, img: "https://images.unsplash.com/photo-1527477396000-e27163b481c2?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_nvs10", name: "🍗 Chicken Manchurian", price: 240, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_nvs11", name: "🍗 Thread Chicken", price: 260, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_nvs12", name: "🍗 Pepper Chicken", price: 240, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_nvs13", name: "🍗 Drumstick Chicken", price: 250, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_nvs14", name: "🍗 Crispy Fried Chicken", price: 260, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_nvs15", name: "🍗 Chicken Sizzler", price: 280, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_nvs16", name: "🍗 Ginger Chicken", price: 240, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_nvs17", name: "🍗 Chicken Bbq", price: 240, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_nvs18", name: "🍗 Lemon Chicken", price: 240, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_nvs19", name: "🍗 Tawa Chicken", price: 250, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_nvs20", name: "🍗 Chicken Streak", price: 250, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_nvs21", name: "🍗 Schezwan Chicken", price: 240, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_nvs22", name: "🍗 Kaju Nut Chicken", price: 280, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_nvs23", name: "🍗 Crimy Chicken", price: 280, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_nvs24", name: "🍗 Ghoti Chicken Crispy Fry", price: 280, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_nvs25", name: "🍗 Ghoti Chilli Chicken", price: 280, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_nvs26", name: "🍗 Kranchy Chicken", price: 280, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_nvs27", name: "🍗 Karivepak Chicken", price: 240, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_nvs28", name: "🍗 Malai Lollipop", price: 260, img: "https://images.unsplash.com/photo-1527477396000-e27163b481c2?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_nvs29", name: "🦐 Prawns Fry", price: 320, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" }
-            ]
-          },
-          {
-            id: "br_fish", title: "Fish Starters",
-            items: [
-              { id: "br_f1", name: "🐟 Chilli Fish", price: 260, img: "https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_f2", name: "🐟 Tawa Fish", price: 260, img: "https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_f3", name: "🐟 Appollo Fish", price: 260, img: "https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_f4", name: "🐟 Fish Manchurian", price: 260, img: "https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_f5", name: "🐟 Ginger Fish", price: 260, img: "https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_f6", name: "🐟 Crispy Fish", price: 260, img: "https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?w=300&auto=format&fit=crop&q=80" }
-            ]
-          },
-          {
-            id: "br_prawns", title: "Prawns Starters",
-            items: [
-              { id: "br_p1", name: "🦐 Loose Prawns", price: 270, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_p2", name: "🦐 Chilli Prawns", price: 270, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_p3", name: "🦐 Schezwan Prawns", price: 270, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_p4", name: "🦐 Ginger Prawns", price: 270, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_p5", name: "🦐 Prawns 65", price: 270, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_p6", name: "🦐 Sizzler Prawns", price: 280, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" }
-            ]
-          },
-          {
-            id: "br_tandoor", title: "Tandoori & Kabab's",
-            items: [
-              { id: "br_t1", name: "🍗 Tandoori Chicken Half", price: 280, img: "https://images.unsplash.com/photo-1610057099443-fde8c4d50f91?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_t2", name: "🍗 Tandoori Chicken Full", price: 480, img: "https://images.unsplash.com/photo-1610057099443-fde8c4d50f91?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_t3", name: "🍗 Tangadi Kabab Full", price: 290, img: "https://images.unsplash.com/photo-1610057099443-fde8c4d50f91?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_t4", name: "🍗 Tangadi Kabab Half", price: 180, img: "https://images.unsplash.com/photo-1610057099443-fde8c4d50f91?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_t5", name: "🍗 Reshmi Kabab", price: 290, img: "https://images.unsplash.com/photo-1610057099443-fde8c4d50f91?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_t6", name: "🍗 Malai Kabab", price: 300, img: "https://images.unsplash.com/photo-1610057099443-fde8c4d50f91?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_t7", name: "🍗 Chicken Tikka", price: 280, img: "https://images.unsplash.com/photo-1610057099443-fde8c4d50f91?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_t8", name: "🍗 Haryali Kabab", price: 280, img: "https://images.unsplash.com/photo-1610057099443-fde8c4d50f91?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_t9", name: "🍗 Achari Chicken Tikka", price: 280, img: "https://images.unsplash.com/photo-1610057099443-fde8c4d50f91?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_t10", name: "🍗 Chicken Sheak Kabab", price: 290, img: "https://images.unsplash.com/photo-1610057099443-fde8c4d50f91?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_t11", name: "🍗 Tandoori Chilli", price: 280, img: "https://images.unsplash.com/photo-1610057099443-fde8c4d50f91?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_t12", name: "🧀 Panner Tikka", price: 260, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_t13", name: "🧀 Haryali Panner Tikka", price: 260, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" }
-            ]
-          },
-          {
-            id: "br_egg_fr", title: "Egg & Non-Veg Fried Rice",
-            items: [
-              { id: "br_ef1", name: "🍳 Egg Manchurian", price: 180, img: "https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_ef2", name: "🍳 Egg Burji", price: 140, img: "https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_ef3", name: "🍳 Chilli Egg", price: 180, img: "https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_ef4", name: "🍗 Chicken Fried Rice", price: 200, img: "https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_ef5", name: "🍳 Egg Fried Rice", price: 170, img: "https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_ef6", name: "🍳 Schezwan Fried Rice", price: 210, img: "https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_ef7", name: "🍗 Mix Non Veg Fried Rice", price: 260, img: "https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_ef8", name: "🍗 Spl Chicken Fried Rice", price: 230, img: "https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=300&auto=format&fit=crop&q=80" }
-            ]
-          },
-          {
-            id: "br_veg_starters", title: "Veg Starters",
-            items: [
-              { id: "br_vs1", name: "🥦 Gobi Manchurian", price: 190, img: "https://images.unsplash.com/photo-1645177628172-a94c1f96e6db?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_vs2", name: "🥦 Gobi 65", price: 190, img: "https://images.unsplash.com/photo-1645177628172-a94c1f96e6db?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_vs3", name: "🥦 Chilli Gobi", price: 200, img: "https://images.unsplash.com/photo-1645177628172-a94c1f96e6db?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_vs4", name: "🧀 Chilli Panner", price: 240, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_vs5", name: "🧀 Panner 65", price: 240, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_vs6", name: "🧀 Panner Majestic", price: 250, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_vs7", name: "🌽 Crispy Corn", price: 220, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_vs8", name: "🌽 Chilli Baby Corn", price: 220, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_vs9", name: "🌽 Baby Corn Manchurian", price: 220, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_vs10", name: "🍄 Chilli Mushroom", price: 230, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_vs11", name: "🍄 Mushroom Manchurian", price: 230, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_vs12", name: "🍄 Mushroom Pepper Dry", price: 230, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_vs13", name: "🍄 Mushroom 65", price: 230, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_vs14", name: "🍄 Ginger Mushroom", price: 230, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_vs15", name: "🥗 Veg Spring Roll", price: 220, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_vs16", name: "🧀 Crispy Panner", price: 250, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_vs17", name: "🍄 Ginger Pepper Mushroom", price: 240, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_vs18", name: "🌽 Sesmi Babycorn", price: 230, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_vs19", name: "🧀 Panner Bujji", price: 250, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_vs20", name: "🍟 French Fries", price: 130, img: "https://images.unsplash.com/photo-1573080496219-bb080dd4f877?w=300&auto=format&fit=crop&q=80" }
-            ]
-          },
-          {
-            id: "br_rice", title: "Rice & Fried Rice",
-            items: [
-              { id: "br_r1", name: "🍚 Curd Rice", price: 99, img: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_r2", name: "🍚 Spl. Curd Rice", price: 109, img: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_r3", name: "🍚 Veg Fried Rice", price: 180, img: "https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_r4", name: "🍚 Gobi Fried Rice", price: 180, img: "https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_r5", name: "🍄 Mushroom Fried Rice", price: 200, img: "https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_r6", name: "🧀 Panner Fried Rice", price: 200, img: "https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_r7", name: "🍚 Jeera Rice", price: 170, img: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_r8", name: "🥜 Kaju Fried Rice", price: 220, img: "https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_r9", name: "🍚 Schezwan Fried Rice", price: 190, img: "https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_r10", name: "🍚 Schezwan Gobi Fried Rice", price: 190, img: "https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_r11", name: "🍄 Schezwan Mushroom Fried Rice", price: 210, img: "https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=300&auto=format&fit=crop&q=80" }
-            ]
-          },
-          {
-            id: "br_breads", title: "Breads",
-            items: [
-              { id: "br_bd1", name: "🫓 Pulka", price: 60, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_bd2", name: "🫓 Tandoori Roti", price: 65, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_bd3", name: "🫓 Butter Roti", price: 65, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_bd4", name: "🫓 Rumali Roti", price: 65, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_bd5", name: "🫓 Plain Naan", price: 65, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_bd6", name: "🫓 Butter Naan", price: 70, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_bd7", name: "🫓 Plain Kulcha", price: 65, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_bd8", name: "🫓 Masala Kulcha", price: 80, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_bd9", name: "🫓 Garlic Naan", price: 80, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_bd10", name: "🫓 Panner Stuffed Kulcha", price: 80, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_bd11", name: "🫓 Lacha Parata", price: 80, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_bd12", name: "🫓 Butter Kulcha", price: 70, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" }
-            ]
-          },
-          {
-            id: "br_biriyani", title: "Biriyani's",
-            items: [
-              { id: "br_b1", name: "🍗 Chicken Biriyani Single Piece", price: 170, img: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_b2", name: "🍗 Chicken Dum Biriyani", price: 220, bestseller: true, img: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_b3", name: "🍗 Chicken Fry Piece Biriyani", price: 260, img: "https://images.unsplash.com/photo-1633945274405-b6c8069047b0?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_b4", name: "🍗 Spl Chicken Biriyani", price: 270, img: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_b5", name: "🦐 Prawns Biriyani", price: 300, img: "https://images.unsplash.com/photo-1633945274405-b6c8069047b0?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_b6", name: "🥩 Mutton Fry Piece Biriyani", price: 370, img: "https://images.unsplash.com/photo-1633945274405-b6c8069047b0?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_b7", name: "🍗 Kaju Biryani", price: 300, img: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_b8", name: "🥚 Egg Biriyani", price: 180, img: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_b9", name: "🍚 Biriyani Rice", price: 150, img: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_b10", name: "🍗 Chicken Biriyani Family Pack", price: 610, img: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_b11", name: "🍗 Spl Chicken Biriyani Family pack", price: 760, img: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_b12", name: "🍗 Fry Peice Chicken Biriyani Family pack", price: 670, img: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_b13", name: "🥩 Mutton Family Pack Biriyani", price: 1010, img: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_b14", name: "🥜 Kaju Biriyani - Veg", price: 270, img: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_b15", name: "🧀 Panner Biriyani - Veg", price: 230, img: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_b16", name: "🍄 Mushroom Biriyani - Veg", price: 230, img: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_b17", name: "🥗 Veg Pulao", price: 210, img: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_b18", name: "🍗 Chicken Pulao", price: 260, img: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=300&auto=format&fit=crop&q=80" }
-            ]
-          },
-          {
-            id: "br_main_nv", title: "Main Course - Non Veg",
-            items: [
-              { id: "br_mnv1", name: "🍗 Chicken Maharani", price: 280, img: "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_mnv2", name: "🍗 Butter Chicken", price: 250, img: "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_mnv3", name: "🍗 Kaju Chicken Curry", price: 260, img: "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_mnv4", name: "🍗 Kadai Chicken", price: 250, img: "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_mnv5", name: "🍗 Afgani Chicken", price: 260, img: "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_mnv6", name: "🍗 Mughalai Chicken", price: 260, img: "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_mnv7", name: "🍗 Chicken Chatpat", price: 230, img: "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_mnv8", name: "🍗 Chicken Kolhapuri (bone)", price: 250, img: "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_mnv9", name: "🍗 Kodi Mamsam (bone)", price: 250, img: "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_mnv10", name: "🍗 Dum Ka Chicken (bone)", price: 260, img: "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_mnv11", name: "🍗 Punjabi Chicken (bone)", price: 250, img: "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_mnv12", name: "🍗 Methi Chicken", price: 240, img: "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_mnv13", name: "🍗 Chicken Fry", price: 250, img: "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_mnv14", name: "🍗 Chicken Fry Semi Gravy", price: 260, img: "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_mnv15", name: "🍗 Rayalaseema Chicken (bone)", price: 250, img: "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_mnv16", name: "🍗 Chicken Do Pyaza", price: 240, img: "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_mnv17", name: "🍗 Chicken Masala", price: 260, img: "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_mnv18", name: "🍗 Chicken Tikka Masala", price: 270, img: "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_mnv19", name: "🍗 Bhadshai Chicken", price: 270, img: "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=300&auto=format&fit=crop&q=80" }
-            ]
-          },
-          {
-            id: "br_mutton", title: "Mutton & Sea Food",
-            items: [
-              { id: "br_mut1", name: "🥩 Mutton Curry", price: 390, img: "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_mut2", name: "🥩 Mutton Fry", price: 390, img: "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_mut3", name: "🥩 Kadai Mutton", price: 390, img: "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_mut4", name: "🥩 Mutton Rogan Ghosh", price: 390, img: "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_mut5", name: "🥩 Mutton Buna Ghosh", price: 390, img: "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_mut6", name: "🥩 Mutton Sagwala", price: 390, img: "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_sf1", name: "🦐 Prawns Curry", price: 290, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_sf2", name: "🦐 Prawns Masala", price: 290, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_sf3", name: "🦐 Prawns Fry", price: 330, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_sf4", name: "🦐 Kadai Prawns", price: 290, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_sf5", name: "🐟 Fish Curry (boneless)", price: 260, img: "https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?w=300&auto=format&fit=crop&q=80" }
-            ]
-          },
-          {
-            id: "br_main_veg", title: "Main Course - Veg",
-            items: [
-              { id: "br_mv1", name: "🧀 Panner Butter Masala", price: 250, bestseller: true, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_mv2", name: "🧀 Kedai Panner", price: 250, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_mv3", name: "🍄 Mashroom Curry", price: 230, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_mv4", name: "🥜 Kaju Masala", price: 280, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_mv5", name: "🥜 kaju Panner", price: 270, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_mv6", name: "🥜 Kaju Curry", price: 280, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_mv7", name: "🍄 Kaju Mashroom Curry", price: 260, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_mv8", name: "🥗 Mix Veg Curry", price: 220, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_mv9", name: "🌽 Bobycorn Masala", price: 240, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_mv10", name: "🧀 Shahi Panner", price: 240, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_mv11", name: "🌿 Methi Chaman", price: 250, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_mv12", name: "🥬 Palak Panner", price: 240, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_mv13", name: "🥬 Plain Palak", price: 200, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_mv14", name: "🍲 Dal Tadkha", price: 160, img: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_mv15", name: "🍲 Dal Fry", price: 190, img: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_mv16", name: "🍲 Malai Koftha", price: 250, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_mv17", name: "🥗 Veg Chatpat", price: 230, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_mv18", name: "🥦 Kodai Veg", price: 230, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_mv19", name: "🥦 Veg Kolhapuri", price: 230, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_mv20", name: "🍛 Spl. Mix Veg Curry", price: 240, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_mv21", name: "🧀 Panner Lavabdar", price: 270, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" }
+              { id: "br_nvs1", name: "🥜 Kamju Fry", price: 230, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_nvs2", name: "🥜 Kamju Roast", price: 220, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_nvs3", name: "🍗 Chilli Chicken", price: 250, bestseller: true, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_nvs4", name: "🍗 Chicken 65", price: 250, img: "https://images.unsplash.com/photo-1610057099443-fde8c4d50f91?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_nvs5", name: "🍗 Chicken Majestic", price: 260, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_nvs6", name: "🍗 Chicken Spring Roll", price: 270, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_nvs7", name: "🍗 Chicken 555", price: 260, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_nvs8", name: "🍗 Dragon Chicken", price: 270, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_nvs9", name: "🍗 Chicken Lollipop", price: 260, img: "https://images.unsplash.com/photo-1527477396000-e27163b481c2?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_nvs10", name: "🍗 Chicken Manchurian", price: 250, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_nvs11", name: "🍗 Thread Chicken", price: 270, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_nvs12", name: "🍗 Pepper Chicken", price: 250, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_nvs13", name: "🍗 Drumstick Chicken", price: 260, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_nvs14", name: "🍗 Crispy Fried Chicken", price: 270, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_nvs15", name: "🍗 Chicken Sizzler", price: 290, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_nvs16", name: "🍗 Ginger Chicken", price: 250, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_nvs17", name: "🍗 Chicken BBQ", price: 250, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_nvs18", name: "🍗 Lemon Chicken", price: 250, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_nvs19", name: "🍗 Sesmi Chicken", price: 250, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_nvs20", name: "🍗 Tawa Chicken", price: 260, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_nvs21", name: "🍗 Chicken Streak", price: 260, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_nvs22", name: "🍗 Schezwan Chicken", price: 250, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_nvs23", name: "🥜 Kaju Nut Chicken", price: 290, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_nvs24", name: "🍗 Creamy Chicken", price: 290, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_nvs25", name: "🍗 Ghoti Chicken Crispy Fry", price: 290, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_nvs26", name: "🍗 Ghoti Chilli Chicken", price: 290, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_nvs27", name: "🍗 Crunchy Chicken", price: 290, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_nvs28", name: "🍗 Karivepaku Chicken", price: 250, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_nvs29", name: "🍗 Malai Lollipop", price: 270, img: "https://images.unsplash.com/photo-1527477396000-e27163b481c2?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_nvs30", name: "🦐 Prawns Fry", price: 330, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" }
             ]
           },
           {
             id: "br_egg", title: "Egg Items",
             items: [
-              { id: "br_eg1", name: "🥚 Egg Curry", price: 190, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_eg2", name: "🥚 Egg Masala", price: 190, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_eg3", name: "🥚 Egg Keema", price: 190, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" }
+              { id: "br_eg1", name: "🥚 Egg Manchurian", price: 190, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_eg2", name: "🥚 Egg Burji", price: 150, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_eg3", name: "🥚 Chilli Egg", price: 190, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_eg4", name: "🥚 Egg Curry", price: 200, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_eg5", name: "🥚 Egg Masala", price: 200, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_eg6", name: "🥚 Egg Keema", price: 200, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" }
+            ]
+          },
+          {
+            id: "br_soups", title: "Soups",
+            items: [
+              { id: "br_s1", name: "🥣 Veg Hot & Sour Soup", price: 159, img: "https://images.unsplash.com/photo-1547592166-23ac45744acd?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_s2", name: "🥣 Veg Manchow Soup", price: 159, img: "https://images.unsplash.com/photo-1547592166-23ac45744acd?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_s3", name: "🥣 Chicken Hot & Sour Soup", price: 170, img: "https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_s4", name: "🥣 Chicken Manchow Soup", price: 170, img: "https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=300&auto=format&fit=crop&q=80" }
+            ]
+          },
+          {
+            id: "br_fish", title: "Fish",
+            items: [
+              { id: "br_f1", name: "🐟 Chilli Fish", price: 270, img: "https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_f2", name: "🐟 Tawa Fish", price: 270, img: "https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_f3", name: "🐟 Apollo Fish", price: 270, img: "https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_f4", name: "🐟 Fish Manchurian", price: 270, img: "https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_f5", name: "🐟 Ginger Fish", price: 270, img: "https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_f6", name: "🐟 Crispy Fish", price: 270, img: "https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?w=300&auto=format&fit=crop&q=80" }
+            ]
+          },
+          {
+            id: "br_prawns", title: "Prawns",
+            items: [
+              { id: "br_p1", name: "🦐 Loose Prawns", price: 280, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_p2", name: "🦐 Chilli Prawns", price: 280, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_p3", name: "🦐 Schezwan Prawns", price: 280, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_p4", name: "🦐 Ginger Prawns", price: 280, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_p5", name: "🦐 Prawns 65", price: 280, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_p6", name: "🦐 Sizzler Prawns", price: 290, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" }
+            ]
+          },
+          {
+            id: "br_tandoor", title: "Tandoori & Kababs",
+            items: [
+              { id: "br_t1", name: "🍗 Tandoori Chicken Half", price: 290, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_t2", name: "🍗 Tandoori Chicken Full", price: 490, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_t3", name: "🍗 Tangadi Kabab Full", price: 300, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_t4", name: "🍗 Tangadi Kabab Half", price: 190, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_t5", name: "🍗 Reshmi Kabab", price: 300, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_t6", name: "🍗 Malai Kabab", price: 310, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_t7", name: "🍗 Chicken Tikka", price: 290, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_t8", name: "🍗 Haryali Kabab", price: 290, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_t9", name: "🍗 Achari Chicken Tikka", price: 290, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_t10", name: "🍗 Chicken Sheek Kabab", price: 300, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_t11", name: "🍗 Tandoori Chilli", price: 290, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_t12", name: "🧀 Paneer Tikka", price: 270, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_t13", name: "🧀 Haryali Paneer Tikka", price: 270, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" }
+            ]
+          },
+          {
+            id: "br_biryani", title: "Biryanis",
+            items: [
+              { id: "br_b1", name: "🍗 Chicken Biryani Single Piece", price: 180, img: "https://images.unsplash.com/photo-1589302168068-964664d93dc0?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_b2", name: "🍗 Chicken Dum Biryani", price: 230, bestseller: true, img: "https://images.unsplash.com/photo-1589302168068-964664d93dc0?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_b3", name: "🍗 Chicken Fry Piece Biryani", price: 270, img: "https://images.unsplash.com/photo-1589302168068-964664d93dc0?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_b4", name: "🍗 Spl Chicken Biryani", price: 280, img: "https://images.unsplash.com/photo-1589302168068-964664d93dc0?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_b5", name: "🦐 Prawns Biryani", price: 310, img: "https://images.unsplash.com/photo-1589302168068-964664d93dc0?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_b6", name: "🥩 Mutton Fry Piece Biryani", price: 380, img: "https://images.unsplash.com/photo-1589302168068-964664d93dc0?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_b7", name: "🥜 Kaju Biryani", price: 310, img: "https://images.unsplash.com/photo-1589302168068-964664d93dc0?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_b8", name: "🥚 Egg Biryani", price: 190, img: "https://images.unsplash.com/photo-1589302168068-964664d93dc0?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_b9", name: "🍚 Biryani Rice", price: 160, img: "https://images.unsplash.com/photo-1589302168068-964664d93dc0?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_b10", name: "🍗 Chicken Biryani Family Pack", price: 620, img: "https://images.unsplash.com/photo-1589302168068-964664d93dc0?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_b11", name: "🍗 Spl Chicken Biryani Family Pack", price: 770, img: "https://images.unsplash.com/photo-1589302168068-964664d93dc0?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_b12", name: "🍗 Fry Piece Chicken Biryani Family Pack", price: 680, img: "https://images.unsplash.com/photo-1589302168068-964664d93dc0?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_b13", name: "🥩 Mutton Family Pack Biryani", price: 1020, img: "https://images.unsplash.com/photo-1589302168068-964664d93dc0?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_b14", name: "🥜 Kaju Biryani - Veg", price: 280, img: "https://images.unsplash.com/photo-1589302168068-964664d93dc0?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_b15", name: "🧀 Paneer Biryani - Veg", price: 240, img: "https://images.unsplash.com/photo-1589302168068-964664d93dc0?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_b16", name: "🍄 Mushroom Biryani - Veg", price: 240, img: "https://images.unsplash.com/photo-1589302168068-964664d93dc0?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_b17", name: "🥗 Veg Pulao", price: 220, img: "https://images.unsplash.com/photo-1589302168068-964664d93dc0?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_b18", name: "🍗 Chicken Pulao", price: 270, img: "https://images.unsplash.com/photo-1589302168068-964664d93dc0?w=300&auto=format&fit=crop&q=80" }
+            ]
+          },
+          {
+            id: "br_main_nv", title: "Main Course - Non Veg",
+            items: [
+              { id: "br_mnv1", name: "🍗 Chicken Maharani", price: 290, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_mnv2", name: "🍗 Butter Chicken", price: 260, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_mnv3", name: "🍗 Kaju Chicken Curry", price: 270, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_mnv4", name: "🍗 Kadai Chicken", price: 260, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_mnv5", name: "🍗 Afghani Chicken", price: 270, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_mnv6", name: "🍗 Mughlai Chicken", price: 270, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_mnv7", name: "🍗 Chicken Chatpat", price: 240, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_mnv8", name: "🍗 Chicken Kolhapuri (Bone)", price: 260, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_mnv9", name: "🍗 Kodi Mamsam (Bone)", price: 260, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_mnv10", name: "🍗 Dum Ka Chicken (Bone)", price: 270, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_mnv11", name: "🍗 Punjabi Chicken (Bone)", price: 260, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_mnv12", name: "🍗 Methi Chicken", price: 250, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_mnv13", name: "🍗 Chicken Fry", price: 260, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_mnv14", name: "🍗 Chicken Fry Semi Gravy", price: 270, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_mnv15", name: "🍗 Rayalaseema Chicken (Bone)", price: 260, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_mnv16", name: "🍗 Chicken Do Pyaza", price: 250, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_mnv17", name: "🍗 Chicken Masala", price: 270, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_mnv18", name: "🍗 Chicken Tikka Masala", price: 280, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_mnv19", name: "🍗 Badshahi Chicken", price: 280, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" }
+            ]
+          },
+          {
+            id: "br_mutton", title: "Mutton",
+            items: [
+              { id: "br_m1", name: "🥩 Mutton Curry", price: 400, img: "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_m2", name: "🥩 Mutton Fry", price: 400, img: "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_m3", name: "🥩 Kadai Mutton", price: 400, img: "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_m4", name: "🥩 Mutton Rogan Josh", price: 400, img: "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_m5", name: "🥩 Mutton Buna Ghosh", price: 400, img: "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_m6", name: "🥩 Mutton Sagwala", price: 400, img: "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=300&auto=format&fit=crop&q=80" }
+            ]
+          },
+          {
+            id: "br_seafood", title: "Sea Food",
+            items: [
+              { id: "br_sf1", name: "🦐 Prawns Curry", price: 300, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_sf2", name: "🦐 Prawns Masala", price: 300, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_sf3", name: "🦐 Prawns Fry", price: 340, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_sf4", name: "🦐 Kadai Prawns", price: 300, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_sf5", name: "🐟 Fish Curry (Boneless)", price: 270, img: "https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?w=300&auto=format&fit=crop&q=80" }
+            ]
+          },
+          {
+            id: "br_main_veg", title: "Main Course - Veg",
+            items: [
+              { id: "br_mv1", name: "🧀 Paneer Butter Masala", price: 260, bestseller: true, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_mv2", name: "🧀 Kadai Paneer", price: 260, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_mv3", name: "🍄 Mushroom Curry", price: 240, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_mv4", name: "🥜 Kaju Masala", price: 290, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_mv5", name: "🥜 Kaju Paneer", price: 280, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_mv6", name: "🥜 Kaju Curry", price: 290, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_mv7", name: "🥜 Kaju Mushroom Curry", price: 270, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_mv8", name: "🥗 Mix Veg Curry", price: 230, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_mv9", name: "🌽 Babycorn Masala", price: 250, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_mv10", name: "🧀 Shahi Paneer", price: 250, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_mv11", name: "🌿 Methi Chaman", price: 260, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_mv12", name: "🥬 Palak Paneer", price: 250, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_mv13", name: "🥬 Plain Palak", price: 210, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_mv14", name: "🍲 Dal Tadka", price: 170, img: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_mv15", name: "🍲 Dal Fry", price: 200, img: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_mv16", name: "🧀 Malai Kofta", price: 260, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_mv17", name: "🥗 Veg Chatpat", price: 240, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_mv18", name: "🥦 Kadai Veg", price: 240, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_mv19", name: "🥦 Veg Kolhapuri", price: 240, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_mv20", name: "🥗 Spl. Mix Veg Curry", price: 250, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_mv21", name: "🧀 Paneer Lababdar", price: 280, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&auto=format&fit=crop&q=80" }
             ]
           },
           {
             id: "br_desserts", title: "Ice Creams & Desserts",
             items: [
-              { id: "br_d1", name: "🍦 Vanila (1 Scoop)", price: 80, img: "https://images.unsplash.com/photo-1545014917-3184f370f1a5?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_d2", name: "🍦 Vanila (2 Scoops)", price: 110, img: "https://images.unsplash.com/photo-1545014917-3184f370f1a5?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_d3", name: "🍓 Strawberry (1 Scoop)", price: 80, img: "https://images.unsplash.com/photo-1545014917-3184f370f1a5?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_d4", name: "🍓 Strawberry (2 Scoops)", price: 110, img: "https://images.unsplash.com/photo-1545014917-3184f370f1a5?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_d5", name: "🍨 Butterscotch (1 Scoop)", price: 90, img: "https://images.unsplash.com/photo-1545014917-3184f370f1a5?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_d6", name: "🍨 Butterscotch (2 Scoops)", price: 130, img: "https://images.unsplash.com/photo-1545014917-3184f370f1a5?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_d7", name: "🍨 Pista (1 Scoop)", price: 85, img: "https://images.unsplash.com/photo-1545014917-3184f370f1a5?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_d8", name: "🍨 Pista (2 Scoops)", price: 120, img: "https://images.unsplash.com/photo-1545014917-3184f370f1a5?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_d9", name: "🍇 Black Current (1 Scoop)", price: 90, img: "https://images.unsplash.com/photo-1545014917-3184f370f1a5?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_d10", name: "🍇 Black Current (2 Scoops)", price: 130, img: "https://images.unsplash.com/photo-1545014917-3184f370f1a5?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_d11", name: "🍫 Chocolate (1 Scoop)", price: 90, img: "https://images.unsplash.com/photo-1545014917-3184f370f1a5?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_d12", name: "🍫 Chocolate (2 Scoops)", price: 130, img: "https://images.unsplash.com/photo-1545014917-3184f370f1a5?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_d13", name: "🥥 Dry Fruit (1 Scoop)", price: 105, img: "https://images.unsplash.com/photo-1545014917-3184f370f1a5?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_d14", name: "🥥 Dry Fruit (2 Scoops)", price: 155, img: "https://images.unsplash.com/photo-1545014917-3184f370f1a5?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_d15", name: "🍯 Fig & Honey (1 Scoop)", price: 95, img: "https://images.unsplash.com/photo-1545014917-3184f370f1a5?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_d16", name: "🍯 Fig & Honey (2 Scoops)", price: 135, img: "https://images.unsplash.com/photo-1545014917-3184f370f1a5?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_d17", name: "🍫 Sizzler Brownie", price: 159, img: "https://images.unsplash.com/photo-1606313564200-e75d5e30476c?w=300&auto=format&fit=crop&q=80" }
+              { id: "br_d1", name: "🍦 Vanilla (1 Scoop)", price: 90, img: "https://images.unsplash.com/photo-1545014917-3184f370f1a5?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_d2", name: "🍦 Vanilla (2 Scoops)", price: 120, img: "https://images.unsplash.com/photo-1545014917-3184f370f1a5?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_d3", name: "🍓 Strawberry (1 Scoop)", price: 90, img: "https://images.unsplash.com/photo-1545014917-3184f370f1a5?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_d4", name: "🍓 Strawberry (2 Scoops)", price: 120, img: "https://images.unsplash.com/photo-1545014917-3184f370f1a5?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_d5", name: "🍦 Butterscotch (1 Scoop)", price: 100, img: "https://images.unsplash.com/photo-1545014917-3184f370f1a5?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_d6", name: "🍦 Butterscotch (2 Scoops)", price: 140, img: "https://images.unsplash.com/photo-1545014917-3184f370f1a5?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_d7", name: "🟢 Pista (1 Scoop)", price: 95, img: "https://images.unsplash.com/photo-1545014917-3184f370f1a5?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_d8", name: "🟢 Pista (2 Scoops)", price: 130, img: "https://images.unsplash.com/photo-1545014917-3184f370f1a5?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_d9", name: "🥥 Dry Fruit (1 Scoop)", price: 115, img: "https://images.unsplash.com/photo-1545014917-3184f370f1a5?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_d10", name: "🥥 Dry Fruit (2 Scoops)", price: 165, img: "https://images.unsplash.com/photo-1545014917-3184f370f1a5?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_d11", name: "🍇 Black Current (1 Scoop)", price: 100, img: "https://images.unsplash.com/photo-1545014917-3184f370f1a5?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_d12", name: "🍇 Black Current (2 Scoops)", price: 140, img: "https://images.unsplash.com/photo-1545014917-3184f370f1a5?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_d13", name: "🍫 Chocolate (1 Scoop)", price: 100, img: "https://images.unsplash.com/photo-1545014917-3184f370f1a5?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_d14", name: "🍫 Chocolate (2 Scoops)", price: 140, img: "https://images.unsplash.com/photo-1545014917-3184f370f1a5?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_d15", name: "🍯 Fig & Honey (1 Scoop)", price: 105, img: "https://images.unsplash.com/photo-1545014917-3184f370f1a5?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_d16", name: "🍯 Fig & Honey (2 Scoops)", price: 145, img: "https://images.unsplash.com/photo-1545014917-3184f370f1a5?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_d17", name: "🍫 Sizzler Brownie", price: 169, img: "https://images.unsplash.com/photo-1606313564200-e75d5e30476c?w=300&auto=format&fit=crop&q=80" }
             ]
           },
           {
-            id: "br_shakes", title: "Milkshakes & Beverages",
+            id: "br_shakes", title: "Milkshakes",
             items: [
-              { id: "br_ms1", name: "🥤 Vanila Shake", price: 129, img: "https://images.unsplash.com/photo-1572490122747-3968b75cc699?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_ms2", name: "🍓 Strawberry Shake", price: 129, img: "https://images.unsplash.com/photo-1572490122747-3968b75cc699?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_ms3", name: "🍫 Chocolate Shake", price: 129, img: "https://images.unsplash.com/photo-1572490122747-3968b75cc699?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_ms4", name: "🍨 Butterscotch Shake", price: 129, img: "https://images.unsplash.com/photo-1572490122747-3968b75cc699?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_ms5", name: "🍪 Oreo Shake", price: 129, img: "https://images.unsplash.com/photo-1572490122747-3968b75cc699?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_ms6", name: "🍇 Black Current Shake", price: 129, img: "https://images.unsplash.com/photo-1572490122747-3968b75cc699?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_ms7", name: "🍫 Kitkat Shake", price: 129, img: "https://images.unsplash.com/photo-1572490122747-3968b75cc699?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_ms8", name: "🧋 Brownie Shake", price: 139, img: "https://images.unsplash.com/photo-1572490122747-3968b75cc699?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_ms9", name: "🟢 Pista Shake", price: 129, img: "https://images.unsplash.com/photo-1572490122747-3968b75cc699?w=300&auto=format&fit=crop&q=80" }
+              { id: "br_ms1", name: "🥤 Vanilla Shake", price: 139, img: "https://images.unsplash.com/photo-1572490122747-3968b75cc699?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_ms2", name: "🍓 Strawberry Shake", price: 139, img: "https://images.unsplash.com/photo-1572490122747-3968b75cc699?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_ms3", name: "🍫 Chocolate Shake", price: 139, img: "https://images.unsplash.com/photo-1572490122747-3968b75cc699?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_ms4", name: "🍦 Butterscotch Shake", price: 139, img: "https://images.unsplash.com/photo-1572490122747-3968b75cc699?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_ms5", name: "🍪 Oreo Shake", price: 139, img: "https://images.unsplash.com/photo-1572490122747-3968b75cc699?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_ms6", name: "🍇 Black Current Shake", price: 139, img: "https://images.unsplash.com/photo-1572490122747-3968b75cc699?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_ms7", name: "🍫 KitKat Shake", price: 139, img: "https://images.unsplash.com/photo-1572490122747-3968b75cc699?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_ms8", name: "🍫 Brownie Shake", price: 149, img: "https://images.unsplash.com/photo-1572490122747-3968b75cc699?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_ms9", name: "🟢 Pista Shake", price: 139, img: "https://images.unsplash.com/photo-1572490122747-3968b75cc699?w=300&auto=format&fit=crop&q=80" }
             ]
           },
           {
-            id: "br_mocktails_lassi", title: "Mocktails & Lassis",
+            id: "br_lassi", title: "Lassis",
             items: [
-              { id: "br_m1", name: "🍹 Virgin Mojito", price: 109, img: "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_m2", name: "🍏 Green Apple", price: 109, img: "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_m3", name: "🍓 Strawberry Mocktail", price: 109, img: "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_m4", name: "🌿 Fresh Mint", price: 109, img: "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_m5", name: "🍉 Watermelon", price: 119, img: "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_m6", name: "🍊 Orange", price: 109, img: "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_m7", name: "🍇 Black Current", price: 119, img: "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_m8", name: "🔵 Blue Coraco", price: 119, img: "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_l1", name: "🥛 Sweet Lassi", price: 109, img: "https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_l2", name: "🥭 Mango Lassi", price: 109, img: "https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_l3", name: "🍓 Strawberry Lassi", price: 119, img: "https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_l4", name: "🍫 Chocolate Lassi", price: 109, img: "https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_l5", name: "🍉 Watermelon Lassi", price: 119, img: "https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=300&auto=format&fit=crop&q=80" },
-              { id: "br_l6", name: "🟢 Pista Lassi", price: 119, img: "https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=300&auto=format&fit=crop&q=80" }
+              { id: "br_l1", name: "🥛 Sweet Lassi", price: 119, img: "https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_l2", name: "🥭 Mango Lassi", price: 119, img: "https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_l3", name: "🍓 Strawberry Lassi", price: 129, img: "https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_l4", name: "🍫 Chocolate Lassi", price: 119, img: "https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_l5", name: "🍉 Watermelon Lassi", price: 129, img: "https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_l6", name: "🟢 Pista Lassi", price: 129, img: "https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=300&auto=format&fit=crop&q=80" }
+            ]
+          },
+          {
+            id: "br_mocktails", title: "Mocktails",
+            items: [
+              { id: "br_m1", name: "🍹 Virgin Mojito", price: 119, img: "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_m2", name: "🍏 Green Apple", price: 119, img: "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_m3", name: "🍓 Strawberry Mocktail", price: 119, img: "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_m4", name: "🌿 Fresh Mint", price: 119, img: "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_m5", name: "🍉 Watermelon", price: 129, img: "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_m6", name: "🍊 Orange", price: 119, img: "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_m7", name: "🍇 Black Current", price: 129, img: "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=300&auto=format&fit=crop&q=80" },
+              { id: "br_m8", name: "🔵 Blue Curacao", price: 129, img: "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=300&auto=format&fit=crop&q=80" }
             ]
           }
         ]
       },
+
       tea_time: {
         name: "Tea Time",
         categories: [
           {
             id: "tt_rice_noodles", title: "Rice & Noodles",
             items: [
-              { id: "tt_rn1", name: "🍚 Gobi Rice", price: 80, img: "https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=300&auto=format&fit=crop&q=80" },
-              { id: "tt_rn2", name: "🍜 Gobi Noodles", price: 80, img: "https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=300&auto=format&fit=crop&q=80" },
-              { id: "tt_rn3", name: "🍳 Egg Rice", price: 70, img: "https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=300&auto=format&fit=crop&q=80" },
-              { id: "tt_rn4", name: "🍜 Egg Noodles", price: 70, img: "https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=300&auto=format&fit=crop&q=80" },
-              { id: "tt_rn5", name: "🍗 Chicken Rice", price: 100, bestseller: true, img: "https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=300&auto=format&fit=crop&q=80" },
-              { id: "tt_rn6", name: "🍜 Chicken Noodles", price: 100, bestseller: true, img: "https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=300&auto=format&fit=crop&q=80" }
+              { id: "tt_rn1", name: "🍚 Gobi Rice", price: 130, img: "https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=300&auto=format&fit=crop&q=80" },
+              { id: "tt_rn2", name: "🍜 Gobi Noodles", price: 130, img: "https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=300&auto=format&fit=crop&q=80" },
+              { id: "tt_rn3", name: "🍳 Egg Rice", price: 120, img: "https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=300&auto=format&fit=crop&q=80" },
+              { id: "tt_rn4", name: "🍜 Egg Noodles", price: 120, img: "https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=300&auto=format&fit=crop&q=80" },
+              { id: "tt_rn5", name: "🍗 Chicken Rice", price: 150, bestseller: true, img: "https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=300&auto=format&fit=crop&q=80" },
+              { id: "tt_rn6", name: "🍜 Chicken Noodles", price: 150, bestseller: true, img: "https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=300&auto=format&fit=crop&q=80" }
             ]
           },
           {
             id: "tt_starters", title: "Starters & Manchuria",
             items: [
-              { id: "tt_st1", name: "🥦 Gobi Manchuria", price: 150, img: "https://images.unsplash.com/photo-1645177628172-a94c1f96e6db?w=300&auto=format&fit=crop&q=80" },
-              { id: "tt_st2", name: "🍗 Chicken Manchuria", price: 170, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
-              { id: "tt_st3", name: "🍗 Chicken 65", price: 180, bestseller: true, img: "https://images.unsplash.com/photo-1610057099443-fde8c4d50f91?w=300&auto=format&fit=crop&q=80" },
-              { id: "tt_st4", name: "🍗 Chilli Chicken", price: 170, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
-              { id: "tt_st5", name: "🍗 Chicken Pakoda (1 kg)", price: 450, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" }
+              { id: "tt_st1", name: "🥦 Gobi Manchuria", price: 200, img: "https://images.unsplash.com/photo-1645177628172-a94c1f96e6db?w=300&auto=format&fit=crop&q=80" },
+              { id: "tt_st2", name: "🍗 Chicken Manchuria", price: 220, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "tt_st3", name: "🍗 Chicken 65", price: 230, bestseller: true, img: "https://images.unsplash.com/photo-1610057099443-fde8c4d50f91?w=300&auto=format&fit=crop&q=80" },
+              { id: "tt_st4", name: "🍗 Chilli Chicken", price: 220, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" },
+              { id: "tt_st5", name: "🍗 Chicken Pakoda (1 kg)", price: 500, img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&auto=format&fit=crop&q=80" }
             ]
           },
           {
             id: "tt_rolls", title: "Rolls",
             items: [
-              { id: "tt_rl1", name: "🌯 Veg Roll", price: 150, img: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?w=300&auto=format&fit=crop&q=80" },
-              { id: "tt_rl2", name: "🌯 Egg Roll", price: 160, img: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?w=300&auto=format&fit=crop&q=80" },
-              { id: "tt_rl3", name: "🌯 Chicken Roll", price: 190, bestseller: true, img: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?w=300&auto=format&fit=crop&q=80" },
-              { id: "tt_rl4", name: "🌯 Gobi Roll", price: 70, img: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?w=300&auto=format&fit=crop&q=80" }
+              { id: "tt_rl1", name: "🌯 Veg Roll", price: 100, img: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?w=300&auto=format&fit=crop&q=80" },
+              { id: "tt_rl2", name: "🌯 Egg Roll", price: 110, img: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?w=300&auto=format&fit=crop&q=80" },
+              { id: "tt_rl3", name: "🌯 Chicken Roll", price: 140, bestseller: true, img: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?w=300&auto=format&fit=crop&q=80" },
+              { id: "tt_rl4", name: "🌯 Gobi Roll", price: 120, img: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?w=300&auto=format&fit=crop&q=80" }
             ]
           }
         ]
